@@ -4,20 +4,20 @@ A transparent overlay with features to allow users to experience video games mor
 
 
 	#######################  Info  ###########################
-	#						                                          	 #
-	# 		Created by u/Graveknight1		                       #
-	#						                                          	 #
+	#				                  	 #
+	# 		Created by u/Graveknight1                #
+	#						         #
 	# Please contact me via reddit for questions or requests #
 	# If you would like to donate to my work, feel free to   #
-	# reach out.					                                	 #
-	#					                                           		 #
+	# reach out.					         #
+	#					           	 #
 	# This program is not for sale, if someone charged you	 #
-	# for it, you've been ripped off.		                  	 #
-	#						                                          	 #
+	# for it, you've been ripped off.			 #
+	#						         #
 	# This code was written for the Healsluts community   	 #
 	# If you like what you see, check them out at 	      	 #
-	# r/healsluts					                                 	 #
-	#					                                          		 #
+	# r/healsluts					         #
+	#					             	 #
 	##########################################################
 	
 	###################### Instructions #####################
