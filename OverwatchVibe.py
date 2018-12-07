@@ -1,5 +1,5 @@
-import pyautogui
-import time
+from pyautogui import screenshot
+from time import sleep
 
 def getcolors(im,location1x,location1y):
 	red, blue, green = im.getpixel((int(location1x), int(location1y)))
@@ -30,7 +30,7 @@ def mean(numbers):
 
 def go(positions, markslist):
 	marks=[]
-	im = pyautogui.screenshot()
+	im = screenshot()
 	time.sleep(1)
 	for x,y in positions.items():
 		for mark in getcolors(im,x,y):
@@ -67,6 +67,7 @@ def genpositions():
 		y = round((usery/1440) * int(y))
 		positions.update({x:y})
 	return positions	
+	
 if __name__ == '__main__':
 	import ctypes
 	markslist = [0,0,0,0]
