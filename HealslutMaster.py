@@ -13,7 +13,7 @@ from itertools import cycle
 from time import time
 from multiprocessing import freeze_support, Process, Pipe
 from threading import Thread
-from glob import iglob
+from glob import iglob, glob
 from playsound import playsound, PlaysoundException
 from ctypes import windll
 from os import remove, path
@@ -59,7 +59,6 @@ from cv2 import VideoCapture, imwrite
 
 	
 #thanks to https://www.reddit.com/r/iateacrayon/wiki/list for the images
-#thanks to https://jpg2png.com/ for the conversion
 
 
 
@@ -111,6 +110,8 @@ class HealslutMaster(Frame):
 			self.hyp_tranbanr.set(1)
 			self.display_rules = IntVar(self.master)
 			self.display_rules.set(1)
+			self.delold = IntVar(self.master)
+			self.delold.set(1)
 			self.s_decay = StringVar(self.master)
 			self.s_decay.set('10')
 			self.s_decay_pow = StringVar(self.master)
@@ -124,6 +125,8 @@ class HealslutMaster(Frame):
 			self.hyp_folders = hyp_folders
 			self.hyp_gfile = StringVar(self.master)
 			self.hyp_gfile.set(hyp_folders[0])
+			self.convfolder = StringVar(self.master)
+			self.convfolder.set('')
 			self.base_speed = 0
 			
 			try:
@@ -273,7 +276,6 @@ class HealslutMaster(Frame):
 		if '$text' in macro:
 			macro=macro+' '
 			text = macro.strip('$text')
-			print(text)
 			self.p_txt.send(text)
 		if '$+vibe' in macro:
 			self.vibe_speed += int(macro.strip('$+vibe'))
@@ -505,7 +507,7 @@ class HealslutMaster(Frame):
 				
 				self.top = Toplevel()
 				self.top.title("HypnoTherapy Settings")
-				width, height = 775,360
+				width, height = 850,380
 				screen_width = self.master.winfo_screenwidth()
 				screen_height = self.master.winfo_screenheight()
 				x = (screen_width/2) - (width/2)
@@ -594,6 +596,16 @@ class HealslutMaster(Frame):
 				w.grid(row=1, columnspan=2)
 				w.configure(state="disabled")
 				
+				self.bg = Label(self.top)
+				self.bg.grid(row=7,column=3, padx=10, rowspan=2, columnspan=3, sticky=W)
+				msg = Button(self.bg, text="Convert jpg to png", command=self.handleimage)
+				msg.grid(row=0, column=0, sticky=W+E)
+				c = Checkbutton(self.bg, text="Delete jpgs", variable=self.delold)
+				c.grid(row=0, column=1, sticky=E)
+				self.hyp_folders.append('All')
+				w = OptionMenu(self.bg, self.convfolder, *self.hyp_folders)
+				w.grid(row=1,column=0, columnspan=3, sticky=E+W)
+				
 				self.button = Button(self.top, text="Dismiss", command=self.end_edit)
 				self.button.grid(row=7,column=7)
 			else:
@@ -621,6 +633,33 @@ class HealslutMaster(Frame):
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'end_edit', subj='')
 	
+	def handleimage(self):
+		x=1
+		folder = self.convfolder.get()
+		if folder == 'All':
+			for folder in self.hyp_folders:
+				if not folder == 'All':
+					self.convertimage(folder)
+		else:
+			self.convertimage(folder)
+		
+	def convertimage(self, folder):
+		filelist = glob(folder+'*.jpg')
+		for file in filelist:
+			try:
+				print(x,'of',len(filelist), file)
+				name,sep,tail = file.rpartition('.')
+				if not path.exists(name+'.png'):
+					with Image.open(file) as im:
+						im.save(name+'.png', "PNG")
+				x+=1
+			except OSError as e:
+				print('\n', e, '\n','error', file, '\n')
+		if self.delold.get() == 1:
+			print('clearing old .jpgs')
+			for file in filelist:	
+				remove(file)
+			
 	def shutdown(self):
 		try:
 			self.p_hypno.send(True)
