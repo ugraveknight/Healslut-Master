@@ -31,7 +31,7 @@ def mean(numbers):
 def go(positions, markslist):
 	marks=[]
 	im = screenshot()
-	time.sleep(1)
+	sleep(1)
 	for x,y in positions.items():
 		for mark in getcolors(im,x,y):
 			marks.append(mark)
@@ -46,7 +46,7 @@ def go(positions, markslist):
 	
 	
 def genpositions():
-	user32 = ctypes.windll.user32
+	user32 = windll.user32
 	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 	userx, usery = screensize
 	oripos =	[
@@ -69,10 +69,11 @@ def genpositions():
 	return positions	
 	
 if __name__ == '__main__':
-	import ctypes
+	from ctypes import windll
+	
 	markslist = [0,0,0,0]
 	positions = genpositions()
 	while True:
 		markslist, base_speed = go(positions,markslist)
 		print(base_speed, markslist)
-		time.sleep(1)
+		sleep(1)
