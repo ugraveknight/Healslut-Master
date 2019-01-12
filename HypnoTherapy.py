@@ -1,19 +1,19 @@
 from tkinter import *
 from win32gui import FindWindow, SetWindowLong
 from win32con import WS_EX_LAYERED, WS_EX_TRANSPARENT, GWL_EXSTYLE
-from multiprocessing import Pipe
+from multiprocessing import Pipe, Process
 from threading import Thread
 from PIL import Image, ImageTk
 from itertools import cycle
 from glob import glob
-from random import choice, randint 
-from time import time
+from random import choice, randint, shuffle
+from time import time, sleep
+from traceback import format_exc
 
 from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
 from mutagen.mp3 import MP3
 
-from traceback import format_exc
 
 
 
@@ -21,18 +21,22 @@ class Hypnotherapy(Frame):
 	def __init__(self, master, image_files, delay, opacity, game, 
 				homework, wordcount, hypno, dom, sub, pinup, banwords,
 				tranbanr, s_rulename, fontsize, display_rules, loopingAudio,
-				c_rules, c_vid, c_txt, c_homework, c_hypno, *pargs):
+				gifset, c_rules, c_vid, c_txt, c_homework, c_hypno, *pargs):
 		Frame.__init__(self, master, *pargs)
 		try:
 			self.master = master
+			self.image_files = image_files
 			self.delay = delay
 			self.opacity = opacity
 			self.game = game
 			self.homework = homework
 			self.wordcount = wordcount
 			self.remaining_work = 0
+			self.pinupvar = 0
 			self.user_line = ''
-			self.doing_homework=False
+			self.doing_homework = False
+			self.processing_image = False
+			self.ready_for_images = False
 			self.playingvideo = False
 			self.vs = None
 			self.nexthomework_time=time()+5
@@ -40,7 +44,7 @@ class Hypnotherapy(Frame):
 			self.enable_hypno = hypno
 			self.prefer_dom = dom
 			self.prefer_sub = sub
-			self.pinupvar = pinup
+			self.enable_pinup = pinup
 			self.banwords = banwords
 			self.tranbanr = tranbanr
 			self.c_vid = c_vid
@@ -51,6 +55,7 @@ class Hypnotherapy(Frame):
 			self.fontsize = fontsize
 			self.display_rules = display_rules
 			self.loopingAudio = loopingAudio
+			self.gifset = gifset
 			self.c_rules = c_rules
 			
 			self.master.overrideredirect(1)
@@ -59,7 +64,7 @@ class Hypnotherapy(Frame):
 			self.build_ports()
 			
 			self.build_rules()
-			self.pinup(image_files)
+			self.pinup()
 			self.setup_text()
 			self.updategif()
 			
@@ -82,26 +87,16 @@ class Hypnotherapy(Frame):
 		self.fg_x = self.master.winfo_screenwidth()/2
 		self.fg_y = self.master.winfo_screenheight()/2
 		
-		if self.enable_hypno == 1:
-			self.image = Image.open('Resources\\Hypno Gif\\hypno1.gif')
-			self.img_copy = self.image.copy()
-			self.bg_image = ImageTk.PhotoImage(self.image)
-			self.bg.gif_create = self.bg.create_image(self.fg_x, self.fg_y, image=self.bg_image)
+		if self.enable_hypno >= 1:
+			self.bg.gif_create = self.bg.create_image(self.fg_x, self.fg_y, image='')
 		else:
 			self.bg.config(bg='#000001')
 		self.bg.pack(fill=BOTH, expand=YES)
 		
 	def formatgif(self):
-		imagelist = [
-					'hypno1.gif', 'hypno2.gif', 'hypno3.gif', 'hypno4.gif', 'hypno5.gif',
-					'hypno6.gif', 'hypno7.gif', 'hypno8.gif', 'hypno9.gif', 'hypno10.gif'
-					]
-		self.gifcycle = []
-		for myimage in imagelist:
-			self.image = Image.open('Resources\\Hypno Gif\\'+myimage)
-			self.image = self.image.resize((self.bg.winfo_screenwidth(), self.bg.winfo_screenheight()))
-			self.gifcycle.append(self.image)
-		
+		imagelist = glob('Resources\\Hypno Gif\\'+self.gifset+'\\*.gif', recursive=True)		
+		self.gifcycle = [(PhotoImage(file=image))
+						  for image in imagelist]
 		self.gifcycle = cycle(self.gifcycle)
 		
 	def build_ports(self):
@@ -183,7 +178,7 @@ class Hypnotherapy(Frame):
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'runaudioloop', subj='')
 		
-	def pinup(self,image_files):
+	def pinup(self):
 		try:
 			with open('Resources\\Text\\Humiliation.txt', 'r') as f:
 				self.humiliation = f.readlines()
@@ -206,11 +201,14 @@ class Hypnotherapy(Frame):
 			Thread(target=create_banner, args=(delay,dom,sub,humiliation,
 								color_list,banwords,wordcount,tranbanr,homework,
 								c_images,self.c_txt,c_hypno)).start()
-			if self.pinupvar == 1:
-				self.pinups = [(PhotoImage(file=image))
-								  for image in image_files]
-				img_object = choice(self.pinups)
-				self.bg.fg = self.bg.create_image(self.x_center, self.y_center, image=img_object)
+			if self.enable_pinup == 1:
+				self.slideiter = 0
+				self.r_nextchunk = True
+				self.foregrounds = cycle([(PhotoImage(file=image))
+								for image in self.image_files[0:5]])
+				self.img_object = next(self.foregrounds) 	
+				self.bg.fg = self.bg.create_image(self.x_center, self.y_center, image=self.img_object)
+				self.t = Thread(target=self.loadnewpic).start()
 			else:
 				self.bg.fg = self.bg.create_image(self.x_center, self.y_center, image='')
 			if self.homework == 'Banner':
@@ -222,9 +220,9 @@ class Hypnotherapy(Frame):
 	
 	def slides(self):
 		try:
-			if self.pinupvar == 1 and not self.playingvideo == True:
-				img_object = choice(self.pinups)
-				self.bg.itemconfig(self.bg.fg, image=img_object)
+			if self.enable_pinup == 1 and not self.playingvideo == True:
+				self.handleimages()
+				
 			if self.c_vid.poll() == True or self.playingvideo == True:
 				if self.c_vid.poll() == True:
 					self.video_filename = self.c_vid.recv()
@@ -246,8 +244,35 @@ class Hypnotherapy(Frame):
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'slides', subj='')
+	
+	def handleimages(self):
+		if self.slideiter == 1:
+			self.r_nextchunk = True
+			self.slideiter = 0
+		self.slideiter +=1
+		self.img_object = next(self.foregrounds)
+		self.bg.itemconfig(self.bg.fg, image=self.img_object)
 		
-			
+	def loadnewpic(self):
+		try:
+			if self.r_nextchunk == True:
+				self.r_nextchunk = False
+				self.foregrounds = cycle([(PhotoImage(file=image))
+							for image in self.image_files[0:1]])
+				shuffle(self.image_files)
+		except KeyboardInterrupt:
+			pass
+		except RuntimeError:
+			exit()
+		except Exception as e:
+			tb = format_exc(2);handleError(tb, e, 'loadnewpic', subj='')
+		if self.c_hypno.poll() == True:
+			self.quit()
+			exit()
+		else:
+			sleep(1)
+			self.t = Thread(target=self.loadnewpic).start()
+		
 	def clear_screen(self):
 		self.bg.delete(self.tmp_top_text)
 		self.bg.delete(self.tmp_top_texta)
@@ -304,8 +329,7 @@ class Hypnotherapy(Frame):
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'set_video', subj='')
-		
-		
+			
 	def assign_homework(self):
 		try:
 			if self.homework == "Never":
@@ -333,8 +357,7 @@ class Hypnotherapy(Frame):
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'assign_homework', subj='')
-		
+			tb = format_exc(2);handleError(tb, e, 'assign_homework', subj='')	
 		
 	def do_homework(self):
 		try:
@@ -553,24 +576,27 @@ class Hypnotherapy(Frame):
 		
 	def breathe_transp(self):
 		try:
-			if self.playingvideo == True:
-				self.tmp_opacity = self.opacity+1
+			if not self.opacity == 4:
+				if self.playingvideo == True:
+					self.tmp_opacity = self.opacity+1
+				else:
+					self.tmp_opacity = self.opacity
+				now, sep, tail = str(time() % 60).partition('.')
+				now = int(now)
+				if 0 <= now <= 15:
+					now=(now-30)*-1
+				elif 15 < now <= 30:
+					pass
+				elif 30 < now <= 45:
+					now=(now-60)*-1
+				elif 45 < now <= 60:
+					now=now-30
+				if self.tmp_opacity == 0:
+					opacity = (now*.01)*1-.15
+				else:
+					opacity = (now*.01)*self.tmp_opacity
 			else:
-				self.tmp_opacity = self.opacity
-			now, sep, tail = str(time() % 60).partition('.')
-			now = int(now)
-			if 0 <= now <= 15:
-				now=(now-30)*-1
-			elif 15 < now <= 30:
-				pass
-			elif 30 < now <= 45:
-				now=(now-60)*-1
-			elif 45 < now <= 60:
-				now=now-30
-			if self.tmp_opacity == 0:
-				opacity = (now*.01)*1-.15
-			else:
-				opacity = (now*.01)*self.tmp_opacity
+				opacity = 1
 			self.master.overrideredirect(1)
 			self.master.attributes('-alpha', opacity)	
 		except KeyboardInterrupt:
@@ -580,22 +606,25 @@ class Hypnotherapy(Frame):
 			
 	def updategif(self):
 		try:
-			if self.enable_hypno == 1:
+			if self.enable_hypno >= 1:
 				if self.playingvideo == False:
-					self.image=next(self.gifcycle)
-					self.bg_image = ImageTk.PhotoImage(self.image)
+					self.bg_image=next(self.gifcycle)
 					self.bg.itemconfig(self.bg.gif_create, image = self.bg_image)
 				else:
 					self.bg.itemconfig(self.bg.gif_create, image ='')
 			if self.c_hypno.poll() == True:
 				self.master.quit()
-				
-			self.after(25, self.updategif)
+			
+			if self.enable_hypno == 1:	
+				self.after(25, self.updategif)
+			if self.enable_hypno == 2:	
+				self.after(5, self.updategif)
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'updategif', subj='')
-	
+
+				
 def set_clickthrough(windowname="Healslut Hypnotherapy"):
 	try:
 		hwnd = FindWindow(None, windowname)
@@ -895,7 +924,6 @@ class Banner(Frame):
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'banner.update_text', subj='')
 				
-		
 def create_banner(delay,dom,sub,humiliation,color_list,banwords,
 						wordcount,tranbanr,homework,c_images,c_txt,
 						c_hypno):
@@ -934,7 +962,7 @@ def handlewriter(tb, e, func, subj):
 def launch(delay,opacity,game,homework,wordcount,hypno,
 				dom,sub,pinup,banwords,tranbanr,globfile,
 				s_rulename,fontsize,display_rules,loopingAudio,
-				c_rules,c_vid,c_txt,c_homework,c_hypno):
+				gifset,c_rules,c_vid,c_txt,c_homework,c_hypno):
 	try:
 		root = Tk()
 		width = root.winfo_screenwidth()
@@ -946,17 +974,22 @@ def launch(delay,opacity,game,homework,wordcount,hypno,
 		root.wm_attributes("-topmost", 1)
 		set_clickthrough()
 		if pinup == 1:
-			image_files = glob(globfile+'/*.png', recursive=True)
-			print(len(image_files))
+			if globfile == 'All':
+				image_files = glob('Resources/Images/*/*.png', recursive=True)
+				print('found', len(image_files), 'images...')
+			else:
+				image_files = glob(globfile+'/*.png', recursive=True)
+				print('found', len(image_files), 'images...')
 		else:
 			image_files = ''
+		shuffle(image_files)
 		if c_hypno.poll() == True:
 			quit()
 		e = Hypnotherapy(root, image_files, delay, opacity, game, 
 						homework, wordcount, hypno, dom, sub, pinup, 
 						banwords, tranbanr, s_rulename, fontsize, 
-						display_rules, loopingAudio, c_rules, c_vid, 
-						c_txt, c_homework, c_hypno)
+						display_rules, loopingAudio, gifset, c_rules, 
+						c_vid, c_txt, c_homework, c_hypno)
 		e.pack(fill=BOTH, expand=YES)
 		root.mainloop()
 	except KeyboardInterrupt:
