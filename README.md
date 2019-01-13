@@ -264,6 +264,9 @@ feedback.
 	####################### Change Log #######################
 
 
+Version 1.2.1
+	-	Minor bug fixes
+
 Version 1.2
 		--- Overlay Functions
 	-	Reduced lag between pinup images
@@ -330,8 +333,4 @@ I would like to make a function that tracks teammate deaths and leverages
 them against the user for things like the above-mentioned writing game or 
 a temporary speed decrease.
 
-The program is pretty well optimized, but on slower computers a longer delay 
-between screenshots could be used.
-
 I'd like to provide a menu selector for download soundgasm files and iateacrayon/wiki/list pics
-
