@@ -9,6 +9,7 @@ from glob import glob
 from random import choice, randint, shuffle
 from time import time, sleep
 from traceback import format_exc
+from sys import exit
 
 from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
@@ -256,19 +257,21 @@ class Hypnotherapy(Frame):
 	def loadnewpic(self):
 		try:
 			if self.r_nextchunk == True:
-				self.r_nextchunk = False
-				self.foregrounds = cycle([(PhotoImage(file=image))
+				try:
+					self.foregrounds = cycle([(PhotoImage(file=image))
 							for image in self.image_files[0:1]])
+					self.r_nextchunk = False
+				except TclError:
+					pass
 				shuffle(self.image_files)
 		except KeyboardInterrupt:
 			pass
 		except RuntimeError:
-			exit()
+			self.quit()
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'loadnewpic', subj='')
 		if self.c_hypno.poll() == True:
 			self.quit()
-			exit()
 		else:
 			sleep(1)
 			self.t = Thread(target=self.loadnewpic).start()
