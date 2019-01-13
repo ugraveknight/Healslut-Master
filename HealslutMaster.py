@@ -56,17 +56,8 @@ from cv2 import VideoCapture, imwrite
 	# https://lovense.com/developer/docs/lan-connect-pc				#
 	#																#
 	#################################################################
-
-
 	
 #thanks to https://www.reddit.com/r/iateacrayon/wiki/list for the images
-#thanks to https://jpg2png.com/ for the conversion
-
-
-
-
-
-
 
 
 class HealslutMaster(Frame):
@@ -758,6 +749,7 @@ class HealslutMaster(Frame):
 				print(mygif)
 				self.extractFrames(mygif,filepath,mywidth,myheight)
 		self.background_list = genbackgroundlist()
+		print('Done.')
 				
 	def convertimage(self, folder):
 		filelist = glob(folder+'*.jpg')
@@ -777,6 +769,11 @@ class HealslutMaster(Frame):
 				remove(file)
 				
 	def savepref(self):
+		self.hyp_gfile_var = 0
+		for item in self.hyp_folders:
+			if item == self.hyp_gfile.get():
+				break
+			self.hyp_gfile_var +=1
 		self.background_select_var = 0
 		for item in self.background_list:
 			if item == self.background_select.get():
