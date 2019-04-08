@@ -10,7 +10,7 @@ from random import choice, randint, shuffle
 from time import time, sleep
 from traceback import format_exc
 from sys import exit
-
+from os import path
 from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
 from mutagen.mp3 import MP3
@@ -91,7 +91,7 @@ class Hypnotherapy(Frame):
 		if self.enable_hypno >= 1:
 			self.bg.gif_create = self.bg.create_image(self.fg_x, self.fg_y, image='')
 		else:
-			self.bg.config(bg='#000001')
+			self.bg.config(bg='#ffffff')
 		self.bg.pack(fill=BOTH, expand=YES)
 		
 	def formatgif(self):
@@ -101,13 +101,13 @@ class Hypnotherapy(Frame):
 		self.gifcycle = cycle(self.gifcycle)
 		
 	def build_ports(self):
-		self.master.wm_attributes("-transparentcolor", "#000001")
+		self.master.wm_attributes("-transparentcolor", "#ffffff")
 		if self.game == 'OW':
-			self.bg.left_port = Canvas(self.bg, bg='#000001', width=495, height=200,
+			self.bg.left_port = Canvas(self.bg, bg='#ffffff', width=495, height=200,
 								highlightthickness=0)
 			self.bg.left_port.pack()
 			self.bg.left_port.place(relx=0, rely=1, anchor=SW)
-		self.bg.right_port = Canvas(self.bg, bg='#000001', width=50, height=255,
+		self.bg.right_port = Canvas(self.bg, bg='#ffffff', width=50, height=255,
 								highlightthickness=0)
 		self.bg.right_port.place(relx=1, rely=.5, anchor=E)	
 
@@ -221,9 +221,10 @@ class Hypnotherapy(Frame):
 	
 	def slides(self):
 		try:
+			if self.c_hypno.poll() == True:
+				self.master.quit()
 			if self.enable_pinup == 1 and not self.playingvideo == True:
 				self.handleimages()
-				
 			if self.c_vid.poll() == True or self.playingvideo == True:
 				if self.c_vid.poll() == True:
 					self.video_filename = self.c_vid.recv()
@@ -308,7 +309,7 @@ class Hypnotherapy(Frame):
 			if self.doing_homework == True:
 				self.bg.right_port.config(bg='#000000')
 			else:
-				self.bg.right_port.config(bg='#000001')
+				self.bg.right_port.config(bg='#ffffff')
 			if self.vs == None:
 				self.vs = VideoCapture(self.video_filename) # capture video frames, 0 is your default video camera
 				self.current_image = None  # current image from the camera
@@ -323,8 +324,12 @@ class Hypnotherapy(Frame):
 				del cv2image
 			else:
 				self.clear_screen()
-				del self.current_image
-				del self.imgtk
+				try:
+					del self.current_image
+					del self.imgtk
+				except AttributeError as e:
+					print('Video not found. Is it spelled and formatted correctly, and in the right place? This is where I think it is')
+					print(path.abspath(self.video_filename))
 				self.vs.release()
 				self.vs = None
 				self.playingvideo = False
@@ -407,13 +412,14 @@ class Hypnotherapy(Frame):
 				self.top.lift()
 				self.e.focus_set()
 				self.e.focus()
+				self.focus_force()
 
 			if self.doing_homework == False:
-				self.master.wm_attributes("-transparentcolor", "#000001")
+				self.master.wm_attributes("-transparentcolor", "#ffffff")
 				if self.game == 'OW':
-					self.bg.left_port.config(bg='#000001')
-				self.bg.config(bg='#000001')
-				self.bg.right_port.config(bg='#000001')
+					self.bg.left_port.config(bg='#ffffff')
+				self.bg.config(bg='#ffffff')
+				self.bg.right_port.config(bg='#ffffff')
 				
 				set_clickthrough()
 			if self.doing_homework==True:
@@ -615,9 +621,6 @@ class Hypnotherapy(Frame):
 					self.bg.itemconfig(self.bg.gif_create, image = self.bg_image)
 				else:
 					self.bg.itemconfig(self.bg.gif_create, image ='')
-			if self.c_hypno.poll() == True:
-				self.master.quit()
-			
 			if self.enable_hypno == 1:	
 				self.after(25, self.updategif)
 			if self.enable_hypno == 2:	
@@ -987,7 +990,7 @@ def launch(delay,opacity,game,homework,wordcount,hypno,
 			image_files = ''
 		shuffle(image_files)
 		if c_hypno.poll() == True:
-			quit()
+			exit()
 		e = Hypnotherapy(root, image_files, delay, opacity, game, 
 						homework, wordcount, hypno, dom, sub, pinup, 
 						banwords, tranbanr, s_rulename, fontsize, 
