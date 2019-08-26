@@ -161,6 +161,6 @@ def Main(WordList='',Difficulty='',SavedCords=''):
 			print('Change parameters and try again')	
 	return grid,SavedCords
 
-if __name__ == '__main__':
+if __name__ == '__main__':	#Just a test, should be imported
 	grid,SavedCords = Main()
 	print("\n".join(map(lambda row: " ".join(row), grid)))
