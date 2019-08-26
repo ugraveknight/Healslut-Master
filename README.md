@@ -35,6 +35,12 @@ directory consistent with the list below.
 			Buzz.mp3' which is used to play a failure sound when the user 
 			fails to fill out the writeforme entry box correctly. All files
 			in this folder must be .mp3 files.
+		--- Background Gif Originals
+			This folder contains the original .gif files that will be converted
+			to background slides using the buildin Convert Gifs function
+		--- ButtonLabels
+			The .jpgs in this folder are used as headers for each of the button
+			icons when using the Action Frame
 		--- Errors
 			Anytime the program runs into an issue, it will log that error
 			here. If the problem persists, reach out to me and let me know
@@ -61,6 +67,14 @@ directory consistent with the list below.
 			to 200 for a nice variety. If you overload the folders, the 
 			overlay will fail to run. These images MUST be .png files. You 
 			can use https://jpg2png.com/ to convert your .jpgs to .pngs.
+		--- Killfeed
+			This folder contains subfolders (right now, only OW is used) which
+			hold screenshots used to monitor actions within the game. in the
+			case of overwatch, I'm using killfeed icons to determine whats 
+			happing to the subs team. Be mindful that if your computer slows
+			down while in Freeplay mode, it may be best to remove some of the less 
+			used images from this folder. (ex. you're mercy, your dom is Roadhog
+			you might consider removing other supports or assists)
 		--- Text
 			This folder and the four files within allow the user to customize
 			the way the program writes to you and makes you write. 
@@ -168,23 +182,30 @@ the end of the file, it starts over from the top.
 		see $+vibe, excpet airpump inflation speed instead of vibrator speed
 	---  $-air[0-3]
 		see $+air, except subtracting the value instead of adding it
+	---  $pinup
+		This simple macro allow you to change your pinup source folder on the go! to use
+		it, you will specify your desired folder name. For the Healslut folder, include 
+		the following line in your punish/reward or button file "$pinup Healslut"
 	---  $picture
-		This function takes a picture from your webcam and sends it to me. This function
-		was made deliberately more difficult to use to protect the privacy of users who 
-		don’t want to share images of themselves or their subs. The first time you use this
-		function, a warning will appear telling you that you need to enable less secure 
+		This function takes a picture from your webcam and sends it to an email of your choice.
+		This function was made deliberately more difficult to use to protect the privacy of 
+		users who don’t want to share images of themselves or their subs. The first time you 
+		use this function, a warning will appear telling you that you need to enable less secure 
 		access to the gmail account that you will be sending pictures from. Follow the 
 		link and sign in using the account you wish to use. It must be a gmail account.
-		A text file has been created in the Resources\ folder called User Info.txt will be
+		A text file has been created in the Resources\ folder called Cam Info.txt will be
 		created. Fill out your login information to the gmail account you wish to use in 
 		the format laid out for you. In order to keep the warning from appearing again,
-		ensure that the third line equals 1. None of your information is shared with me
-		and I will never attempt to communicate with those of you who use this function.
-		All the same, if I were you, I'd create a new email account and use it exclusively 
-		for this purpose.
-
-		This program will never take a picture of you without your consent. It is included
-		only for those who would find the exposure or punishment exciting.
+		ensure that the third line equals 1. In the fourth line of the Cam Info.txt file
+		you will have the option of specifing who you would like to receive your image. if you
+		leave this line blank, your image will be sent to me*. Most users create a new email 
+		account and use it exclusively for this purpose.
+			*None of your information is shared with me and I will never attempt to communicate 
+			with those of you who use this function. 
+			
+			This program will never take a picture of you without your consent. It is included
+			only for those who would find the exposure or punishment exciting. If there is no 
+			Cam Info.txt file, this function has not been used or attempted.
 
 	---  $writeforme[number]
 		This sets the remaining number of lines to whichever number you've selected. You can
@@ -193,24 +214,74 @@ the end of the file, it starts over from the top.
 		exit the writeforme menu and you want to preserve your place in the punishments and 
 		rewards, entering [] into the entry box will reset the number of remaining sentences
 		you are to write to zero, and end your current writing session.
+	---  $wordsearch easy,medium,hard
+		I made this function after seeing some really cool puzzles that another reddit user
+		had made. I thought it would be a fun thing to do during flight paths, queues and such.
+		SO, its easy to use, you just enter '$wordsearch easy' and then it will generate a word
+		seach based on words within the Healslut Subjects and Healslut Adjectives files.
+		Running '$wordsearch easy' again will close the window.
+	--- $dicerolls
+		This simple tweak to the $text macro allows the user to roll dice for the purpose of 
+		playing Faproulette or anything else! '$diceroll8 6d10' shows six 10 sided dice for 8
+		seconds
 
 Here is a good example of the lines you'd want to include in the punishments and rewards
 
 example rewards.txt
 
-$+vibe10,$+rotate00,$+air3
+$+vibe10,$+rotate10,$+air3,$pinup Healslut
 $text10 You're my dumb little supportslut 
 $playvideo titfuck.mp4,$playsound titfuck.mp3
 
 
+			#### Action Buttons Functionality ####
+By popular request we now have ten optional buttons for the user to customize! they function 
+just like the punish/reward buttons except that the first line of each of them is the name of 
+a file with the Resources/ButtonLabels/ folder. You can find good examples of their usage 
+prepackaged into the newest release. The nomenclature for setting up buttons on the Action Menu
+follows below:
+RULENAME ButtonA
+RULENAME ButtonB
+RULENAME ButtonC
+RULENAME ButtonD
+RULENAME ButtonE
+RULENAME ButtonF
+RULENAME ButtonG
+RULENAME ButtonH
+RULENAME ButtonI
+RULENAME ButtonJ
+
+NOTE: This program does not currently support any more than 10(A-J) buttons.
+
+
+
+			#### Killfeed Monitor ####
+			
+This long awaited feature monitors the killfeed and executes lines from four files;
+Overwatch DeathAssist/DeathDom/DeathSub/DeathTeam.txt which will determine what happens to the sub upon
+one of those events. This process can be detected several times depending on how long the image remains in
+the fillfeed. If it doesnt work for you, its possible that the Character icon screenshots I used are only 
+good for my resolution size (2560,1440). I will do my best to acquire and package alternate versions of my 
+icon screenshots so more users can enjoy this feature with ease. 
+
+If you experience lag while using the Killfeed monitor, disabling freeplay should reduce the system load
+
 
 
 			#### Vibrator Functionality ####
+			
 The user can use the punishment and reward buttons to control their vibrator. Alternately if the user 
 enjoys Overwatch, the program can detect the users on fire meter and control the vibe speed based on
 the meter. In order to do this, you MUST set the game from None to OW, EVEN IF YOU ARE NOT USING THE 
 OVERLAY! This signals the program to look for an on fire meter on screen. I have implemented this 
 requirement to save on hardware resources.
+
+
+
+			#### Wordsearch ####
+
+This neat function randomly generates a wordsearch based on adjective and subject files! it even has a
+way to move it across the screen! Now you'll never get bored on flightpaths or autorun!
 
 
 
@@ -221,7 +292,6 @@ include it in this release. This function will interrupt the user and force them
 of written tasks based on the severity of the user’s choice. I don't advise using it while playing
 a fast-paced game, as it will severely handicap you. But, maybe that’s what you're looking for. I enjoy
 setting some work for myself in between games or while respawning.
-
 
 
 
@@ -237,6 +307,7 @@ progress as you do this.
 
 
 			#### Gif Converter ####
+			
 By placing a gif into the Resources\Background Gif original\ folder and formatting the gif in the edit menu
 the user now has the ability to display any background theyd like, and it will be sized to their screen which
 reduces lag. sometimes gifs are not converted correctly. I have found that his has more to do with the quailty
@@ -264,8 +335,49 @@ feedback.
 	####################### Change Log #######################
 
 
-Version 1.2.1
-	-	Minor bug fixes
+Version 1.4
+		--- Menu Functions
+	-	Fixed a bug where editing the overlay without closing it wouldnt close the 
+		action menu
+	-	Added a gip so the user can move the main menu up or down the screen
+
+		--- Overlay Functions
+	-	Customize Punishment/Reward macros
+			$wordsearch
+			$diceroll
+	-	Fixed an error where long background gifs would load in the wrong order
+	- 	added the option to set a destination email so users can send their pics to 
+		their doms automatically
+		
+		--- The Killfeed Monitor
+	-	Screenscraping will now detect killfeed events and treat the sub appropriately
+		depening on the following criteria
+			- The Sub dies
+			- The Dom dies
+			- The Sub is credited with an assist
+			- Someone on the Subs team dies (Freeplay only)
+	
+Version 1.3
+		--- Menu Functions
+	-	Fixed a bug where closing the program while the overlay is active would
+		freeze instead of closing
+	-	Fixed a bug when prevented clean closing of overlay when pinups, writeforme
+		and backgrounds were disabled, but text was not
+	-	Fixed a bug which prevented the use of the image converter
+	-	Added version check function which will let you know when a new verison is
+		released
+	
+		--- Action Frame
+	-	Added additional buttons for various punish/reward macros
+	
+		--- Overlay Functions
+	-	Added troubleshooting support for $playvideo related errors
+	-	Fixed a setting which caused certain images to appear grainy or semi
+		trasnparent
+	-	Fixed a focus issue when using write for me where focus wouldnt properly set
+		to the entry box
+	-	Customize Punishment/Reward macros
+			$pinup
 
 Version 1.2
 		--- Overlay Functions
@@ -284,7 +396,7 @@ Version 1.1
 	-	Looping audio tracks
 
 
-Version 1.0.0
+Version 1.0
 		--- Overlay Functions
 	-	Hypnotic Gif Background
 	-	Pinup images and folder selection
@@ -296,7 +408,7 @@ Version 1.0.0
 
 		--- Punishments and Rewards
 	-	Display rules and rule selection
-	-	customize punishments and rewards
+	-	Customize Punishment/Reward macros
 			$playsound
 			$playvideo
 			$text
@@ -333,4 +445,16 @@ I would like to make a function that tracks teammate deaths and leverages
 them against the user for things like the above-mentioned writing game or 
 a temporary speed decrease.
 
+The program is pretty well optimized, but on slower computers a longer delay 
+between screenshots could be used.
+
 I'd like to provide a menu selector for download soundgasm files and iateacrayon/wiki/list pics
+
+
+	######################## Credits ########################
+
+Lewd-Zko (twitter.com/LewdZko) for the image of their OC crystal which was modified and placed on the wordsearch page
+u/iateacrayon for their wiki/list of all those fetishes
+
+And you, the user. <3
+
