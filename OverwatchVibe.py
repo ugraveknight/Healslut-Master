@@ -1,51 +1,37 @@
 from pyautogui import screenshot
 from time import sleep
-
-def getcolors(im,location1x,location1y):
-	red, blue, green = im.getpixel((int(location1x), int(location1y)))
-	if 37 < red < 165 and 223 < blue <= 255 and 248 < green <= 255:
-		mark = 10
-	elif 62 < red < 122 and 138 < blue < 234 and 246 < red <= 255:
-		mark = 10
-	elif 248 < red and 250 < blue and 250 < green:
-		mark = 10
-	else:
-		mark = 0
+from ctypes import windll
+	
+def getcolors(im,x,y):
+	red, blue, green = im.getpixel((int(x), int(y)))
+	mark = 10 if 37  < red < 165 and 223 < blue        and 248 < green \
+			  or 62  < red < 122 and 138 < blue <  234 and 246 < red \
+			  or 248 < red       and 250 < blue        and 250 < green \
+			  else 0
 	yield mark
-
+	
+def mean(numbers): return float(sum(numbers)) / max(len(numbers), 1)
 def cleanmarks(markslist,marks):
 	marks = int(mean(marks))*10
-	if marks > 100:
-		marks = 100	
+	marks = 100	if marks > 100 else marks
 	markslist.append(marks)
 	markslist.pop(0)
-	if any(marks == 100 for marks in markslist):
-		level=100
-	else:
-		level=int(mean(markslist))
-	return markslist, level
+	base_speed = 100 if any(marks == 100 for marks in markslist) else int(mean(markslist))
+	return markslist, base_speed
 
-def mean(numbers):
-    return float(sum(numbers)) / max(len(numbers), 1)	
-
-def go(positions, markslist):
+def go(positions, markslist, im):
 	marks=[]
-	im = screenshot()
-	sleep(1)
 	for x,y in positions.items():
 		for mark in getcolors(im,x,y):
 			marks.append(mark)
 	markslist, base_speed = cleanmarks(markslist,marks)
 	return markslist, base_speed
-	
-	
-	
+
 ###########################################
 # ####################################### #
 ###########################################	
-	
-	
-def genpositions():
+
+def GenPositions():		#Imported
 	user32 = windll.user32
 	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 	userx, usery = screensize
@@ -66,14 +52,16 @@ def genpositions():
 		x = round((userx/2560) * int(x))
 		y = round((usery/1440) * int(y))
 		positions.update({x:y})
-	return positions	
+	return positions
 	
-if __name__ == '__main__':
-	from ctypes import windll
-	
+def RunTest():		#Debug
 	markslist = [0,0,0,0]
-	positions = genpositions()
+	positions = GenPositions()
 	while True:
-		markslist, base_speed = go(positions,markslist)
+		im = screenshot()
+		markslist, base_speed = go(positions,markslist,im)
 		print(base_speed, markslist)
 		sleep(1)
+		
+if __name__ == '__main__':	
+	RunTest()
