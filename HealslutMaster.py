@@ -1,17 +1,16 @@
-Version='v1.3'
-if __name__ == '__main__':
-	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
-	print('Version number:',Version)
+Version='v1.4'
 
 import HypnoTherapy
 import OverwatchVibe
+import KillfeedMonitor
+import WordSearch
 
 from tkinter import *
 from win32gui import FindWindow, GetForegroundWindow, ShowWindow, SetWindowLong
 from win32con import SW_MINIMIZE
 from PIL import Image, ImageTk
 from itertools import cycle
-from time import time
+from time import time, sleep
 from multiprocessing import freeze_support, Process, Pipe
 from threading import Thread
 from glob import iglob, glob
@@ -28,6 +27,8 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from requests import get, exceptions
 from cv2 import VideoCapture, imwrite
+from pyautogui import screenshot
+from random import choice, randint
 
 
 
@@ -37,20 +38,22 @@ from cv2 import VideoCapture, imwrite
 	#																#
 	# 					Created by u/Graveknight1					#
 	#																#
-	# Please contact me via reddit for questions or requests if you	#
-	# would like to donate to my work, checkout my paypal.			#										#
+	# Please contact me via reddit for questions or requests. if	#
+	# you would like to donate to my work, checkout my paypal.		#
 	#																#
 	# This program is not for sale, if someone charged you for it,  #
 	# you've been ripped off.										#
 	#																#
 	# This code was written for the Healsluts community. If you		#
-	# like what you see, check them out at r/healsluts				#										#
+	# like what you see, check them out at r/healsluts				#
 	#																#
 	#################################################################
 	#				use this line to compile the .exe				#
+	#	For me														#
+	# pyinstaller -F --icon=Developer\hs.ico HealslutMaster.py		#
 	#																#
-	#pyinstaller -f --icon=Developer\hs.ico HealslutMaster.py		#
-	#																#
+	#	For you	(No Icon)											#
+	# pyinstaller -F HealslutMaster.py								#
 	#																#
 	#################################################################
 	#																#
@@ -59,157 +62,145 @@ from cv2 import VideoCapture, imwrite
 	#																#
 	#################################################################
 	
-#thanks to https://www.reddit.com/r/iateacrayon/wiki/list for the images
-
+#go to to https://www.reddit.com/r/iateacrayon/wiki/list for images broad range of images
+#thanks to Lewd-Zko	(twitter.com/LewdZko) for the image of crystal which was modified and placed on the wordsearch page
 
 class HealslutMaster(Frame):
-	def __init__(self, master, hyp_folders, userinfo, background_list, prefdict,
-								p_ow, c_ow,	
-								p_hypno, c_hypno, 
-								p_vid, c_vid, 
-								p_txt, c_txt,
-								p_rules, c_rules,
-								p_homework, c_homework,
-								*pargs):
+	def __init__(self,master,hyp_folders,userinfo,background_list,prefdict,*pargs):
 		Frame.__init__(self, master, *pargs)
 		try:
 			self.master = master
 			self.master.overrideredirect(1)
-			self.c_hypno, self.p_hypno = c_hypno, p_hypno
-			self.c_ow, self.p_ow = c_ow, p_ow
-			self.p_vid, self.c_vid = p_vid, c_vid
-			self.p_txt, self.c_txt = p_txt, c_txt
-			self.p_rules, self.c_rules = p_rules, c_rules 
-			self.p_homework, self.c_homework = p_homework, c_homework
-			
-			self.hyp_delay = StringVar(self.master)
-			self.hyp_delay.set(prefdict['hyp_delay'])
-			self.hyp_game = StringVar(self.master)
-			self.hyp_game.set(prefdict['hyp_game'])
-			self.hyp_opacity = StringVar(self.master)
-			self.hyp_opacity.set(prefdict['hyp_opacity'])
-			self.hyp_homework = StringVar(self.master)
-			self.hyp_homework.set(prefdict['hyp_homework'])
-			self.hyp_words = StringVar(self.master)
-			self.hyp_words.set(prefdict['hyp_words'])
-			self.loopingAudio = StringVar(self.master)
-			self.loopingAudio.set(prefdict['loopingAudio'])
-			self.hyp_able = IntVar(self.master)
-			self.hyp_able.set(int(prefdict['hyp_able']))
-			self.T_hyp_able = IntVar(self.master)
-			self.T_hyp_able.set(int(prefdict['T_hyp_able']))
-			self.hyp_pinup = IntVar(self.master)
-			self.hyp_pinup.set(int(prefdict['hyp_pinup']))
-			self.s_playing = IntVar(self.master)
-			self.s_playing.set(int(prefdict['s_playing']))
-			self.hyp_banword = IntVar(self.master)
-			self.hyp_banword.set(int(prefdict['hyp_banword']))
-			self.hyp_tranbanr = IntVar(self.master)
-			self.hyp_tranbanr.set(int(prefdict['hyp_tranbanr']))
-			self.display_rules = IntVar(self.master)
-			self.display_rules.set(int(prefdict['display_rules']))
-			self.delold = IntVar(self.master)
-			self.delold.set(int(prefdict['delold']))
-			self.s_decay = StringVar(self.master)
-			self.s_decay.set(prefdict['s_decay'])
-			self.s_decay_pow = StringVar(self.master)
-			self.s_decay_pow.set(prefdict['s_decay_pow']) #'-1', '-3', '-10', '-20', '/2', '/3', '/4'
-			self.hyp_dom = StringVar(self.master)
-			self.hyp_dom.set(prefdict['hyp_dom'])
-			self.hyp_sub = StringVar(self.master)
-			self.hyp_sub.set(prefdict['hyp_sub'])
-			self.fontsize = StringVar(self.master)
-			self.fontsize.set(prefdict['fontsize'])
-			
-			hyp_folders.append('All')
-			self.hyp_folders = hyp_folders
-			self.hyp_gfile = StringVar(self.master)
-			self.hyp_gfile_var = int(prefdict['hyp_gfile_var'])
-			self.hyp_gfile.set(hyp_folders[self.hyp_gfile_var])
-			self.conv_hyp_folders = hyp_folders
-			self.convfolder = StringVar(self.master)
-			self.convfolder.set('')
-			
-			self.background_list = background_list
-			self.background_select = StringVar(self.master)
-			self.background_select_var = int(prefdict['background_select_var'])
-			self.background_select.set(background_list[self.background_select_var])
-			
-			self.base_speed = 0
-			self.ActionMenuOpen = False
-			
-			try:
-				self.userinfo = userinfo
-				self.usermail = str(userinfo[0]).strip('\n')
-				self.userpass = str(userinfo[1]).strip('\n')
-				try:
-					self.usersecure = str(userinfo[2]).strip('\n')
-				except IndexError:
-					self.usersecure = '0'
-			except IndexError:
-				self.usermail = 'myemail@gmail.com'
-				self.userpass = 'mypassword'
-				self.usersecure = '0'
-			
-			self.hypno = False
-			self.vibe = False
-			self.editting = False
-			self.rules_okay = False
-			self.vibe_speed = 0
-			self.rotr_speed = 0
-			self.air_speed = 0
-			
-			
-			self.set_pun_rwd()
-			self.s_rulename = StringVar(self.master)
-			self.s_rulename.set(prefdict['s_rulename'])
-			# #### #
-			self.setup_menu()
-			# #### #
-			
-			self.savepref()
-			
+			self.SetupVars(background_list,prefdict,hyp_folders)
+			self.SetupPunRwd()
+			self.SetupEmail(userinfo)
+			self.SetupMenu()
+			self.SavePref()
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'healslutmaster.init', subj='')
+	
+	def SetupVars(self,background_list,prefdict,hyp_folders):
+		self.p_hypno, self.c_hypno = Pipe()
+		self.p_ow, self.c_ow = Pipe()
+		self.p_vid, self.c_vid = Pipe()
+		self.p_txt, self.c_txt = Pipe()
+		self.p_pinup, self.c_pinup = Pipe()
+		self.p_rules, self.c_rules = Pipe()
+		self.p_homework, self.c_homework = Pipe()
 		
-	def setup_menu(self):
-		self.frame = Frame(self.master, width=50, height=255,
+		self.background_list = background_list
+		self.background_select = StringVar(self.master)
+		self.background_select_var = int(prefdict['background_select_var'])
+		self.background_select.set(background_list[self.background_select_var])
+				
+		self.hyp_delay = StringVar(self.master)
+		self.hyp_delay.set(prefdict['hyp_delay'])
+		self.hyp_game = StringVar(self.master)
+		self.hyp_game.set(prefdict['hyp_game'])
+		self.hyp_opacity = StringVar(self.master)
+		self.hyp_opacity.set(prefdict['hyp_opacity'])
+		self.hyp_homework = StringVar(self.master)
+		self.hyp_homework.set(prefdict['hyp_homework'])
+		self.hyp_words = StringVar(self.master)
+		self.hyp_words.set(prefdict['hyp_words'])
+		self.loopingAudio = StringVar(self.master)
+		self.loopingAudio.set(prefdict['loopingAudio'])
+		self.hyp_able = IntVar(self.master)
+		self.hyp_able.set(int(prefdict['hyp_able']))
+		self.T_hyp_able = IntVar(self.master)
+		self.T_hyp_able.set(int(prefdict['T_hyp_able']))
+		self.hyp_pinup = IntVar(self.master)
+		self.hyp_pinup.set(int(prefdict['hyp_pinup']))
+		self.s_playing = IntVar(self.master)
+		self.s_playing.set(int(prefdict['s_playing']))
+		self.Freeplay = IntVar(self.master)
+		self.Freeplay.set(int(prefdict['Freeplay']))
+		self.hyp_banword = IntVar(self.master)
+		self.hyp_banword.set(int(prefdict['hyp_banword']))
+		self.hyp_tranbanr = IntVar(self.master)
+		self.hyp_tranbanr.set(int(prefdict['hyp_tranbanr']))
+		self.display_rules = IntVar(self.master)
+		self.display_rules.set(int(prefdict['display_rules']))
+		self.delold = IntVar(self.master)
+		self.delold.set(int(prefdict['delold']))
+		self.s_decay = StringVar(self.master)
+		self.s_decay.set(prefdict['s_decay'])
+		self.s_decay_pow = StringVar(self.master)
+		self.s_decay_pow.set(prefdict['s_decay_pow']) #'-1', '-3', '-10', '-20', '3/4', '1/2', '1/4'
+		self.hyp_dom = StringVar(self.master)
+		self.hyp_dom.set(prefdict['hyp_dom'])
+		self.hyp_sub = StringVar(self.master)
+		self.hyp_sub.set(prefdict['hyp_sub'])
+		self.fontsize = StringVar(self.master)
+		self.fontsize.set(prefdict['fontsize'])
+		self.HSSub = StringVar(self.master)
+		self.HSSub.set(prefdict['sub'])
+		self.HSDom = StringVar(self.master)
+		self.HSDom.set(prefdict['dom'])
+		self.Alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+		self.KillFeedPath = 'Resources\\Killfeed\\Overwatch\\'
+		self.convfolder = StringVar(self.master)
+		self.convfolder.set('')
+		self.s_rulename = StringVar(self.master)
+		self.s_rulename.set(prefdict['s_rulename'])
+		self.hyp_gfile = StringVar(self.master)
+		self.hyp_gfile_var = int(prefdict['hyp_gfile_var'])
+		
+		self.hyp_folders = hyp_folders
+		self.hyp_gfile.set(hyp_folders[self.hyp_gfile_var])
+		self.conv_hyp_folders = hyp_folders
+		
+		self.hypno = False
+		self.vibe = False
+		self.editting = False
+		self.rules_okay = False
+		self.ActionMenuOpen = False
+		self.GameWindowOpen = False
+		self.base_speed = 0
+		self.vibe_speed = 0
+		self.rotr_speed = 0
+		self.air_speed = 0
+			
+	def SetupEmail(self,userinfo):
+		try:
+			self.usermail = str(userinfo[0]).replace('\n','')
+			self.userpass = str(userinfo[1]).replace('\n','')
+			self.usersecure = str(userinfo[2]).replace('\n','')
+		except IndexError:
+			self.usermail = 'myemail@gmail.com'
+			self.userpass = 'mypassword'
+			self.usersecure = '0'
+		try:
+			self.ToEmail = str(userinfo[3]).replace('\n','')
+		except IndexError:
+			self.ToEmail = 'ugraveknight@gmail.com'	
+			
+	def SetupMenu(self):
+		self.frame = Frame(self.master, width=50, height=270,
 						   borderwidth=2, relief=RAISED)
 		self.frame.grid(row=0,column=0)
-								
-		self.bg = Label(self.frame, bg='gray30', width=50, height=255, anchor=E)
-		self.bg.pack(fill=BOTH)
-		pixel = PhotoImage(width=1, height=1)
+		self.bg = Label(self.frame, bg='gray30', width=50, height=270, anchor=E)
+		self.bg.place(x=0,y=20)
+		self.bg.grip = Label(self.frame, height=1, bg='Gray50', text="<Move>", font=('Times', 8))
+		self.bg.grip.place(x=0,y=0)
+		self.bg.grip.bind("<ButtonPress-1>", self.StartMoveMM)
+		self.bg.grip.bind("<ButtonRelease-1>", self.StopMoveMM)
+		self.bg.grip.bind("<B1-Motion>", self.MainMenuOnMotion)
 		
-
-		self.rewardlist, self.rewardcycle = self.GenActionLines(self.s_rulename.get()+' Rewards.txt')
-		self.punishlist, self.punishcycle = self.GenActionLines(self.s_rulename.get()+' Punishments.txt')	
-		
-		self.bEHypno = Button(self.bg, bg='green',text="Rwrd",
-							command=partial(self.HandleCycles,self.rewardcycle))
-		self.bEHypno.grid(row=0,column=0,sticky=W+E+N+S)
-		self.bEHypno = Button(self.bg, bg='red', text="Pnsh",
-							command=partial(self.HandleCycles,self.punishcycle))
-		self.bEHypno.grid(row=1,column=0,sticky=W+E+N+S)
-		
-		self.bOW = Button(self.bg, text="Start\nVibe",
-							command=self.LaunchVibe)
-		self.bOW.grid(row=2,column=0,sticky=W+E+N+S)
-		
-		self.bHypno = Button(self.bg,text="Start\nHypno",
-							command=self.launch_hypno)
-		self.bHypno.grid(row=3,column=0,sticky=W+E)
-		
-		self.bEHypno = Button(self.bg, text="Edit",
-							command=self.edit_hypno)
-		self.bEHypno.grid(row=4,column=0,sticky=W+E+N+S)
-		
-		self.bQuit = Button(self.bg, text="Quit",
-							command=self.shutdown)
-		self.bQuit.grid(row=5,column=0,sticky=W+E+N+S)
-		
+		self.RwdBtn = Button(self.bg, bg='green',text="Rwrd",width=5,command=partial(self.HandleCycles,self.rewardcycle))
+		self.RwdBtn.grid(row=1, column=0)
+		self.PnshBtn = Button(self.bg, bg='red', text="Pnsh", width=5,command=partial(self.HandleCycles,self.punishcycle))
+		self.PnshBtn.grid(row=2, column=0)
+		self.bOW = Button(self.bg, text="Start\nVibe",width=5,command=self.LaunchVibe)
+		self.bOW.grid(row=3, column=0)
+		self.bHypno = Button(self.bg,text="Start\nHypno",width=5,command=self.launch_hypno)
+		self.bHypno.grid(row=4, column=0)
+		self.EditBtn = Button(self.bg, text="Edit",width=5,command=self.edit_hypno)
+		self.EditBtn.grid(row=5, column=0)
+		self.bQuit = Button(self.bg, text="Quit",width=5,command=self.shutdown)
+		self.bQuit.grid(row=6, column=0)
 		self.master.config(takefocus=1)
 	
 	def LaunchVibe(self):
@@ -220,11 +211,20 @@ class HealslutMaster(Frame):
 					self.c_ow.recv()
 				self.bOW.config(text='End\nVibe')
 				self.markslist = [0,0,0,0]
-				self.positions = genpositions()
+				self.Positions = OverwatchVibe.GenPositions()
+				self.ListOfCycles = KillfeedMonitor.GenCycles()
+				self.Cords = KillfeedMonitor.GenCords(self)
+				self.KillFeedFiles = glob(self.KillFeedPath+'*.png') if self.Freeplay.get() == True else \
+							[self.KillFeedPath+self.HSSub.get()+'.png', 
+							self.KillFeedPath+self.HSSub.get()+' Assist.png', 
+							self.KillFeedPath+self.HSDom.get()+'.png']
+				self.p_killfeed, self.c_killfeed = Pipe()
 				self.vibeloop()
 			else:
 				self.vibe = False
 				self.bOW.config(text='Start\nVibe')
+				for url in ['http://localhost.lovense.com:20010/Vibrate?v=0','http://localhost.lovense.com:20010/RotateAntiClockwise?v=0','http://localhost.lovense.com:20010/AirAuto?v=0']:
+					Thread(target=do_request, args=(url,5)).start()
 				if self.c_rules.poll() == False:
 					self.p_rules.send(True)
 					self.rules_okay = False
@@ -234,26 +234,37 @@ class HealslutMaster(Frame):
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'LaunchVibe', subj='')
-			
+	
+	def GenKillfeedList(self):
+		l = glob(self.KillFeedPath+'*.png')
+		AllCharList = []
+		for i in l:
+			if not 'Assist' in i:
+				i = i.replace(self.KillFeedPath,'').replace('.png','')
+				AllCharList.append(i)
+		self.AllCharList = AllCharList		
+	
 	def vibeloop(self):
 		try:
-			if self.hyp_game.get() == 'OW':
-				self.markslist, self.base_speed = OverwatchVibe.go(self.positions,self.markslist)
-				print(self.markslist,self.base_speed)
+			if self.hyp_game.get() == 'OW' and self.vibe == True:
+				im = screenshot()
+				self.markslist, self.base_speed = OverwatchVibe.go(self.Positions,self.markslist,im)
+				KillfeedMonitor.Main(im,self.KillFeedFiles,
+									self.HSSub.get(),self.HSDom.get(),
+									self.Cords,self.ListOfCycles,
+									self.c_killfeed,self.KillFeedPath)
+				if self.p_killfeed.poll() == True:
+					self.do_macro(self.p_killfeed.recv())
 				
-
-			lovense_speed=str(int(self.base_speed/5))
 			vibespeed = self.base_speed+self.vibe_speed
 			rotaspeed = self.base_speed+self.rotr_speed
 			self.check_decay()
 			print('Vibe:',vibespeed,', Rotate:',rotaspeed)
 			
-			
 				#This is the area where we will communicate to the buttplug server
 			urllist=['http://localhost.lovense.com:20010/Vibrate?v='+str(vibespeed)]
 			urllist.append('http://localhost.lovense.com:20010/RotateAntiClockwise?v='+str(rotaspeed))
 			urllist.append('http://localhost.lovense.com:20010/AirAuto?v='+str(self.air_speed))
-			
 			for url in urllist:
 				Thread(target=do_request, args=(url,)).start()
 				
@@ -263,8 +274,7 @@ class HealslutMaster(Frame):
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'vibeloop', subj='')	
-		
-	
+
 	def check_decay(self):
 		if not self.s_decay == '0' and time() > self.decaytimer:
 			sec = int(self.s_decay.get())
@@ -282,34 +292,24 @@ class HealslutMaster(Frame):
 				elif self.s_decay_pow.get() == '-20':
 					self.vibe_speed=self.vibe_speed-20
 					self.rotr_speed=self.rotr_speed-20
-				elif self.s_decay_pow.get() == '/2':
+				elif self.s_decay_pow.get() == '3/4':
+					self.vibe_speed=self.vibe_speed*.75
+					self.rotr_speed=self.rotr_speed*.75
+				elif self.s_decay_pow.get() == '1/2':
 					self.vibe_speed=self.vibe_speed/2
 					self.rotr_speed=self.rotr_speed/2
-				elif self.s_decay_pow.get() == '/3':
-					self.vibe_speed=self.vibe_speed/3
-					self.rotr_speed=self.rotr_speed/3
-				elif self.s_decay_pow.get() == '/4':
+				elif self.s_decay_pow.get() == '1/4':
 					self.vibe_speed=self.vibe_speed/4
 					self.rotr_speed=self.rotr_speed/4
 		if not self.s_decay == '0' and time() > self.air_decaytimer:
 			sec = int(self.s_decay.get())*3
 			self.air_decaytimer=time()+sec
 			self.air_speed -= 1
-	
-		if self.air_speed < 0:
-			self.air_speed = 0
-		if self.air_speed > 3:
-			self.air_speed = 3
-			
-		if self.rotr_speed <= 0:
-			self.rotr_speed = 0
-		if self.rotr_speed >= 100:
-			self.rotr_speed = 100
-			
-		if self.vibe_speed <= 0:
-			self.vibe_speed = 0
-		if self.vibe_speed >= 100:
-			self.vibe_speed = 100
+		self.air_speed = 0 if self.air_speed < 0 else 3 if self.air_speed > 3 else self.air_speed
+		self.rotr_speed = 0 if self.rotr_speed <= 0 else 100 if self.rotr_speed >= 100 else self.rotr_speed
+		self.vibe_speed = 0 if self.vibe_speed <= 0 else 100 if self.vibe_speed >= 100 else self.vibe_speed
+		self.rotr_speed = int(self.rotr_speed/5)
+		self.vibe_speed = int(self.vibe_speed/5)
 	
 	def launch_hypno(self):
 		try:
@@ -317,9 +317,9 @@ class HealslutMaster(Frame):
 				self.hypno = True
 				self.rules_okay = False
 				self.bHypno.config(text='End\nHypno')
-				
 				if self.c_hypno.poll() == True:
 					self.c_hypno.recv()
+					
 				delay = int(self.hyp_delay.get())
 				opacity = int(self.hyp_opacity.get())
 				game = str(self.hyp_game.get())
@@ -338,33 +338,19 @@ class HealslutMaster(Frame):
 				display_rules = self.display_rules.get()
 				loopingAudio = self.loopingAudio.get()
 				c_rules = self.c_rules
-				
-				if wordcount == "None":
-					wordcount = 0
-				elif wordcount == "Low":
-					wordcount = 1
-				elif wordcount == "Medium":
-					wordcount = 2
-				elif wordcount == "High":
-					wordcount = 3
-				elif wordcount == "Very High":
-					wordcount = 4
-				elif wordcount == "Max":
-					wordcount = 5
-				if loopingAudio == 'None':
-					loopingAudio = 0
-				elif loopingAudio == 'List':
-					loopingAudio = 1
-				elif loopingAudio == 'Shuffle':
-					loopingAudio = 2
+				loopingAudio = 0 if loopingAudio== 'None' else 1 if loopingAudio == 'List' else 2
+				wordcount = 0 if wordcount == 'None' else 1 if wordcount == 'Low' else 2 if wordcount == 'Medium' \
+					   else 3 if wordcount == 'High' else 4 if wordcount == 'Very High' else 5
 				if t_hypno == 1:
 					hypno = 2
 					pinup = 0
 				gifset = self.background_select.get().replace('.gif','')
+				
 				StartHypnoProcess(delay,opacity,game,
 							homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
 							globfile,s_rulename,fontsize,display_rules,loopingAudio,gifset,
-							c_rules,self.c_vid,self.c_txt,self.c_homework,self.c_hypno)
+							c_rules,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,
+							self.c_hypno)
 				self.establish_rules()
 			else:
 				self.hypno = False
@@ -390,7 +376,7 @@ class HealslutMaster(Frame):
 				self.top = Toplevel()
 				self.top.title("HypnoTherapy Settings")
 				self.top.overrideredirect(True)
-				width, height = 1130,415
+				width, height = 1200,415
 				screen_width = self.master.winfo_screenwidth()
 				screen_height = self.master.winfo_screenheight()
 				x = (screen_width/2) - (width/2)
@@ -411,7 +397,7 @@ class HealslutMaster(Frame):
 				c.grid(row=1,column=2)
 				msg7 = Message(self.top, text='Speed Decay Strengh')
 				msg7.grid(row=0,column=3)
-				c = OptionMenu(self.top, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '/2', '/3', '/4')
+				c = OptionMenu(self.top, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '3/4', '1/2', '1/4')
 				c.grid(row=1,column=3)
 				msg6 = Message(self.top, text='Dom Gender Prefer')
 				msg6.grid(row=0,column=4)
@@ -421,7 +407,6 @@ class HealslutMaster(Frame):
 				msg6.grid(row=0,column=5)
 				w = OptionMenu(self.top, self.hyp_sub, "Sub", "Boy", "Girl")
 				w.grid(row=1,column=5)
-				
 				msg1 = Message(self.top, text='Image Flash Delay')
 				msg1.grid(row=2,column=0)
 				w = OptionMenu(self.top, self.hyp_delay, "250", "500", "1000", "1500", "3000")
@@ -447,12 +432,22 @@ class HealslutMaster(Frame):
 				w = OptionMenu(self.top, self.loopingAudio, "None", "List", "Shuffle")
 				w.grid(row=3,column=5)
 				
-				
-				
 				msg6 = Message(self.top, text='Image Folder', justify=RIGHT)
 				msg6.grid(row=4,column=0,rowspan=2)
 				w = OptionMenu(self.top, self.hyp_gfile, *self.hyp_folders)
 				w.grid(row=4,column=1, rowspan=2, columnspan=6, sticky=W)
+				
+				self.GenKillfeedList()
+				msg7 = Message(self.top, text='Sub Character', justify=RIGHT)
+				msg7.grid(row=6,column=0)
+				w = OptionMenu(self.top, self.HSSub, *self.AllCharList)
+				w.grid(row=6,column=1)
+				msg8 = Message(self.top, text='Dom Character', justify=RIGHT)
+				msg8.grid(row=6,column=2)
+				w = OptionMenu(self.top, self.HSDom, *self.AllCharList)
+				w.grid(row=6,column=3)
+				c = Checkbutton(self.top, text="Freeplay", variable=self.Freeplay)
+				c.grid(row=6,column=4, columnspan=2, sticky=W)
 				
 				c = Checkbutton(self.top, text="Hypno Background", variable=self.hyp_able)
 				c.grid(row=0,column=6, columnspan=2, sticky=W)
@@ -470,25 +465,23 @@ class HealslutMaster(Frame):
 				c.grid(row=6,column=6, columnspan=2, sticky=W)
 				
 				
-				emptymsg= Message(self.top, text='')
-				emptymsg.grid(row=6, column=0)
-				self.bg = Label(self.top, bg='gray75')
-				self.bg.grid(row=7,column=0, padx=10, rowspan=2, columnspan=4, sticky=W)
-				msg = Label(self.bg, width=22, text='Play Support on Paypal')
+				self.bgPaypal = Label(self.top, bg='gray75')
+				self.bgPaypal.grid(row=7,column=0, padx=10, rowspan=2, columnspan=4, sticky=W)
+				msg = Label(self.bgPaypal, width=22, text='Play Support on Paypal')
 				msg.grid(row=0, column=0, columnspan=2, sticky=E+W)
-				w = Text(self.bg, height=1, width=22, borderwidth=0, font=('Times', 14))
+				w = Text(self.bgPaypal, height=1, width=22, borderwidth=0, font=('Times', 14))
 				w.insert(1.0, 'ugraveknight@gmail.com')
 				w.grid(row=1, columnspan=2)
 				w.configure(state="disabled")
 				
 				#convert to png
-				self.bg = Label(self.top)
-				self.bg.grid(row=7,column=3, padx=10, rowspan=2, columnspan=3, sticky=W)
-				msg = Button(self.bg, text="Convert jpg to png", command=self.handleimage)
+				self.bgConvert = Label(self.top)
+				self.bgConvert.grid(row=7,column=3, padx=10, rowspan=2, columnspan=3, sticky=W)
+				msg = Button(self.bgConvert, text="Convert jpg to png", command=self.handleimage)
 				msg.grid(row=0, column=0, sticky=W+E)
-				c = Checkbutton(self.bg, text="Delete jpgs", variable=self.delold)
+				c = Checkbutton(self.bgConvert, text="Delete jpgs", variable=self.delold)
 				c.grid(row=0, column=1, sticky=E)
-				w = OptionMenu(self.bg, self.convfolder, *self.conv_hyp_folders)
+				w = OptionMenu(self.bgConvert, self.convfolder, *self.conv_hyp_folders)
 				w.grid(row=1,column=0, columnspan=3, sticky=E+W)
 				
 				# Handle Gif
@@ -530,15 +523,19 @@ class HealslutMaster(Frame):
 				self.after(25, self.updategif)
 			else:
 				self.hypno = False
+				self.vibe = False
 				self.bHypno.config(text='Start\nHypno')
+				self.bOW.config(text='Start\nVibe')
 				self.editting = False
 				self.p_hypno.send(True)
-				if not self.c_rules.poll() == True:
+				if self.c_rules.poll() == False:
 					self.p_rules.send(True)
-				try:
-					self.top.destroy()
-				except AttributeError:
-					pass
+					self.rules_okay = False
+				if self.c_ow.poll() == False:
+					self.p_ow.send(True)	
+				for url in ['http://localhost.lovense.com:20010/Vibrate?v=0','http://localhost.lovense.com:20010/RotateAntiClockwise?v=0','http://localhost.lovense.com:20010/AirAuto?v=0']:
+					Thread(target=do_request, args=(url,5)).start()
+				self.DestroyActions()
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
@@ -547,13 +544,11 @@ class HealslutMaster(Frame):
 	def buildgifset(self, event):
 		self.globpath = 'Resources\\Hypno Gif\\'+self.background_select.get().replace('.gif','')+'\\*.gif'
 		self.imagelist = glob(self.globpath, recursive=True)
-		self.gifcycle = []
+		self.imagelist.sort()
+		self.gifcyclist = []
 		for myimage in self.imagelist:
-			self.image = Image.open(myimage)
-			self.image = self.image.resize((250, 250), Image.LANCZOS)
-			self.image = ImageTk.PhotoImage(self.image)
-			self.gifcycle.append(self.image)
-		self.gifcycle = cycle(self.gifcycle)
+			self.gifcyclist.append(ImageTk.PhotoImage(Image.open(myimage).resize((250, 250), Image.LANCZOS)))
+		self.gifcycle = cycle(self.gifcyclist)
 		
 	def updategif(self):
 		try:
@@ -573,7 +568,6 @@ class HealslutMaster(Frame):
 			tb = format_exc(2);handleError(tb, e, 'end_edit', subj='')
 	
 	def handleimage(self):
-		x=1
 		folder = self.convfolder.get()
 		if folder == 'All':
 			for folder in self.hyp_folders:
@@ -590,11 +584,12 @@ class HealslutMaster(Frame):
 			sizeframe = frame.resize((mywidth,myheight))
 			if not path.exists('Resources\Hypno Gif\\'+mygif.replace('.gif','')+'\\'):
 				makedirs('Resources\Hypno Gif\\'+mygif.replace('.gif','')+'\\')
-			sizeframe.save( '%s/%s-%s.gif' % ('Resources\Hypno Gif\\'+mygif.replace('.gif','')+'\\', path.basename(mygif), namecount ) , 'GIF')
+			cnt = str(namecount) if len(str(namecount)) == 4 else '0'+str(namecount)
+			sizeframe.save( '%s/%s-%s.gif' % ('Resources\Hypno Gif\\'+mygif.replace('.gif','')+'\\', path.basename(mygif), cnt ) , 'GIF')
 			nframes += 1
 			namecount = round(namecount+.1,1)
 			try:
-				frame.seek( nframes )
+				frame.seek(nframes)
 			except EOFError:
 				break;
 		return True
@@ -606,13 +601,13 @@ class HealslutMaster(Frame):
 		for mygif in og_giflist:
 			mygif=mygif.replace(filepath,'')
 			if not mygif == '.gif':
-				print(mygif)
 				self.extractFrames(mygif,filepath,mywidth,myheight)
-		self.background_list = genbackgroundlist()
+		self.background_list = GenBackgroundList()
 		print('Done.')
 				
 	def convertimage(self, folder):
 		filelist = glob(folder+'*.jpg')
+		x=0
 		for file in filelist:
 			try:
 				print(x,'of',len(filelist), file)
@@ -628,7 +623,7 @@ class HealslutMaster(Frame):
 			for file in filelist:	
 				remove(file)
 				
-	def savepref(self):
+	def SavePref(self):
 		self.hyp_gfile_var = 0
 		for item in self.hyp_folders:
 			if item == self.hyp_gfile.get():
@@ -639,7 +634,7 @@ class HealslutMaster(Frame):
 			if item == self.background_select.get():
 				break
 			self.background_select_var +=1
-		prefdict = [
+		PrefDictList = [
 			'hyp_delay:'+str(self.hyp_delay.get()),
 			'hyp_game:'+str(self.hyp_game.get()),
 			'hyp_opacity:'+str(self.hyp_opacity.get()),
@@ -650,6 +645,7 @@ class HealslutMaster(Frame):
 			'T_hyp_able:'+str(self.T_hyp_able.get()),
 			'hyp_pinup:'+str(self.hyp_pinup.get()),
 			's_playing:'+str(self.s_playing.get()),
+			'Freeplay:'+str(self.Freeplay.get()),
 			'hyp_banword:'+str(self.hyp_banword.get()),
 			'hyp_tranbanr:'+str(self.hyp_tranbanr.get()),
 			'display_rules:'+str(self.display_rules.get()),
@@ -661,18 +657,23 @@ class HealslutMaster(Frame):
 			'fontsize:'+str(self.fontsize.get()),
 			'hyp_gfile_var:'+str(self.hyp_gfile_var),
 			'background_select_var:'+str(self.background_select_var),
-			's_rulename:'+str(self.s_rulename.get())
-		]
+			's_rulename:'+str(self.s_rulename.get()),
+			'sub:'+str(self.HSSub.get()),
+			'dom:'+str(self.HSDom.get())
+			]
 		
 		with open('Resources\\Preferences.txt', 'w') as f:
 			f.write('')
 		with open('Resources\\Preferences.txt', 'a') as f:
-			for line in prefdict:
+			for line in PrefDictList:
 				f.write(line+'\n')
 			
 	def shutdown(self):
-		self.savepref()
-		
+		self.SavePref()
+		try:
+			self.WSFrame.destroy()
+		except AttributeError:
+			pass
 		if self.hypno == True and self.editting == True:
 			self.bHypno.config(text='Start\nHypno')
 			self.hypno = False
@@ -699,12 +700,12 @@ class HealslutMaster(Frame):
 				pass
 			except Exception as e:
 				tb = format_exc(2);handleError(tb, e, 'shutdown', subj='')
-
+		
 	#########################
 	# Begin Buttons Manager #
 	#########################
 	
-	def set_pun_rwd(self):
+	def SetupPunRwd(self):
 		self.rulesets = []
 		for filename in iglob('Resources\\Healslut Games\\* Rules.txt', recursive=True):
 			head, sep, tail = filename.rpartition('\\')
@@ -741,15 +742,25 @@ class HealslutMaster(Frame):
 				# MOVING GRIP #
 				self.grip = Label(self.ActionFrame, height=1, bg='Gray50', text="< Hold to Move >", font=('Times', 8))
 				self.grip.grid(row=0,column=0,columnspan=2)
-				self.grip.bind("<ButtonPress-1>", self.StartMove)
-				self.grip.bind("<ButtonRelease-1>", self.StopMove)
-				self.grip.bind("<B1-Motion>", self.OnMotion)
+				self.grip.bind("<ButtonPress-1>", self.StartMoveAM)
+				self.grip.bind("<ButtonRelease-1>", self.StopMoveAM)
+				self.grip.bind("<B1-Motion>", self.ActionMenuOnMotion)
 				# ########### #
 				
 				x = (self.master.winfo_screenwidth()) - (110)
 				y = (self.master.winfo_screenheight()/2) - (600)
 				self.ActionMenu.geometry('%dx%d+%d+%d' % (115, 310, x, y))
+				if not self.rwdicon == '':
+					self.imageRwd = self.GenButtonImage(self.rwdicon)
+					self.RwdBtn.config(image=self.imageRwd,bd=0,highlightthickness=0)
+				if not self.punicon == '':
+					self.imagePun = self.GenButtonImage(self.punicon)
+					self.RwdBtn.config(image=self.imageRwd,bd=0,highlightthickness=0)
+				self.RwdBtn.config(command=partial(self.HandleCycles,self.rewardcycle))
+				self.PnshBtn.config(command=partial(self.HandleCycles,self.punishcycle))
+		
 				try:
+				
 					self.imageA = self.GenButtonImage(self.IconA)
 					self.ButtonA = Button(self.ActionFrame, image=self.imageA, text="A",
 						command=partial(self.HandleCycles,self.ActionCycleA)).grid(row=1,column=0,sticky=W+E+N+S)
@@ -785,15 +796,38 @@ class HealslutMaster(Frame):
 					
 		# ####################### #
 		# MORE MOVING GRIP ACTION #
-	def StartMove(self, event):
-		self.x = event.x
-		self.y = event.y
-	def StopMove(self, event):
-		self.x = None
-		self.y = None
-	def OnMotion(self, event):
-		deltax = event.x - self.x
-		deltay = event.y - self.y
+	def StartMoveMM(self, event):
+		self.MMy = event.y
+	def StopMoveMM(self, event):
+		self.MMy = None
+	def MainMenuOnMotion(self, event):
+		deltay = event.y - self.MMy
+		x = self.master.winfo_x()
+		y = self.master.winfo_y() + deltay
+		self.master.geometry("+%s+%s" % (x, y))
+		
+	def StartMoveWS(self, event):
+		self.WSx = event.x
+		self.WSy = event.y
+	def StopMoveWS(self, event):
+		self.WSx = None
+		self.WSy = None
+	def WordSearchOnMotion(self, event):
+		deltax = event.x - self.WSx
+		deltay = event.y - self.WSy
+		x = self.WSFrame.winfo_x() + deltax
+		y = self.WSFrame.winfo_y() + deltay
+		self.WSFrame.geometry("+%s+%s" % (x, y))
+		
+	def StartMoveAM(self, event):
+		self.AMx = event.x
+		self.AMy = event.y
+	def StopMoveAM(self, event):
+		self.AMx = None
+		self.AMy = None
+	def ActionMenuOnMotion(self, event):
+		deltax = event.x - self.AMx
+		deltay = event.y - self.AMy
 		x = self.ActionMenu.winfo_x() + deltax
 		y = self.ActionMenu.winfo_y() + deltay
 		self.ActionMenu.geometry("+%s+%s" % (x, y))
@@ -801,9 +835,16 @@ class HealslutMaster(Frame):
 		
 	def establish_rules(self):
 		try:
-			if self.rules_okay == False:
-				topwindow_isopen = False
-				iterlist = [self.rewardlist,self.punishlist]
+			if self.rules_okay == False and self.s_playing.get() == 1:
+				self.topwindow_isopen = False
+				self.rwdicon, self.rewardlist, self.rewardcycle = self.GenButtonLines(self.s_rulename.get()+' Rewards.txt')
+				self.punicon, self.punishlist, self.punishcycle = self.GenButtonLines(self.s_rulename.get()+' Punishments.txt')	
+				self.RwdBtn.config(command=partial(self.HandleCycles,self.rewardcycle))
+				self.PnshBtn.config(command=partial(self.HandleCycles,self.punishcycle))
+				
+				iterlist = []
+				iterlist.append(self.rewardlist)
+				iterlist.append(self.punishlist)
 				try:
 					FirstIconFound = False
 					self.IconA, self.ActionListA, self.ActionCycleA = self.GenButtonLines(self.s_rulename.get()+' ButtonA.txt')
@@ -844,11 +885,10 @@ class HealslutMaster(Frame):
 			
 	def CheckForPictue(self,line):
 		if '$picture' in line:
-			if self.usersecure == None or self.usersecure == '0':
-				if topwindow_isopen == False:
-					topwindow_isopen = True
-					self.secure_link = 'https://myaccount.google.com/lesssecureapps'
-					self.popup_bonus()	
+			if not self.usersecure == '1':
+				if self.topwindow_isopen == False:
+					self.topwindow_isopen = True
+					self.popup_bonus()
 
 	def popup_bonus(self):
 		try:
@@ -877,35 +917,33 @@ class HealslutMaster(Frame):
 			tb = format_exc(2);handleError(tb, e, 'popup_bonus', subj='')
 
 	def record_secure(self):
-		with open('Resources\\User Info.txt', 'w') as f:
+		with open('Resources\\Cam Info.txt', 'w') as f:
 			f.write('')
-		with open('Resources\\User Info.txt', 'a') as f:
+		with open('Resources\\Cam Info.txt', 'a') as f:
 			f.write(self.usermail+'\n')
 			f.write(self.userpass+'\n')
 			f.write('1')
-		self.usersecure == '1'
+		self.usersecure = '1'
 		self.win.destroy()
 			
 	def GenButtonLines(self,rulefilename):
 		with open('Resources\\Healslut Games\\'+rulefilename, 'r') as f:
 			self.templines = f.readlines()
-			icon = self.templines[0].replace('\n','')
-			self.templines.remove(self.templines[0])
-			return icon, self.templines, cycle(self.templines)
-			
-	def GenActionLines(self,rulefilename):
-		with open('Resources\\Healslut Games\\'+rulefilename, 'r') as f:
-			self.templines = f.readlines()
-			return f.readlines(), cycle(self.templines)	
+			if '.jpg' in self.templines[0].replace('\n',''):
+				icon = self.templines[0].replace('\n','')
+				self.templines.remove(self.templines[0])
+			else:
+				icon = ''
+			return icon, self.templines, cycle(self.templines)	
 
-			
 	def GenButtonImage(self, filename):
 		tempphoto = Image.open('Resources\\Buttonlabels\\'+filename)
 		tempphoto = tempphoto.resize((50, 50), Image.LANCZOS)
 		return ImageTk.PhotoImage(tempphoto)
 
 	def do_macro(self,macro):
-		macro=macro.strip('\n')
+		macro=macro.replace('\n','')
+		print(macro)
 		if '$playsound' in macro:
 			file = macro.replace('$playsound ','')
 			try:
@@ -913,36 +951,126 @@ class HealslutMaster(Frame):
 			except PlaysoundException:
 				print(file, 'not found in Resources\\Audio\\')
 		if '$playvideo' in macro:
-			file = macro.strip('$playvideo ')
+			file = macro.replace('$playvideo ','')
 			filename = 'Resources\\Video\\'+ file
 			self.p_vid.send(filename)
 		if '$text' in macro:
 			macro=macro+' '
-			text = macro.strip('$text')
+			text = macro.replace('$text','').upper()
 			self.p_txt.send(text)
 		if '$+vibe' in macro:
-			self.vibe_speed += int(macro.strip('$+vibe'))
+			self.vibe_speed += int(macro.replace('$+vibe',''))
 		if '$-vibe' in macro:
-			self.vibe_speed -= int(macro.strip('$-vibe'))
+			self.vibe_speed -= int(macro.replace('$-vibe',''))
 		if '$+rotate' in macro:
-			self.rotr_speed += int(macro.strip('$+rotate'))
+			self.rotr_speed += int(macro.replace('$+rotate',''))
 		if '$-rotate' in macro:
-			self.rotr_speed -= int(macro.strip('$-rotate'))
+			self.rotr_speed -= int(macro.replace('$-rotate',''))
 		if '$+air' in macro:
-			self.air_speed += int(macro.strip('$+air'))
+			self.air_speed += int(macro.replace('$+air',''))
 		if '$-air' in macro:
-			self.air_speed -= int(macro.strip('$-air'))
+			self.air_speed -= int(macro.replace('$-air',''))
+		if '$pinup' in macro:
+			pin = 'Resources\\Images\\'+macro.replace('$pinup ','')+'\\'
+			self.p_pinup.send(pin)
 		if '$picture' in macro:
-			Thread(target=take_pic, args=(self.usermail, self.userpass)).start()
+			Thread(target=take_pic, args=(self.usermail, self.userpass, self.ToEmail)).start()
 		if '$writeforme' in macro:
-			homeworkcount = int(macro.strip('$writeforme'))
+			homeworkcount = int(macro.replace('$writeforme',''))
 			print(homeworkcount)
 			self.p_homework.send(homeworkcount)
+		if '$wordsearch' in macro:
+			self.Difficulty = macro.replace('$wordsearch ','').upper()
+			if self.GameWindowOpen == True:
+				self.GameWindowOpen = False
+				try:
+					self.WSFrame.destroy()
+				except AttributeError:
+					pass
+			else:
+				self.GameWindowOpen = True
+				self.WordSearchFrame()
+		if '$diceroll' in macro:
+			Dice = macro.replace('$diceroll','').upper()
+			text,sep,tail = Dice.partition(' ')
+			count,sep,die = tail.partition('D')
+			for i in range(int(count)):
+				x=i+1
+				text = text+' '+str(self.Alphabet[-x])+':'+str(randint(1,int(die)))
+			self.p_txt.send(text)
+
+	def WordSearchFrame(self):
+		while True:
+			try:
+				width, height = 800,738
+				WordList = GenWordSearchList(self.Difficulty)
+				grid,SavedCords = WordSearch.Main(WordList,self.Difficulty)
+				self.WSFrame = Toplevel(self, bg='#ffffff', highlightthickness=0)
+				self.WSFrame.wm_title("Word Search")
+				self.WSFrame.overrideredirect(True)
+				self.WSFrame.wm_attributes("-topmost", 1)
+				self.WSFrame.wm_attributes("-transparentcolor", "#ffffff")
+				screen_width = self.master.winfo_screenwidth()
+				screen_height = self.master.winfo_screenheight()
+				x = (screen_width/2) - (width/2)
+				y = (screen_height/2) - (height/2)
+				self.WSFrame.geometry('%dx%d+%d+%d' % (width, height, x, y))
+				
+				# ########### #
+				# MOVING GRIP #
+				self.grip = Label(self.WSFrame, height=1, bg='Gray50', text="< Hold to Move >", font=('Times', 8))
+				self.grip.pack(fill=X)
+				self.grip.bind("<ButtonPress-1>", self.StartMoveWS)
+				self.grip.bind("<ButtonRelease-1>", self.StopMoveWS)
+				self.grip.bind("<B1-Motion>", self.WordSearchOnMotion)
+				# ########### #
+				
+				FontColor = 'pink'
+				self.WSFrame.bg = Canvas(self.WSFrame, bg='light blue', width=300, height=height*2)
+				self.WSFrame.bg.pack(fill=X)
+				WordListStr1 = '\n\n\n'
+				WordListStr2 = ''
+				img = 'Resources/ButtonLabels/Misc/WordSearchBackgroundDark.png'
+				image = Image.open(img)
+				self.WordSearchImg = ImageTk.PhotoImage(image)
+				self.WordSearchBackground = self.WSFrame.bg.create_image(width/2, height/2, image=self.WordSearchImg)
+				
+				for word in WordList[0:int(len(WordList)*.5)]:
+					WordListStr1 += word+'\n'
+				for word in WordList[int(len(WordList)*.5):-1]:
+					WordListStr2 += word+'\n'
+				WordListStr2+='\n\n\n'
+				self.WSFrame.bg.create_text((5,height/2), font=('Impact', 14),
+					text=WordListStr1, fill=FontColor, justify=LEFT, anchor=W)
+				self.WSFrame.bg.create_text((width-5,height/2), font=('Impact', 14),
+					text=WordListStr2, fill=FontColor, justify=RIGHT, anchor=E)
+				self.WordSearchBG = self.WSFrame.bg.create_text((width/2,height/2), fill='#FF7FED', font=("Courier", 16, "bold"),
+					text="\n".join(map(lambda row: " ".join(row), grid)))
+				self.WordSearchGrid=grid
+				self.WordSearchSavedCords=SavedCords
+				self.WordList=WordList
+				break
+				
+			except KeyboardInterrupt:
+				pass
+			except Exception as e:
+				tb = format_exc(2);handleError(tb, e, 'WordSearchFrame', subj='')
+		self.after(15000, self.ScrambleGrid)
+		
+	def ScrambleGrid(self):
+		grid=self.WordSearchGrid
+		SavedCords=self.WordSearchSavedCords
+		if self.GameWindowOpen == True:
+			width, height = WordSearch.GenDimensions(self.WordList,self.Difficulty)
+			grid = WordSearch.GenBlankGrid(self.Difficulty,width,height,SavedCords)
+			self.WSFrame.bg.itemconfig(self.WordSearchBG, text="\n".join(map(lambda row: " ".join(row), grid)))
+			self.after(30000, self.ScrambleGrid)
 
 	def HandleCycles(self,mycycle):
 		try:
 			if self.s_playing.get() == 1:
-				line = str(next(mycycle)).split(',')
+				cyc = next(mycycle)
+				line = str(cyc).split(',')
 				for macro in line:
 					self.do_macro(macro)
 		except KeyboardInterrupt:
@@ -952,18 +1080,32 @@ class HealslutMaster(Frame):
 				tb = format_exc(2);handleError(tb, e, 'HandleCycles', subj=[k for k,v in locals().items() if v == mycycle][0])
 			except Exception as e:
 				tb = format_exc(2);handleError(tb, e, 'DumbCyclesString', subj='Failed to iterate locals')
-	def DestroyActions(self):
+
+	def DestroyActions(self):	#self.DestroyActions()
 		self.ActionMenuOpen = False
+		self.GameWindowOpen = False
 		try:
 			self.ActionMenu.destroy()
 		except AttributeError:
 			pass
-				
+		try:
+			self.WSFrame.destroy()
+		except AttributeError:
+			pass
+		try:
+			self.top.destroy()
+		except AttributeError:
+			pass
+	
+	
+	
+	
+
 class StartHypnoProcess(Process):
 	def __init__(self, delay,opacity,game,
 						homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
 						globfile,s_rulename,fontsize,display_rules,loopingAudio,gifset,
-						c_rules,c_vid,c_txt,c_homework,c_hypno):
+						c_rules,c_vid,c_txt,c_pinup,c_homework,c_hypno):
 		try:
 			self.delay = delay
 			self.opacity = opacity
@@ -985,6 +1127,7 @@ class StartHypnoProcess(Process):
 			self.c_rules = c_rules
 			self.c_vid = c_vid
 			self.c_txt = c_txt
+			self.c_pinup = c_pinup
 			self.c_homework = c_homework
 			self.c_hypno = c_hypno	
 
@@ -1000,52 +1143,51 @@ class StartHypnoProcess(Process):
 			HypnoTherapy.launch(self.delay,self.opacity,self.game,
 				self.homework,self.wordcount,self.hypno,self.dom,self.sub,self.pinup,self.banwords,self.tranbanr,
 				self.globfile,self.s_rulename,self.fontsize,self.display_rules,self.loopingAudio,self.gifset,
-				self.c_rules,self.c_vid,self.c_txt,self.c_homework,self.c_hypno)
+				self.c_rules,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_hypno)
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'StartHypnoProcess.run', subj='')
 
+def GenWordSearchList(Difficulty):
+	if Difficulty=='MEDIUM':
+		WordCount = 20
+	elif Difficulty=='HARD':
+		WordCount = 28
+	else:
+		WordCount = 12
+	with open('Resources/Text/Healslut Adjectives.txt','r') as f:
+		alines = f.readlines()
+	with open('Resources/Text/Healslut Subjects.txt','r') as f:
+		blines = f.readlines()
+	totallines = alines+blines
+	WordList = []
+	for i in range(0,WordCount):
+		while True:
+			word = choice(totallines).replace('\n','').replace('-','').replace(' ','').upper()
+			if not word == '' and not word in WordList and not len(word) > 9:
+				WordList.append(word)
+				break
+	return WordList
 
-			
-def genpositions():
-	user32 = windll.user32
-	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-	userx, usery = screensize
-	oripos =	[
-		'400,1320',
-		'415,1320',
-		'445,1320',
-		'475,1315',	
-		'510,1315',
-		'540,1310',
-		'570,1310',
-		'600,1305',
-		'610,1305',
-		'630,1305']	
-	positions = {}
-	for value in oripos:	
-		x,sep,y=value.partition(',')
-		x = round((userx/2560) * int(x))
-		y = round((usery/1440) * int(y))
-		positions.update({x:y})
-	return positions	
-		
-def take_pic(usermail, userpass):
+
+def take_pic(usermail, userpass, ToEmail):
 	try:
 		cam = VideoCapture(0)
 		s, img = cam.read()
 		if s:
 			imwrite("Resources\Healslut.jpg",img)
-			send_email(usermail, userpass)
+			send_email(usermail, userpass, ToEmail)
 			remove("Resources\Healslut.jpg")
+		else:
+			print('No Video Found')
 	except KeyboardInterrupt:
 		pass
 	except Exception as e:
-		tb = format_exc(2);handleError(tb, e, 'do_request', subj='')
+		tb = format_exc(2);handleError(tb, e, 'take_pic', subj='')
 	
 		
-def send_email(usermail, userpass):
+def send_email(usermail, userpass, ToEmail):
 	print('sending email')
 	try:
 		ImgFileName ='Resources\Healslut.jpg'
@@ -1053,7 +1195,7 @@ def send_email(usermail, userpass):
 		msg = MIMEMultipart()
 		msg['Subject'] = 'Pics'
 		msg['From'] = usermail
-		msg['To'] = 'ugraveknight@gmail.com'
+		msg['To'] = ToEmail
 
 		text = MIMEText("test")
 		msg.attach(text)
@@ -1075,11 +1217,12 @@ def send_email(usermail, userpass):
 	except Exception as e:
 		tb = format_exc(2);handleError(tb, e, 'send_email', subj='')
 			
-def do_request(url):
+def do_request(url,delay=0):
+	sleep(delay)
 	try:
 		r = get(url)
 	except exceptions.ConnectionError:
-		print('no connection')
+		pass
 	except KeyboardInterrupt:
 		pass
 	except Exception as e:
@@ -1092,7 +1235,7 @@ def center_window(root, width, height):
 	y = (screen_height/2) - (height/2)
 	root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 	
-def genfolders():
+def GenFolders():
 	foundimage=False
 	hyp_folders = []
 	for filename in iglob('Resources\\Images/*.png', recursive=True):
@@ -1103,6 +1246,7 @@ def genfolders():
 		foundimage=True
 	if foundimage==False:
 		hyp_folders.append('No .png files found')
+	hyp_folders.append('All')
 	return hyp_folders
 	
 def genuserinfo():
@@ -1135,6 +1279,7 @@ def genuserpref():
 			'T_hyp_able':0,
 			'hyp_pinup':1,
 			's_playing':1,
+			'Freeplay':0,
 			'hyp_banword':1,
 			'hyp_tranbanr':1,
 			'display_rules':0,
@@ -1145,16 +1290,21 @@ def genuserpref():
 			'hyp_sub':'Girl',
 			'fontsize':'20',
 			'hyp_gfile_var':0,
-			'background_select_var':0
+			'background_select_var':0,
+			's_rulename':'Verbal',
+			'sub':'Mercy',
+			'dom':'Roadhog'
+			
+			
 		}
 	return prefdict
 	
-def genbackgroundlist():
-	path = 'Resources\\Background Gif original\\'
-	mylist = glob(path+'*.gif', recursive=True)
+def GenBackgroundList():
+	BGPath = 'Resources\\Background Gif original\\'
+	mylist = glob(BGPath+'*.gif', recursive=True)
 	background_list = []
 	for item in mylist:
-		background_list.append(item.replace('Resources\\Background Gif original\\',''))
+		background_list.append(item.replace(BGPath,''))
 	return background_list
 	
 def handleError(tb, e, func, subj=''):
@@ -1171,6 +1321,8 @@ def handlewriter(tb, e, func, subj):
 		f.write(tb+'\n'+subj)
 		
 def VersionCheck():
+	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
+	print('Version number:',Version)
 	try:
 		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
 		source = urlopen(url).read()
@@ -1192,31 +1344,18 @@ def go():
 		Minimize = GetForegroundWindow()
 		ShowWindow(Minimize, SW_MINIMIZE)
 		root = Tk()
-		center_window(root, 50, 255)
+		center_window(root, 50, 275)
 		root.wm_attributes("-topmost", 1)
-		p_ow, c_ow = Pipe()
-		p_hypno, c_hypno = Pipe()
-		p_vid, c_vid = Pipe()
-		p_txt, c_txt = Pipe()
-		p_rules, c_rules = Pipe()
-		p_homework, c_homework = Pipe()
+
 		
-		hyp_folders = genfolders()
+		hyp_folders = GenFolders()
 		userinfo = genuserinfo()
 		prefdict = genuserpref()
-		background_list = genbackgroundlist()
+		background_list = GenBackgroundList()
 		
-			
-			
-			
-		e = HealslutMaster(root, hyp_folders, userinfo, background_list, prefdict,
-						p_ow, c_ow,	
-						p_hypno, c_hypno,
-						p_vid, c_vid,
-						p_txt, c_txt,
-						p_rules, c_rules,
-						p_homework, c_homework
-						)
+		screen_width = root.winfo_screenwidth()
+		screen_height = root.winfo_screenheight()
+		e = HealslutMaster(root, hyp_folders, userinfo, background_list, prefdict)
 		print('Healslut Master is now live')
 		print()
 		root.mainloop()
