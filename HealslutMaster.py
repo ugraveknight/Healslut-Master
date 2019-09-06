@@ -1,4 +1,4 @@
-Version='v1.4'
+Version='v1.4.1'
 
 import HypnoTherapy
 import OverwatchVibe
@@ -50,7 +50,7 @@ from random import choice, randint
 	#################################################################
 	#				use this line to compile the .exe				#
 	#	For me														#
-	# pyinstaller -F --icon=Developer\hs.ico HealslutMaster.py		#
+	# pyinstaller -F --icon=ProgDeveloper\hs.ico HealslutMaster.py	#
 	#																#
 	#	For you	(No Icon)											#
 	# pyinstaller -F HealslutMaster.py								#
@@ -178,8 +178,9 @@ class HealslutMaster(Frame):
 			self.ToEmail = 'ugraveknight@gmail.com'	
 			
 	def SetupMenu(self):
-		self.frame = Frame(self.master, width=50, height=270,
-						   borderwidth=2, relief=RAISED)
+		self.master.wm_attributes("-transparentcolor", "#010101")
+		self.frame = Frame(self.master, width=50, height=1000,#height=270,
+						   borderwidth=2, bg='#010101', relief=RAISED)
 		self.frame.grid(row=0,column=0)
 		self.bg = Label(self.frame, bg='gray30', width=50, height=270, anchor=E)
 		self.bg.place(x=0,y=20)
@@ -748,7 +749,7 @@ class HealslutMaster(Frame):
 				# ########### #
 				
 				x = (self.master.winfo_screenwidth()) - (110)
-				y = (self.master.winfo_screenheight()/2) - (600)
+				y = (self.master.winfo_screenheight()/2) - (self.master.winfo_screenheight()/2.3)
 				self.ActionMenu.geometry('%dx%d+%d+%d' % (115, 310, x, y))
 				if not self.rwdicon == '':
 					self.imageRwd = self.GenButtonImage(self.rwdicon)
