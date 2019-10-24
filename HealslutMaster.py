@@ -534,7 +534,8 @@ class HealslutMaster(Frame):
 					self.rules_okay = False
 				if self.c_ow.poll() == False:
 					self.p_ow.send(True)	
-				for url in ['http://localhost.lovense.com:20010/Vibrate?v=0','http://localhost.lovense.com:20010/RotateAntiClockwise?v=0','http://localhost.lovense.com:20010/AirAuto?v=0']:
+				URL='http://localhost.lovense.com:20010/'
+				for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 					Thread(target=do_request, args=(url,5)).start()
 				self.DestroyActions()
 		except KeyboardInterrupt:
