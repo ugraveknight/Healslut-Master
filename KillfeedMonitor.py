@@ -4,11 +4,16 @@ from itertools import cycle
 from time import sleep, time
 	
 def TreatSub(info,name,ListOfCycles,c_killfeed):
-	i = 0 if info == 'SubDeath'  else \
-	    1 if info == 'DomDeath'  else \
-	    2 if info == 'TeamDeath' else \
-	    3 if info == 'Assist' else \
-	    4 if info == 'Kill' else ''
+	info_values = \
+	{
+		'SubDeath' : 0,
+		'DomDeath' : 1,
+		'TeamDeath': 2,
+		'Assist'   : 3,
+		'Kill'     : 4,
+	}
+
+	i = info_values.get(info, '')
 	try:
 		c_killfeed.send(next(ListOfCycles[i]))
 	except StopIteration:
