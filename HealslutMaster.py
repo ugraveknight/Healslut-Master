@@ -224,7 +224,7 @@ class HealslutMaster(Frame):
 			else:
 				self.vibe = False
 				self.bOW.config(text='Start\nVibe')
-                                URL='http://localhost.lovense.com:20010/'
+				URL='http://localhost.lovense.com:20010/'
 				for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 					Thread(target=do_request, args=(url,5)).start()
 				if self.c_rules.poll() == False:
