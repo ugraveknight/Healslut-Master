@@ -282,22 +282,22 @@ class HealslutMaster(Frame):
 			self.decaytimer=time()+sec
 			
 			#the change in speed and rotr associated with each value
-                        speed_changes = \
-                        {
-                                '-1' : lambda x: x - 1,
-                                '-3' : lambda x: x - 3,
-                                '-10': lambda x: x - 10,
-                                '-20': lambda x: x - 20,
-                                '3/4': lambda x: x * .75,
-                                '1/2': lambda x: x * .5,
-                                '1/4': lambda x: x * .25,
-                        }
+			speed_changes = \
+			{
+				'-1' : lambda x: x - 1,
+				'-3' : lambda x: x - 3,
+				'-10': lambda x: x - 10,
+				'-20': lambda x: x - 20,
+				'3/4': lambda x: x * .75,
+				'1/2': lambda x: x * .5,
+				'1/4': lambda x: x * .25,
+			}
 			
 			if self.vibe_speed > 0 or self.rotr_speed > 0:
 				#if the value is not in the dict (for whatever reason)
 				#then the identity function will used, ie, no change
 				new_speed = speed_changes.get(self.s_decay_pow.get(), lambda x: x)
-                            	self.vibe_speed = new_speed(self.vibe_speed)
+				self.vibe_speed = new_speed(self.vibe_speed)
 				self.rotr_speed = new_speed(self.rotr_speed)
 
 		if not self.s_decay == '0' and time() > self.air_decaytimer:
