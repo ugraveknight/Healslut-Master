@@ -263,9 +263,10 @@ class HealslutMaster(Frame):
 			print('Vibe:',vibespeed,', Rotate:',rotaspeed)
 			
 				#This is the area where we will communicate to the buttplug server
-			urllist=['http://localhost.lovense.com:20010/Vibrate?v='+str(vibespeed)]
-			urllist.append('http://localhost.lovense.com:20010/RotateAntiClockwise?v='+str(rotaspeed))
-			urllist.append('http://localhost.lovense.com:20010/AirAuto?v='+str(self.air_speed))
+			URL='http://localhost.lovense.com:20010/'
+			urllist=[URL+'Vibrate?v='+str(vibespeed)]
+			urllist.append(URL+'RotateAntiClockwise?v='+str(rotaspeed))
+			urllist.append(URL+'AirAuto?v='+str(self.air_speed))
 			for url in urllist:
 				Thread(target=do_request, args=(url,)).start()
 				
