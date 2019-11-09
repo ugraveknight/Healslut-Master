@@ -224,7 +224,8 @@ class HealslutMaster(Frame):
 			else:
 				self.vibe = False
 				self.bOW.config(text='Start\nVibe')
-				for url in ['http://localhost.lovense.com:20010/Vibrate?v=0','http://localhost.lovense.com:20010/RotateAntiClockwise?v=0','http://localhost.lovense.com:20010/AirAuto?v=0']:
+				URL='http://localhost.lovense.com:20010/'
+				for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 					Thread(target=do_request, args=(url,5)).start()
 				if self.c_rules.poll() == False:
 					self.p_rules.send(True)
@@ -263,9 +264,10 @@ class HealslutMaster(Frame):
 			print('Vibe:',vibespeed,', Rotate:',rotaspeed)
 			
 				#This is the area where we will communicate to the buttplug server
-			urllist=['http://localhost.lovense.com:20010/Vibrate?v='+str(vibespeed)]
-			urllist.append('http://localhost.lovense.com:20010/RotateAntiClockwise?v='+str(rotaspeed))
-			urllist.append('http://localhost.lovense.com:20010/AirAuto?v='+str(self.air_speed))
+			URL='http://localhost.lovense.com:20010/'
+			urllist=[URL+'Vibrate?v='+str(vibespeed)]
+			urllist.append(URL+'RotateAntiClockwise?v='+str(rotaspeed))
+			urllist.append(URL+'AirAuto?v='+str(self.air_speed))
 			for url in urllist:
 				Thread(target=do_request, args=(url,)).start()
 				
@@ -282,22 +284,22 @@ class HealslutMaster(Frame):
 			self.decaytimer=time()+sec
 			
 			#the change in speed and rotr associated with each value
-                        speed_changes = \
-                        {
-                                '-1' : lambda x: x - 1,
-                                '-3' : lambda x: x - 3,
-                                '-10': lambda x: x - 10,
-                                '-20': lambda x: x - 20,
-                                '3/4': lambda x: x * .75,
-                                '1/2': lambda x: x * .5,
-                                '1/4': lambda x: x * .25,
-                        }
+			speed_changes = \
+			{
+				'-1' : lambda x: x - 1,
+				'-3' : lambda x: x - 3,
+				'-10': lambda x: x - 10,
+				'-20': lambda x: x - 20,
+				'3/4': lambda x: x * .75,
+				'1/2': lambda x: x * .5,
+				'1/4': lambda x: x * .25,
+			}
 			
 			if self.vibe_speed > 0 or self.rotr_speed > 0:
 				#if the value is not in the dict (for whatever reason)
 				#then the identity function will used, ie, no change
 				new_speed = speed_changes.get(self.s_decay_pow.get(), lambda x: x)
-                            	self.vibe_speed = new_speed(self.vibe_speed)
+				self.vibe_speed = new_speed(self.vibe_speed)
 				self.rotr_speed = new_speed(self.rotr_speed)
 
 		if not self.s_decay == '0' and time() > self.air_decaytimer:
@@ -532,7 +534,8 @@ class HealslutMaster(Frame):
 					self.rules_okay = False
 				if self.c_ow.poll() == False:
 					self.p_ow.send(True)	
-				for url in ['http://localhost.lovense.com:20010/Vibrate?v=0','http://localhost.lovense.com:20010/RotateAntiClockwise?v=0','http://localhost.lovense.com:20010/AirAuto?v=0']:
+				URL='http://localhost.lovense.com:20010/'
+				for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 					Thread(target=do_request, args=(url,5)).start()
 				self.DestroyActions()
 		except KeyboardInterrupt:
