@@ -15,7 +15,7 @@ from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
 from mutagen.mp3 import MP3
 
-
+TRANS_CLR = '#f7e9f1'	#Haha, Pride!
 
 
 class Hypnotherapy(Frame):
@@ -27,6 +27,8 @@ class Hypnotherapy(Frame):
 		Frame.__init__(self, master, *pargs)
 		try:
 			self.master = master
+			self.screenwidth = self.master.winfo_screenwidth()
+			self.screenheight = self.master.winfo_screenheight()
 			self.image_files = image_files
 			self.delay = delay
 			self.opacity = opacity
@@ -81,41 +83,40 @@ class Hypnotherapy(Frame):
 			tb = format_exc(2);handleError(tb, e, 'hypno.init', subj='')
 		
 	def make_background(self):
-		self.x_center = int(self.master.winfo_screenwidth()*.5)
-		self.x_left = int(self.master.winfo_screenwidth()*.4)
-		self.x_right = int(self.master.winfo_screenwidth()*.6)
-		self.y_center = int(self.master.winfo_screenheight()*.5)
-		self.y_upper = int(self.master.winfo_screenheight()*.33)
-		self.y_lower = int(self.master.winfo_screenheight()*.66)
+		self.x_center = int(self.screenwidth*.5)
+		self.x_left = int(self.screenwidth*.4)
+		self.x_right = int(self.screenwidth*.6)
+		self.y_center = int(self.screenheight*.5)
+		self.y_upper = int(self.screenheight*.33)
+		self.y_lower = int(self.screenheight*.66)
 		
 		self.bg = Canvas(self, highlightthickness=0)
-		self.fg_x = self.master.winfo_screenwidth()/2
-		self.fg_y = self.master.winfo_screenheight()/2
+		self.fg_x = self.screenwidth/2
+		self.fg_y = self.screenheight/2
 		
 		if self.enable_hypno >= 1:
 			self.bg.gif_create = self.bg.create_image(self.fg_x, self.fg_y, image='')
 		else:
-			self.bg.config(bg='#ffffff')
+			self.bg.config(bg=TRANS_CLR)
 		self.bg.pack(fill=BOTH, expand=YES)
 		
 	def formatgif(self):
 		imagelist = glob('Resources\\Hypno Gif\\'+self.gifset+'\\*.gif', recursive=True)		
-		self.gifcycle = [(PhotoImage(file=image))
-						  for image in imagelist]
+		self.gifcycle = [(PhotoImage(file=image)) for image in imagelist]
 		self.gifcycle = cycle(self.gifcycle)
 		
 	def build_ports(self):
-		self.master.wm_attributes("-transparentcolor", "#ffffff")
+		self.master.wm_attributes("-transparentcolor", TRANS_CLR)
 		if self.game == 'OW':
-			self.bg.left_port = Canvas(self.bg, bg='#ffffff', width=650, height=200,
+			self.bg.left_port = Canvas(self.bg, bg=TRANS_CLR, width=650, height=200,
 								highlightthickness=0)
 			self.bg.left_port.place(relx=0, rely=1, anchor=SW)
 			
-			self.bg.Killfeed_port = Canvas(self.bg, bg='#ffffff', width=800, height=800,
+			self.bg.Killfeed_port = Canvas(self.bg, bg=TRANS_CLR, width=800, height=800,
 								highlightthickness=0)
 			self.bg.Killfeed_port.place(relx=.75, rely=.25, anchor=SW)
 			
-		self.bg.right_port = Canvas(self.bg, bg='#ffffff', width=50, height=270,
+		self.bg.right_port = Canvas(self.bg, bg=TRANS_CLR, width=50, height=270,
 								highlightthickness=0)
 		self.bg.right_port.place(relx=1, rely=.5, anchor=E)	
 
@@ -194,10 +195,9 @@ class Hypnotherapy(Frame):
 				self.r_nextchunk = True
 				self.foregrounds = cycle([(PhotoImage(file=image))
 								for image in self.image_files[0:5]])
-				self.img_object = next(self.foregrounds) 	
+				self.img_object = next(self.foregrounds) 
 				self.bg.fg = self.bg.create_image(self.x_center, self.y_center, image=self.img_object)
 				self.t = Thread(target=self.loadnewpic).start()
-				self.LastImageList = self.image_files
 			else:
 				self.bg.fg = self.bg.create_image(self.x_center, self.y_center, image='')
 			if self.homework == 'Banner':
@@ -216,20 +216,25 @@ class Hypnotherapy(Frame):
 				colors = f.readlines()
 				for line in colors:
 					self.color_list.append(line.strip('\n'))
-			dom = self.prefer_dom
-			sub = self.prefer_sub
-			delay = self.delay
-			humiliation = self.humiliation
-			banwords = self.banwords
-			color_list = self.color_list
-			wordcount = self.wordcount
-			tranbanr = self.tranbanr
-			homework = self.homework
-			c_images, self.p_images = Pipe()
-			c_hypno = self.c_hypno
-			Thread(target=create_banner, args=(delay,dom,sub,humiliation,
+			#if self.homework == 'Banner': # or any other reason to launch...
+				dom = self.prefer_dom
+				sub = self.prefer_sub
+				delay = self.delay
+				humiliation = self.humiliation
+				banwords = self.banwords
+				color_list = self.color_list
+				wordcount = self.wordcount
+				tranbanr = self.tranbanr
+				homework = self.homework
+				output = self.output
+				fontsize = self.fontsize
+				display_rules = self.display_rules
+				c_images, self.p_images = Pipe()
+				c_hypno = self.c_hypno
+				Thread(target=create_banner, args=(delay,dom,sub,humiliation,
 								color_list,banwords,wordcount,tranbanr,homework,
-								c_images,self.c_txt,c_hypno)).start()
+								output,display_rules,fontsize,c_images,self.c_txt,
+								c_hypno)).start()
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
@@ -281,8 +286,8 @@ class Hypnotherapy(Frame):
 		try:
 			if self.r_nextchunk == True:
 				try:
-					self.foregrounds = cycle([(PhotoImage(file=image))
-							for image in self.image_files[0:1]])
+					self.foregrounds = cycle([PhotoImage(file=image) 
+						for image in self.image_files[0:1]])
 					self.r_nextchunk = False
 				except TclError:
 					pass
@@ -331,7 +336,7 @@ class Hypnotherapy(Frame):
 			if self.doing_homework == True:
 				self.bg.right_port.config(bg='#000000')
 			else:
-				self.bg.right_port.config(bg='#ffffff')
+				self.bg.right_port.config(bg=TRANS_CLR)
 			if self.vs == None:
 				self.vs = VideoCapture(self.video_filename) # capture video frames, 0 is your default video camera
 				self.current_image = None  # current image from the camera
@@ -396,8 +401,8 @@ class Hypnotherapy(Frame):
 				self.doing_homework=True
 				self.master.overrideredirect(1)
 				width, height =1000,150
-				screen_width = self.master.winfo_screenwidth()
-				screen_height = self.master.winfo_screenheight()
+				screen_width = self.screenwidth
+				screen_height = self.screenheight
 				x = (screen_width/2) - (width/2)
 				y = (screen_height/2) - (height/2)
 				
@@ -437,11 +442,11 @@ class Hypnotherapy(Frame):
 				self.focus_force()
 
 			if self.doing_homework == False:
-				self.master.wm_attributes("-transparentcolor", "#ffffff")
+				self.master.wm_attributes("-transparentcolor", TRANS_CLR)
 				if self.game == 'OW':
-					self.bg.left_port.config(bg='#ffffff')
-				self.bg.config(bg='#ffffff')
-				self.bg.right_port.config(bg='#ffffff')
+					self.bg.left_port.config(bg=TRANS_CLR)
+				self.bg.config(bg=TRANS_CLR)
+				self.bg.right_port.config(bg=TRANS_CLR)
 				
 				set_clickthrough()
 			if self.doing_homework==True:
@@ -509,19 +514,10 @@ class Hypnotherapy(Frame):
 					else:
 						colory1 = choice(self.color_list)
 						
-					left_x_value = float(randint(
-									int(self.x_left*.9),
-									int(self.x_left*1.1)))
-					left_y_value = float(randint(
-									int(self.y_center*.9),
-									int(self.y_center*1.1)))
-					right_x_value = float(randint(
-									int(self.x_right*.9),
-									int(self.x_right*1.1)))
-					right_y_value = float(randint(
-									int(self.y_center*.9),
-									int(self.y_center*1.1)))
-									
+					left_x_value  = float(randint(int(self.x_left*.9)  ,int(self.x_left*1.1)))
+					left_y_value  = float(randint(int(self.y_center*.9),int(self.y_center*1.1)))
+					right_x_value = float(randint(int(self.x_right*.9) ,int(self.x_right*1.1)))
+					right_y_value = float(randint(int(self.y_center*.9),int(self.y_center*1.1)))			
 					adjy1 = choice(self.alines).upper()
 					suby1 = choice(self.slines).upper()
 					self.bg.delete(self.tmp_right_text)
@@ -643,16 +639,13 @@ class Hypnotherapy(Frame):
 					self.bg.itemconfig(self.bg.gif_create, image = self.bg_image)
 				else:
 					self.bg.itemconfig(self.bg.gif_create, image ='')
-			if self.enable_hypno == 1:	
-				self.after(25, self.updategif)
-			if self.enable_hypno == 2:	
-				self.after(5, self.updategif)
+			if   self.enable_hypno == 1: self.after(25, self.updategif)
+			elif self.enable_hypno == 2: self.after(5 , self.updategif)
 		except KeyboardInterrupt:
 			pass
 		except Exception as e:
 			tb = format_exc(2);handleError(tb, e, 'updategif', subj='')
 
-				
 def set_clickthrough(windowname="Healslut Hypnotherapy"):
 	try:
 		hwnd = FindWindow(None, windowname)
@@ -721,8 +714,12 @@ def set_written_line(humiliation, dom, sub):
 			
 class Banner(Frame):
 	def __init__(self, master, delay, dom, sub, humiliation, color_list, 
-					banwords, wordcount, tranbanr, homework, c_images, c_txt, c_hypno, *pargs):
+					banwords, wordcount, tranbanr, homework, output, 
+					display_rules, fontsize, c_images, c_txt, c_hypno, *pargs):
 		try:
+			self.master = master
+			self.screenwidth = self.master.winfo_screenwidth()
+			self.screenheight = self.master.winfo_screenheight()
 			self.delay = delay
 			self.dom = dom
 			self.sub = sub
@@ -731,18 +728,20 @@ class Banner(Frame):
 			self.banwords = banwords
 			self.wordcount = wordcount
 			self.tranbanr = tranbanr
+			self.output = output
+			self.display_rules = display_rules
+			self.fontsize = fontsize
 			self.c_images = c_images
 			self.c_txt = c_txt
 			self.c_hypno = c_hypno
-			self.master = master
 			self.banner_var = 4		
 			self.doing_homework = False
 			self.freshtext = False
 			self.endtime = time()
 			self.master.wm_attributes("-topmost", 1)
 			self.master.wm_attributes("-transparentcolor", "#000000")
-			self.screen_width = self.master.winfo_screenwidth()
-			self.screen_height = self.master.winfo_screenheight()
+			self.screen_width = self.screenwidth
+			self.screen_height = self.screenheight
 			self.master.geometry('%dx%d+%d+%d' % (self.screen_width, self.screen_height, 0, 0))
 			self.master.overrideredirect(1)
 			self.banner = Canvas(self.master, bg='#000000', width=495, height=200,
@@ -751,7 +750,10 @@ class Banner(Frame):
 			self.tmp_banner = self.banner.create_text(0, 0, text='')
 			self.maintext = self.banner.create_text(0, 0, text='')
 			if self.tranbanr == 1:
-				self.master.attributes('-alpha', .5)	
+				self.master.attributes('-alpha', .5)
+			if self.display_rules == 2:
+				self.banner.create_text(0, self.screen_height/2, text=self.output, font=("Impact", self.fontsize), 
+							fill='hot pink',justify=LEFT, anchor=W)
 			if self.banwords == 0:
 				with open('Resources\\Text\\Healslut Adjectives.txt', 'r') as a:
 					self.alines=a.readlines()
@@ -770,12 +772,12 @@ class Banner(Frame):
 				self.tmp_right_texta = self.banner.create_text(0, 0, text='', font=("Impact", 44))
 				self.tmp_right_textb = self.banner.create_text(0, 0, text='', font=("Impact", 44))
 			
-				self.x_center = int(self.master.winfo_screenwidth()*.5)
-				self.x_left = int(self.master.winfo_screenwidth()*.4)
-				self.x_right = int(self.master.winfo_screenwidth()*.6)
-				self.y_center = int(self.master.winfo_screenheight()*.5)
-				self.y_upper = int(self.master.winfo_screenheight()*.33)
-				self.y_lower = int(self.master.winfo_screenheight()*.66)
+				self.x_center = int(self.screenwidth*.5)
+				self.x_left = int(self.screenwidth*.4)
+				self.x_right = int(self.screenwidth*.6)
+				self.y_center = int(self.screenheight*.5)
+				self.y_upper = int(self.screenheight*.33)
+				self.y_lower = int(self.screenheight*.66)
 			self.run_banner()
 		except KeyboardInterrupt:
 			pass
@@ -953,8 +955,8 @@ class Banner(Frame):
 			tb = format_exc(2);handleError(tb, e, 'banner.update_text', subj='')
 				
 def create_banner(delay,dom,sub,humiliation,color_list,banwords,
-						wordcount,tranbanr,homework,c_images,c_txt,
-						c_hypno):
+						wordcount,tranbanr,homework,output,
+						display_rules,fontsize,c_images,c_txt,c_hypno):
 	try:
 		root = Tk()
 		width = root.winfo_screenwidth()
@@ -966,8 +968,8 @@ def create_banner(delay,dom,sub,humiliation,color_list,banwords,
 		set_clickthrough('Healslut Banner')
 		root.attributes('-alpha', 1)
 		e = Banner(root,delay,dom,sub,humiliation,color_list,
-					banwords,wordcount,tranbanr,homework,c_images,c_txt,
-					c_hypno)
+					banwords,wordcount,tranbanr,homework,output,
+					display_rules,fontsize,c_images,c_txt,c_hypno)
 		root.mainloop()
 	except KeyboardInterrupt:
 		pass
