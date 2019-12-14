@@ -12,7 +12,6 @@ def TreatSub(info,name,ListOfCycles,c_killfeed):
 		'Assist'   : 3,
 		'Kill'     : 4,
 	}
-
 	i = info_values.get(info, '')
 	try:
 		c_killfeed.send(next(ListOfCycles[i]))
@@ -31,7 +30,7 @@ def GenTeamColor(im, x, y):
 	BorderRed,_,BorderBlue = im.getpixel((int(x), int(y)))
 	return 'Red' if BorderRed > BorderBlue else 'Blue'
 
-def Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,Debug=False):
+def Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,BorderPixels,Debug=False):
 	try:
 		newtime = time() if Debug==True else 0
 		for file in Files:
@@ -39,15 +38,15 @@ def Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,Debug=False):
 			for userloc in locateAll(file, im, confidence=0.9, region=Cords):
 				x, y = center(userloc)
 				if not 'Assist' in file:
-					TeamColor = GenTeamColor(im, x-35, y)
-					red, green, blue = im.getpixel((int(x)-70, int(y)))
+					TeamColor = GenTeamColor(im, x-BorderPixels[1], y)
+					red, green, blue = im.getpixel((int(x)-BorderPixels[2], int(y)))
 					if red > 250 and green > 245 and      blue > 240 or \
 					   red > 250 and green < 20  and 30 < blue < 50:
 						name = file.replace(KFPath,'').replace('.png','')
 						if TeamColor == 'Blue':
 							TrackDeath(name,TeamColor,Sub,Dom,ListOfCycles,c_killfeed)
 				else:
-					TeamColor = GenTeamColor(im, x-15, y)
+					TeamColor = GenTeamColor(im, x-BorderPixels[0], y)	#BorderPixels = 15 on 2560
 					name = file.replace(KFPath,'').replace('.png','')
 					print(Sub,name)
 					if Sub in name and TeamColor == 'Blue':
@@ -79,7 +78,10 @@ def GenCords(self,screen_x=0,screen_y=0):	#Imported
 	StartXPos = int(screen_x*.75)
 	EndXPos = int(screen_x*.25)
 	EndYPos = int(screen_y*.25)
-	return (StartXPos,0, EndXPos, EndYPos)
+	KillFeedBorderPixels = [int(screen_x*.005859375),
+							int(screen_x*.01367875),
+							int(screen_x*.02734375)]
+	return (StartXPos,0, EndXPos, EndYPos), KillFeedBorderPixels
 
 def LogTime(file,Files,newtime):	#Debug
 	if file == Files[0]:
@@ -93,19 +95,33 @@ def RunTest():	#Debug
 	from pyautogui import screenshot
 	p_killfeed, c_killfeed = mp.Pipe()
 	ListOfCycles = GenCycles()
-	Cords = GenCords('',2560,1440)
+	#Cords, KillFeedBorderPixels = GenCords('',2560,1440)
+	Cords, BorderPixels = GenCords('',1920,1080)
 	Freeplay=False
 	Sub = 'Mercy'
 	Dom = 'Ana'
-	KFPath = 'Resources\\Killfeed\\Overwatch\\'
+	#KFPath = 'Resources\\Killfeed\\Overwatch\\'
+	KFPath = 'Resources\\Killfeed\\OW - 1920\\'
 	Files = glob(KFPath+'*.png') if Freeplay == True else \
 				[KFPath+Sub+'.png', KFPath+Dom+'.png']
 	while True:
 		sleep(5)
 		im = screenshot()
-		Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath)
+		Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,BorderPixels)
 		if p_killfeed.poll() == True:
 			print(p_killfeed.recv())
 
 if __name__ == '__main__':
 	RunTest()
+	i=2560
+	#KillFeedBorderPixels = [int(self.master.winfo_screenwidth()*.005859375),
+							#int(self.master.winfo_screenwidth()*.01367875),
+							#int(self.master.winfo_screenwidth()*.02734375)
+							#]
+	for i in KillFeedBorderPixels:
+		print(i)
+	for i in [1920,2560]:
+		print(i,int(i*.005859375))
+		print(i,int(i*.01367875))
+		print(i,int(i*.02734375))
+		
