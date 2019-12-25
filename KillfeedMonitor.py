@@ -95,12 +95,10 @@ def RunTest():	#Debug
 	from pyautogui import screenshot
 	p_killfeed, c_killfeed = mp.Pipe()
 	ListOfCycles = GenCycles()
-	#Cords, KillFeedBorderPixels = GenCords('',2560,1440)
 	Cords, BorderPixels = GenCords('',1920,1080)
 	Freeplay=False
 	Sub = 'Mercy'
 	Dom = 'Ana'
-	#KFPath = 'Resources\\Killfeed\\Overwatch\\'
 	KFPath = 'Resources\\Killfeed\\OW - 1920\\'
 	Files = glob(KFPath+'*.png') if Freeplay == True else \
 				[KFPath+Sub+'.png', KFPath+Dom+'.png']
@@ -125,3 +123,5 @@ if __name__ == '__main__':
 		print(i,int(i*.01367875))
 		print(i,int(i*.02734375))
 		
+	
+	
