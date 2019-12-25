@@ -30,33 +30,33 @@ import KillfeedMonitor
 import WordSearch
 from HealslutPackages import *
 	
-	###########################  Info  ##############################
-	#																#
-	# 					Created by u/Graveknight1					#
-	#																#
-	# Please contact me via reddit for questions or requests. if	#
-	# you would like to donate to my work, checkout my paypal.		#
-	#																#
-	# This program is not for sale, if someone charged you for it,  #
-	# you've been ripped off.										#
-	#																#
-	# This code was written for the Healsluts community. If you		#
-	# like what you see, check them out at r/healsluts				#
-	#																#
-	#################################################################
-	#				use this line to compile the .exe				#
-	#	For me														#
-	# pyinstaller -F --icon=ProgDeveloper\hs.ico HealslutMaster.py	#
-	#																#
-	#	For you	(No Icon)											#
-	# pyinstaller -F HealslutMaster.py								#
-	#																#
-	#################################################################
-	#																#
-	# https://lovense.com/developer/docs/session-control			#
-	# https://lovense.com/developer/docs/lan-connect-pc				#
-	#																#
-	#################################################################
+    ###########################  Info  ##############################
+    #                                                               #
+    #                   Created by u/Graveknight1                   #
+    #                                                               #
+    # Please contact me via reddit for questions or requests. if    #
+    # you would like to donate to my work, checkout my paypal.      #
+    #                                                               #
+    # This program is not for sale, if someone charged you for it,  #
+    # you've been ripped off.                                       #
+    #                                                               #
+    # This code was written for the Healsluts community. If you     #
+    # like what you see, check them out at r/healsluts              #
+    #                                                               #
+    #################################################################
+    #               use this line to compile the .exe               #
+    #   For me                                                      #
+    # pyinstaller -F --icon=ProgDeveloper\hs.ico HealslutMaster.py  #
+    #                                                               #
+    #   For you                                                     #
+    # pyinstaller -F HealslutMaster.py                              #
+    #                                                               #
+    #################################################################
+    #                                                               #
+    # https://lovense.com/developer/docs/session-control            #
+    # https://lovense.com/developer/docs/lan-connect-pc             #
+    #                                                               #
+    #################################################################
 	
 #go to to https://www.reddit.com/r/iateacrayon/wiki/list for images broad range of images
 #thanks to Lewd-Zko	(twitter.com/LewdZko) for the image of crystal which was modified and placed on the wordsearch page
@@ -175,7 +175,10 @@ class HealslutMaster(Frame):
 		
 		self.AllCharList = ['No Images']
 		self.hyp_folders = hyp_folders
-		self.hyp_gfile.set(hyp_folders[self.hyp_gfile_var])
+		try:
+			self.hyp_gfile.set(hyp_folders[self.hyp_gfile_var])
+		except IndexError:
+			self.hyp_gfile.set(hyp_folders[0])
 		self.conv_hyp_folders = hyp_folders
 		
 		self.textwdith = StringVar()
@@ -1219,58 +1222,58 @@ def do_request(url,delay=0):
 		pass
 	except Exception as e:
 		handleError(format_exc(2), e, 'do_request', subj='')
+# ########################################## #
+def center_window(root, width, height):
+	x = root.winfo_screenwidth() - width
+	y = (root.winfo_screenheight() / 2) - (height / 2)
+	root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+def GenFolders(foundimage=False):
+	hyp_folders = glob('Resources\\Images/*/', recursive=True)
+	if len(hyp_folders) == 0: 
+		hyp_folders.append('No .png files found')
+	else:
+		hyp_folders.append('All')
+	return hyp_folders
+def genuserinfo():
+	try:
+		with open('Resources\\Cam Info.txt', 'r') as f:
+			return f.readlines()
+	except FileNotFoundError:
+		return ['myemail@gmail.com','mypassword','0']
+def GenBackgroundList(BGPath = 'Resources\\Background Gif original\\'):
+	bglist = []
+	for item in glob(BGPath+'*.gif', recursive=True):
+		bglist.append(item.replace(BGPath,''))
+	return bglist
+def genuserpref():
+	try:
+		with open('Resources\\Preferences.txt', 'r') as f:
+			lines = f.read().split('\n')
+		prefdict = {}
+		for line in lines:
+			key, sep, value = line.partition(':')
+			prefdict[key] = value
+	except FileNotFoundError:
+		prefdict = PREFDICT_PRESET
+	return prefdict
+def VersionCheck():
+	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
+	print('Version number:',Version)
+	try:
+		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
+		source = urlopen(url).read()
+		soup = BeautifulSoup(source,'lxml')
+		for t in soup.html.find_all('ul', attrs={'class':'d-none d-md-block mt-2 list-style-none'}):
+			NewestRelease = t.find_next('a').get('title')
+			break
+		if not NewestRelease == Version:
+			print('A new version is available! Visit:', url)
+		else:
+			print('Your version is up to date')
+	except Exception as e:
+		print('Error connecting to Github, automatic verison check failed.')
 
 def go():
-	def center_window(root, width, height):
-		x = root.winfo_screenwidth() - width
-		y = (root.winfo_screenheight() / 2) - (height / 2)
-		root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-	def GenFolders(foundimage=False):
-		hyp_folders = glob('Resources\\Images/*/', recursive=True)
-		if len(hyp_folders) == 0: 
-			hyp_folders.append('No .png files found')
-		else:
-			hyp_folders.append('All')
-		return hyp_folders
-	def genuserinfo():
-		try:
-			with open('Resources\\Cam Info.txt', 'r') as f:
-				return f.readlines()
-		except FileNotFoundError:
-			return ['myemail@gmail.com','mypassword','0']
-	def GenBackgroundList(BGPath = 'Resources\\Background Gif original\\'):
-		bglist = []
-		for item in glob(BGPath+'*.gif', recursive=True):
-			bglist.append(item.replace(BGPath,''))
-		return bglist
-	def genuserpref():
-		try:
-			with open('Resources\\Preferences.txt', 'r') as f:
-				lines = f.read().split('\n')
-			prefdict = {}
-			for line in lines:
-				key, sep, value = line.partition(':')
-				prefdict[key] = value
-		except FileNotFoundError:
-			prefdict = PREFDICT_PRESET
-		return prefdict
-	def VersionCheck():
-		print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
-		print('Version number:',Version)
-		try:
-			url = 'https://github.com/ugraveknight/Healslut-Master/releases'
-			source = urlopen(url).read()
-			soup = BeautifulSoup(source,'lxml')
-			for t in soup.html.find_all('ul', attrs={'class':'d-none d-md-block mt-2 list-style-none'}):
-				NewestRelease = t.find_next('a').get('title')
-				break
-			if not NewestRelease == Version:
-				print('A new version is available! Visit:', url)
-			else:
-				print('Your version is up to date')
-		except Exception as e:
-			print('Error connecting to Github, automatic verison check failed.')
-	# ############################################### #	
 	try:
 		VersionCheck()
 		ShowWindow(GetForegroundWindow(), SW_MINIMIZE)
