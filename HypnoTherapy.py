@@ -12,6 +12,7 @@ from os import path
 from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
 from mutagen.mp3 import MP3
+from traceback import format_exc
 
 from Banner import create_banner
 from HealslutPackages import *
@@ -68,7 +69,7 @@ class Hypnotherapy(Frame):
 			self.build_ports()
 			
 			self.build_rules()
-			self.SetUpText()
+			self.PrepBanner()
 			self.pinup()
 			self.setup_text()
 			self.updategif()
@@ -85,12 +86,9 @@ class Hypnotherapy(Frame):
 		self.y_upr = int(self.screenheight*.33)
 		self.y_low = int(self.screenheight*.66)
 		
-		self.bg = Canvas(self, highlightthickness=0)
-		self.fg_x = self.screenwidth/2
-		self.fg_y = self.screenheight/2
-		
+		self.bg = Canvas(self,width=self.screenwidth,height=self.screenheight, highlightthickness=0)
 		if self.enable_hypno >= 1:
-			self.bg.gif_create = self.bg.create_image(self.fg_x, self.fg_y, image='')
+			self.bg.gif_create = self.bg.create_image(self.screenwidth/2,self.screenheight/2,image='')
 		else:
 			self.bg.config(bg=TRANS_CLR)
 		self.bg.pack(fill=BOTH, expand=YES)
@@ -103,16 +101,9 @@ class Hypnotherapy(Frame):
 	def build_ports(self):
 		self.master.wm_attributes("-transparentcolor", TRANS_CLR)
 		if self.game == 'OW':
-			self.bg.left_port = Canvas(self.bg, bg=TRANS_CLR, width=650, height=200,
-								highlightthickness=0)
-			self.bg.left_port.place(relx=0, rely=1, anchor=SW)
-			
-			self.bg.Killfeed_port = Canvas(self.bg, bg=TRANS_CLR, width=800, height=800,
-								highlightthickness=0)
-			self.bg.Killfeed_port.place(relx=.75, rely=.25, anchor=SW)
-			
-		self.bg.right_port = Canvas(self.bg, bg=TRANS_CLR, width=50, height=270,
-								highlightthickness=0)
+			Canvas(self.bg,bg=TRANS_CLR,width=650,height=200,highlightthickness=0).place(relx=0, rely=1, anchor=SW)
+			Canvas(self.bg,bg=TRANS_CLR,width=800,height=800,highlightthickness=0).place(relx=.75, rely=.25, anchor=SW)
+		self.bg.right_port = Canvas(self.bg,bg=TRANS_CLR,width=50,height=270,highlightthickness=0)
 		self.bg.right_port.place(relx=1, rely=.5, anchor=E)	
 
 	def build_rules(self):
@@ -142,10 +133,40 @@ class Hypnotherapy(Frame):
 		self.RgtTextC = self.bg.create_text(0, 0, text='')
 				
 		if self.display_rules == 1:
-			self.bg.create_text(0, self.y_cen, text=self.output, font=("Impact", self.fontsize), fill='hot pink',
-						justify=LEFT, anchor=W)
+			self.bg.create_text(0,self.y_cen,text=self.output,font=("Impact",self.fontsize),fill='hot pink',justify=LEFT,anchor=W)
 		self.slides()
 
+	def PrepBanner(self):
+		try:
+			with open('Resources\\Text\\Humiliation.txt', 'r') as f:
+				self.humiliation = f.readlines()
+			self.color_list = []
+			with open('Resources\\Text\\Text Colors.txt', 'r') as f:
+				colors = f.readlines()
+				for line in colors:
+					self.color_list.append(line.strip('\n'))
+			#if self.homework == 'Banner': # or any other reason to launch...
+				dom = self.prefer_dom
+				sub = self.prefer_sub
+				delay = self.delay
+				humiliation = self.humiliation
+				banwords = self.banwords
+				color_list = self.color_list
+				wordcount = self.wordcount
+				tranbanr = self.tranbanr
+				homework = self.homework
+				output = self.output
+				fontsize = self.fontsize
+				display_rules = self.display_rules
+				c_images, self.p_images = Pipe()
+				c_hypno = self.c_hypno
+				Thread(target=create_banner, args=(delay,dom,sub,humiliation,
+								color_list,banwords,wordcount,tranbanr,homework,
+								output,display_rules,fontsize,c_images,self.c_txt,
+								c_hypno)).start()
+		except Exception as e:
+			handleError(format_exc(2), e, 'PrepBanner', subj='')
+			
 	def setaudioloop(self):
 		if not self.loopingAudio == 0:
 			self.audiolist = glob('Resources/Tracks/*.mp3', recursive=True)
@@ -182,37 +203,6 @@ class Hypnotherapy(Frame):
 		except Exception as e:
 			handleError(format_exc(2), e, 'pinup', subj='')
 	
-	def SetUpText(self):
-		try:
-			with open('Resources\\Text\\Humiliation.txt', 'r') as f:
-				self.humiliation = f.readlines()
-			self.color_list = []
-			with open('Resources\\Text\\Text Colors.txt', 'r') as f:
-				colors = f.readlines()
-				for line in colors:
-					self.color_list.append(line.strip('\n'))
-			#if self.homework == 'Banner': # or any other reason to launch...
-				dom = self.prefer_dom
-				sub = self.prefer_sub
-				delay = self.delay
-				humiliation = self.humiliation
-				banwords = self.banwords
-				color_list = self.color_list
-				wordcount = self.wordcount
-				tranbanr = self.tranbanr
-				homework = self.homework
-				output = self.output
-				fontsize = self.fontsize
-				display_rules = self.display_rules
-				c_images, self.p_images = Pipe()
-				c_hypno = self.c_hypno
-				Thread(target=create_banner, args=(delay,dom,sub,humiliation,
-								color_list,banwords,wordcount,tranbanr,homework,
-								output,display_rules,fontsize,c_images,self.c_txt,
-								c_hypno)).start()
-		except Exception as e:
-			handleError(format_exc(2), e, 'SetUpText', subj='')
-			
 	def slides(self):
 		try:
 			if self.c_hypno.poll() == True:
@@ -556,31 +546,6 @@ def GenHomework(homework,DoingHW,NxtHWTime,HWRemain):
 	if   HWRemain > 20: HWRemain = 20  
 	elif HWRemain < 1 : HWRemain = 0
 	return DoingHW,NxtHWTime,HWRemain
-		
-def set_written_line(humiliation, dom='Female', sub='Girl'):
-	try:
-		line=(choice(humiliation)).strip('\n')
-		if line == '': 
-			line='i love being a healslut'
-		if '99' in line:
-			gendervar = randint(1,2) if dom == 'None' else 0
-			if dom == 'Male' or gendervar == 1:
-				ReplaceList = ['masters','master','his','his','sir','cocks','cock']
-			elif dom == 'Female' or gendervar == 2:
-				ReplaceList = ['mistresses','mistress','hers','her','miss','pussies','pussy']
-			BaseList = ['m99s','m99','s99s','s99','n99','p99s','p99']
-			for i in range(0,len(BaseList)):
-				line = line.replace(BaseList[i], ReplaceList[i])
-		if '00' in line:
-			if   sub == 'Sub' : ReplaceList = ['sub','parts','part']
-			elif sub == 'Boy' : ReplaceList = ['boy','balls','dick']
-			elif sub == 'Girl': ReplaceList = ['girl','tits','cunt']
-			BaseList = ['m00','p00s','p00']
-			for i in range(0,len(BaseList)):
-				line = line.replace(BaseList[i], ReplaceList[i])
-		return line	
-	except Exception as e:
-		handleError(format_exc(2), e, 'set_written_line', subj='')
 
 def GenImageFiles(globfile,pinup):
 	if pinup == 1:
