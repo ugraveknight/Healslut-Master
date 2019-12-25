@@ -1,21 +1,22 @@
-	#######################  Info  ###########################
-	#							 #
-	# 		Created by u/Graveknight1		 #
-	#							 #
-	# Please contact me via reddit for questions or requests #
-	# If you would like to donate to my work, feel free to   #
-	# reach out.						 #
-	#							 #
-	# This program is not for sale, if someone charged you	 #
-	# for it, you've been ripped off.			 #
-	#							 #
-	# This code was written for the Healsluts community	 #
-	# If you like what you see, check them out at 		 #
-	# r/healsluts						 #
-	#							 #
-	##########################################################
-	
-	###################### Instructions #####################
+    #######################  Info  ###########################
+    #                                                        #
+    #                Created by u/Graveknight1               #
+    #                                                        #
+    # Please contact me via reddit for questions or requests #
+    # If you would like to donate to my work, feel free to   #
+    # reach out.                                             #
+    #                                                        #
+    # This program is not for sale, if someone charged you   #
+    # for it, you've been ripped off.                        #
+    #                                                        #
+    #   This code was written for the Healsluts community    #
+    #   If you like what you see, check them out at          #
+    #   r/healsluts                                          #
+    #                                                        #
+    ##########################################################
+    
+    ###################### Instructions #####################
+
 
 I made this program so that all people could enjoy the healslut kink even when they
 may not be able to coordinate with a partner. 
@@ -334,6 +335,31 @@ feedback.
 
 	####################### Change Log #######################
 
+Version 1.4.3
+		--- Menu Functions
+	-	Fixed compadibility on 1366x768 monitors. Killfeed Functionality is not yet 
+		supported for this monitor szie
+	- 	Changed global transparent color to #f7e9f1, a light pink, which should mitigate 
+		the cases where a pinup becomes completely transparent
+	-	Retooled the setting Image Flash Delay into Cycle Delay, which now acts more 
+		consistantly with its name
+	-	The Convert Images function will now resize images too large to be displayed
+		on your screen. It may a take a while to run thought
+	-	Rebuilt the settings menu to organize all of the hodge-podge features ive added
+		on this last year. My hope is that this will help me build more consistant 
+		features in the future
+	-	Refactored a bunch of old code so that it is more easliy maintanable and easier
+		to look at
+	-	Fixed an issue where Write for me lines would exceed the lengh of the box that
+		they are displayed within
+		
+Version 1.4.2
+		--- Menu Functions
+	-	Fix to enable Killfeed Functionality on 1920x1080 Monitors
+
+Version 1.4.1
+		--- Menu Functions
+	-	Fixed an incompatibility issue with monitors shorter than 1440 pixels
 
 Version 1.4
 		--- Menu Functions
@@ -438,23 +464,24 @@ Version 1.0
 
 	######################## Forecast ########################
 
+Soon I intend to implement spoken lines from the users
+
 I will work to enable the use of more vibrator brands. This will take time but I believe
 it will be worth it
-
-I would like to make a function that tracks teammate deaths and leverages 
-them against the user for things like the above-mentioned writing game or 
-a temporary speed decrease.
 
 The program is pretty well optimized, but on slower computers a longer delay 
 between screenshots could be used.
 
-I'd like to provide a menu selector for download soundgasm files and iateacrayon/wiki/list pics
-
+I'd like to provide a menu selector for download soundgasm files
 
 	######################## Credits ########################
 
-Lewd-Zko (twitter.com/LewdZko) for the image of their OC crystal which was modified and placed on the wordsearch page
-u/iateacrayon for their wiki/list of all those fetishes
+Lewd-Zko 	(twitter.com/LewdZko) 
+	- for the image of their OC crystal which was modified and placed on the wordsearch page
+u/iateacrayon 	(https://www.reddit.com/r/iateacrayon/wiki/list)
+	- for their wiki/list of all those fetishes
+this-is-embarrassing 	(https://github.com/this-is-embarrassing)
+	- did some sexy jazz to the code, much sharper now.
 
 And you, the user. <3
 
