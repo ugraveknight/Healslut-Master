@@ -1,0 +1,206 @@
+from tkinter import *
+from random import choice, randint
+from time import time
+from traceback import format_exc
+
+from HealslutPackages import *
+
+class Banner(Frame):
+	def __init__(self, master, delay, dom, sub, humiliation, color_list, 
+					banwords, wordcount, tranbanr, homework, output, 
+					display_rules, fontsize, c_images, c_txt, c_hypno, *pargs):
+		try:
+			self.master = master
+			self.screenwidth = self.master.winfo_screenwidth()
+			self.screenheight = self.master.winfo_screenheight()
+			self.delay = delay
+			self.dom = dom
+			self.sub = sub
+			self.humiliation = humiliation
+			self.color_list = color_list
+			self.banwords = banwords
+			self.wordcount = wordcount
+			self.tranbanr = tranbanr
+			self.output = output
+			self.display_rules = display_rules
+			self.fontsize = fontsize
+			self.c_images = c_images
+			self.c_txt = c_txt
+			self.c_hypno = c_hypno
+			self.banner_var = 4		
+			self.freshtext = False
+			self.endtime = time()
+			self.master.wm_attributes("-topmost", 1)
+			self.master.wm_attributes("-transparentcolor", "#000000")
+			self.screen_width = self.screenwidth
+			self.screen_height = self.screenheight
+			self.master.geometry('%dx%d+%d+%d' % (self.screen_width, self.screen_height, 0, 0))
+			self.master.overrideredirect(1)
+			self.banner = Canvas(self.master, bg='#000000', width=495, height=200,
+									highlightthickness=0)
+			self.banner.pack(fill=BOTH, expand=YES)
+			self.tmp_banner = self.banner.create_text(0, 0, text='')
+			self.maintext = self.banner.create_text(0, 0, text='')
+			if self.tranbanr == 1:
+				self.master.attributes('-alpha', .5)
+			if self.display_rules == 2:
+				self.banner.create_text(0, self.screen_height/2, text=self.output, font=("Impact", self.fontsize), 
+							fill='hot pink',justify=LEFT, anchor=W)
+			if self.banwords == 0:
+				with open('Resources\\Text\\Healslut Adjectives.txt', 'r') as a:
+					self.alines=a.readlines()
+				with open('Resources\\Text\\Healslut Subjects.txt', 'r') as s:
+					self.slines=s.readlines()
+					
+				self.TopTextA = self.banner.create_text(0, 0, text='')
+				self.TopTextB = self.banner.create_text(0, 0, text='')
+				self.TopTextC = self.banner.create_text(0, 0, text='')
+				self.BotTextA = self.banner.create_text(0, 0, text='')
+				self.BotTextB = self.banner.create_text(0, 0, text='')
+				self.BotTextC = self.banner.create_text(0, 0, text='')
+				self.LefTextA = self.banner.create_text(0, 0, text='')
+				self.LefTextB = self.banner.create_text(0, 0, text='')
+				self.LefTextC = self.banner.create_text(0, 0, text='')
+				self.RgtTextA = self.banner.create_text(0, 0, text='')
+				self.RgtTextB = self.banner.create_text(0, 0, text='')
+				self.RgtTextC = self.banner.create_text(0, 0, text='')
+				
+				self.x_cen = int(self.screenwidth*.5)
+				self.x_lef = int(self.screenwidth*.4)
+				self.x_rgt = int(self.screenwidth*.6)
+				self.y_cen = int(self.screenheight*.5)
+				self.y_upr = int(self.screenheight*.33)
+				self.y_low = int(self.screenheight*.66)
+			self.run_banner()
+		except Exception as e:
+			handleError(format_exc(2), e, 'Banner', subj='')
+		
+	def run_banner(self):
+		try:
+			if self.c_hypno.poll() == True:
+				self.master.quit()
+			if self.c_images.poll() == True:
+				self.master.lift()
+				self.banner_var+=1
+				if self.banner_var >= 4:
+					self.written_line = set_written_line(self.humiliation, self.dom, self.sub)
+					self.banner_var = 0
+					self.linecolor = choice(self.color_list)
+				self.banner.delete(self.tmp_banner)
+				self.tmp_banner = self.banner.create_text(self.screen_width/2, self.screen_height/1.3, 
+													text=self.written_line.upper(),anchor=CENTER,
+													font=("Impact", 44), fill=self.linecolor)
+			if self.banwords == 0:
+				self.master.lift()
+				self.maintext_var = True
+				self.update_text()
+				self.master.after(int(self.delay/2), self.update_text)
+			if self.c_txt.poll() == True:
+				pipetext = self.c_txt.recv()
+				text_count, sep, self.mytext = pipetext.partition(' ')
+				self.endtime = time()+int(text_count)
+				self.master.attributes('-alpha', 1)	
+				self.freshtext = True
+			if time() < self.endtime:
+				self.linecolor = choice(self.color_list)
+				self.banner.delete(self.maintext)
+				self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, 
+													text=self.mytext,anchor=CENTER,
+													font=("Impact", 50), fill=self.linecolor)
+			elif self.freshtext == True:
+				self.freshtext = False
+				if self.tranbanr == 1:
+					self.master.attributes('-alpha', .5)
+				self.banner.delete(self.maintext)
+				self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, 
+													text=' ')
+		except Exception as e:
+			handleError(format_exc(2), e, 'run_banner', subj='')
+		self.master.after(self.delay, self.run_banner)
+		
+		
+	def GenColor(self): return choice(self.color_list)
+	def update_text(self):
+		try:
+			if self.wordcount > 0:
+				if self.maintext_var == True:
+					colorx1 = self.GenColor()
+					adjx1 = choice(self.alines).upper()
+					subx1 = choice(self.slines).upper()	
+					
+					self.banner.delete(self.TopTextA)
+					self.banner.delete(self.BotTextA)
+					self.TopTextA = self.banner.create_text(self.x_cen,self.y_upr,text=adjx1,font=FONT0,fill=colorx1,justify=CENTER)
+					self.BotTextA = self.banner.create_text(self.x_cen,self.y_low,text=subx1,font=FONT0,fill=colorx1,justify=CENTER)
+				if self.wordcount > 1:				# L+R words	
+					lx = float(randint(int(self.x_lef*.9),int(self.x_lef*1.1)))
+					ly = float(randint(int(self.y_cen*.9),int(self.y_cen*1.1)))
+					rx = float(randint(int(self.x_rgt*.9),int(self.x_rgt*1.1)))
+					ry = float(randint(int(self.y_cen*.9),int(self.y_cen*1.1)))
+					colory1 = self.GenColor()	
+					adjy1 = choice(self.alines).upper()
+					suby1 = choice(self.slines).upper()
+					
+					self.banner.delete(self.RgtTextA)
+					self.banner.delete(self.LefTextA)
+					self.LefTextA = self.banner.create_text(lx, ly,text=adjy1,font=FONT1,fill=colory1,justify=CENTER)
+					self.RgtTextA = self.banner.create_text(rx, ry,text=suby1,font=FONT1,fill=colory1,justify=CENTER)
+				if self.wordcount > 2:				#T+B extra words	
+					colorx2 = self.GenColor()
+					colorx3 = self.GenColor()
+					adjx2 = choice(self.alines).upper()
+					subx2 = choice(self.slines).upper()
+					adjx3 = choice(self.alines).upper()
+					subx3 = choice(self.slines).upper()
+					
+					self.banner.delete(self.TopTextB)
+					self.banner.delete(self.TopTextC)
+					self.banner.delete(self.BotTextB)
+					self.banner.delete(self.BotTextC)						
+					Top_offset = self.x_cen+randint(-30,30)
+					self.TopTextB = self.banner.create_text(Top_offset   ,self.y_upr-68,text=adjx2,font=FONT2,fill=colorx2,justify=CENTER)
+					self.TopTextC = self.banner.create_text(Top_offset*-1,self.y_upr+20,text=subx2,font=FONT2,fill=colorx2,justify=CENTER)
+					self.BotTextB = self.banner.create_text(Top_offset   ,self.y_low+-68,text=adjx3,font=FONT2,fill=colorx3,justify=CENTER)
+					self.BotTextC = self.banner.create_text(Top_offset*-1,self.y_low+20,text=subx3,font=FONT2,fill=colorx3,justify=CENTER)	
+				if self.wordcount > 3:			#L+R extra words
+					colory2 = self.GenColor()
+					colory3 = self.GenColor()
+					adjy2 = choice(self.alines).upper()
+					suby2 = choice(self.slines).upper()
+					adjy3 = choice(self.alines).upper()
+					suby3 = choice(self.slines).upper()
+					
+					self.banner.delete(self.RgtTextB)
+					self.banner.delete(self.RgtTextC)
+					self.banner.delete(self.LefTextB)
+					self.banner.delete(self.LefTextC)
+					Lef_offset = lx+randint(-30,30)
+					Rgt_offset = rx+randint(-30,30)
+					self.RgtTextB = self.banner.create_text(Rgt_offset   ,ry-45,text=adjy3,font=FONT3,fill=colory3,justify=CENTER)
+					self.RgtTextC = self.banner.create_text(Rgt_offset*-1,ry+18,text=suby3,font=FONT3,fill=colory3,justify=CENTER)
+					self.LefTextB = self.banner.create_text(Lef_offset   ,ly-45,text=adjy2,font=FONT3,fill=colory2,justify=CENTER)
+					self.LefTextC = self.banner.create_text(Lef_offset*-1,ly+18,text=suby2,font=FONT3,fill=colory2,justify=CENTER)
+				if not self.wordcount == 5:
+					self.maintext_var = False	
+		except Exception as e:
+			handleError(format_exc(2), e, 'banner.update_text', subj='')
+
+def create_banner(delay,dom,sub,humiliation,color_list,banwords,
+						wordcount,tranbanr,homework,output,
+						display_rules,fontsize,c_images,c_txt,c_hypno):
+	try:
+		root = Tk()
+		width = root.winfo_screenwidth()
+		height = root.winfo_screenheight()
+		root.geometry('%dx%d' % (width, height))
+		root.configure(background="#000000")
+		root.title("Healslut Banner")
+		root.wm_attributes("-topmost", 1)
+		set_clickthrough('Healslut Banner')
+		root.attributes('-alpha', 1)
+		e = Banner(root,delay,dom,sub,humiliation,color_list,
+					banwords,wordcount,tranbanr,homework,output,
+					display_rules,fontsize,c_images,c_txt,c_hypno)
+		root.mainloop()
+	except Exception as e:
+		handleError(format_exc(2), e, 'create_banner', subj='')
