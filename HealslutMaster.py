@@ -1,11 +1,6 @@
-import HypnoTherapy
-import OverwatchVibe
-import KillfeedMonitor
-import WordSearch
-
 from tkinter import *
 from tkinter.ttk import Notebook
-from win32gui import FindWindow, GetForegroundWindow, ShowWindow, SetWindowLong
+from win32gui import GetForegroundWindow, ShowWindow
 from win32con import SW_MINIMIZE
 from PIL import Image, ImageTk
 from itertools import cycle
@@ -28,6 +23,12 @@ from requests import get, exceptions
 from cv2 import VideoCapture, imwrite
 from pyautogui import screenshot
 from random import choice, randint
+
+import HypnoTherapy
+import OverwatchVibe
+import KillfeedMonitor
+import WordSearch
+from HealslutPackages import *
 	
 	###########################  Info  ##############################
 	#																#
@@ -62,8 +63,34 @@ from random import choice, randint
 
 Version='v1.4.3'
 
-TRANS_CLR = '#f7e9f1'	#Haha, Pride!
-
+PREFDICT_PRESET = \
+	{
+	'hyp_delay':'500',
+	'hyp_game':'None',
+	'hyp_opacity':'3',
+	'hyp_homework':'Banner',
+	'hyp_words':'High',
+	'loopingAudio':'None',
+	'hyp_able':0,
+	'hyp_pinup':1,
+	's_playing':1,
+	'Freeplay':0,
+	'hyp_banword':1,
+	'hyp_tranbanr':1,
+	'display_rules':0,
+	'delold':1,
+	's_decay':'10',
+	's_decay_pow':'-3',
+	'hyp_dom':'Female',
+	'hyp_sub':'Girl',
+	'fontsize':'20',
+	'hyp_gfile_var':0,
+	'background_select_var':0,
+	's_rulename':'Verbal',
+	'sub':'Mercy',
+	'dom':'Roadhog'
+	}
+				
 class HealslutMaster(Frame):
 	def __init__(self,master,hyp_folders,userinfo,background_list,prefdict,*pargs):
 		Frame.__init__(self, master, *pargs)
@@ -75,10 +102,8 @@ class HealslutMaster(Frame):
 			self.SetupEmail(userinfo)
 			self.SetupMenu()
 			self.SavePref()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'healslutmaster.init', subj='')
+			handleError(format_exc(2), e, 'healslutmaster.init', subj='')
 	
 	def SetupVars(self,background_list,prefdict,hyp_folders):
 		self.p_hypno, self.c_hypno = Pipe()
@@ -142,7 +167,7 @@ class HealslutMaster(Frame):
 		self.Alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 		self.KillFeedPath = 'Resources\\Killfeed\\%sx%s\\Overwatch\\'%(self.screenwidth,self.screenheight)
 		self.convfolder = StringVar(self.master)
-		self.convfolder.set('')
+		self.convfolder.set('                                              ')
 		self.s_rulename = StringVar(self.master)
 		self.s_rulename.set(prefdict['s_rulename'])
 		self.hyp_gfile = StringVar(self.master)
@@ -238,10 +263,8 @@ class HealslutMaster(Frame):
 					self.rules_okay = False
 				if self.c_ow.poll() == False:
 					self.p_ow.send(True)
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'LaunchVibe', subj='')
+			handleError(format_exc(2), e, 'LaunchVibe', subj='')
 	
 	def GenKillfeedList(self):
 		l = glob(self.KillFeedPath+'*.png')
@@ -281,10 +304,8 @@ class HealslutMaster(Frame):
 				
 			if self.vibe == True:			
 				self.after(2000, self.vibeloop)
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'vibeloop', subj='')	
+			handleError(format_exc(2), e, 'vibeloop', subj='')	
 
 	def check_decay(self):
 		if not self.s_decay == '0' and time() > self.decaytimer:
@@ -363,10 +384,8 @@ class HealslutMaster(Frame):
 				if self.c_hypno.poll() == False:
 					self.p_hypno.send(True)
 				self.DestroyActions()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'launch_hypno', subj='')
+			handleError(format_exc(2), e, 'launch_hypno', subj='')
 			
 	def edit_hypno(self):
 		try:
@@ -429,11 +448,9 @@ class HealslutMaster(Frame):
 				for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 					Thread(target=do_request, args=(url,5)).start()
 				self.DestroyActions()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'edit_hypno', subj='')
-
+			handleError(format_exc(2), e, 'edit_hypno', subj='')
+		
 	def SetupTab1(self):
 			# #Handle Gif# #
 		self.handlegif = Canvas(self.tab1, bg='gray50',width=250, height=300)
@@ -457,11 +474,11 @@ class HealslutMaster(Frame):
 		Button(self.bggif, text="Format Gifs", command=self.buildgifs).grid(row=1,column=2)
 			# ############ #
 			#  Convert png #
-		self.bgConvert = Label(self.tab1, bg='gray50')
+		self.bgConvert = Label(self.tab1, bg='gray50',width=30,height=4)
 		self.bgConvert.place(x=500,y=240)
-		Button(self.bgConvert, text="Convert jpg to png", command=self.handleimage).grid(row=0, column=0, sticky=W+E)
-		Checkbutton(self.bgConvert, text="Delete jpgs", variable=self.delold).grid(row=0, column=1, sticky=E)
-		OptionMenu(self.bgConvert, self.convfolder, *self.conv_hyp_folders).grid(row=1,column=0, columnspan=3, sticky=E+W)
+		Button(self.bgConvert, text="Convert jpg to png", command=self.handleimage).place(x=1,y=1)
+		Checkbutton(self.bgConvert, text="Delete jpgs", variable=self.delold).place(x=138,y=2)
+		OptionMenu(self.bgConvert, self.convfolder, *self.conv_hyp_folders).place(x=1,y=35)
 			# ############ #
 		Message(self.tab1, text='Overlay Opacity').place(x=300,y=25)
 		Message(self.tab1, text='Cycle Delay').place(x=300,y=75)
@@ -472,7 +489,8 @@ class HealslutMaster(Frame):
 		Radiobutton(self.tab1, text="None", variable=self.hyp_able,value=0).place(x=300,y=200)
 		Radiobutton(self.tab1, text="Hypno Background", variable=self.hyp_able,value=1).place(x=300,y=225)
 		Radiobutton(self.tab1, text="Turbo Hypno", variable=self.hyp_able,value=2).place(x=300,y=250)
-		Checkbutton(self.tab1, text="Enable Pinups", variable=self.hyp_pinup).place(x=300,y=275)
+		self.EnablePinups = Checkbutton(self.tab1, text="Enable Pinups", variable=self.hyp_pinup)
+		self.EnablePinups.place(x=300,y=275)
 	
 	def SetupTab2(self):
 		owlvl = 250
@@ -498,8 +516,8 @@ class HealslutMaster(Frame):
 	def SetupTab3(self):
 		Message(self.tab3, text='Dom Gender').place(x=25,y=20)
 		Message(self.tab3, text='Self Gender').place(x=25,y=70)
-		Message(self.tab3, text='Word Count').place(x=25,y=120)
-		Message(self.tab3, text='Write For Me').place(x=25,y=170)
+		Message(self.tab3, text='Write For Me').place(x=25,y=120)
+		Message(self.tab3, text='Word Count').place(x=25,y=170)
 		Message(self.tab3, text='Looping Audio').place(x=25,y=220)
 		Message(self.tab3, text='Speed Decay Timer').place(x=350,y=20)
 		Message(self.tab3, text='Speed Decay Strengh').place(x=350,y=70)
@@ -525,10 +543,15 @@ class HealslutMaster(Frame):
 			self.gifcyclist.append(ImageTk.PhotoImage(Image.open(myimage).resize((250, 250), Image.LANCZOS)))
 		self.gifcycle = cycle(self.gifcyclist)
 		
-	def updategif(self):
+	def updategif(self):	#only for edit menu
 		try:
 			if self.editting == True:
 				self.gifcanvas.itemconfig(self.gifpreview, image=next(self.gifcycle))
+				if self.hyp_able.get() == 2:
+					self.hyp_pinup.set(0)
+					self.EnablePinups.configure(state=DISABLED)
+				else:
+					self.EnablePinups.configure(state=NORMAL)
 				self.after(25, self.updategif)
 		except Exception:
 			pass
@@ -537,10 +560,8 @@ class HealslutMaster(Frame):
 		try:
 			self.editting = False
 			self.top.destroy()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'end_edit', subj='')
+			handleError(format_exc(2), e, 'end_edit', subj='')
 	
 	def handleimage(self):
 		folder = self.convfolder.get()
@@ -654,10 +675,8 @@ class HealslutMaster(Frame):
 					self.top.destroy()
 				except AttributeError:
 					pass
-			except KeyboardInterrupt:
-				pass
 			except Exception as e:
-				tb = format_exc(2);handleError(tb, e, 'shutdown', subj='')
+				handleError(format_exc(2), e, 'shutdown', subj='')
 		
 	#########################
 	# Begin Buttons Manager #
@@ -838,10 +857,8 @@ class HealslutMaster(Frame):
 						self.CheckForPictue(line)
 				self.rules_okay = True
 				self.setup_menu_actions()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'establish_rules', subj='')
+			handleError(format_exc(2), e, 'establish_rules', subj='')
 			
 	def CheckForPictue(self,line):
 		if '$picture' in line:
@@ -869,10 +886,8 @@ class HealslutMaster(Frame):
 			w.configure(state="disabled")
 			b = Button(self.win, text="I've done it, please dont show this again.", command=self.record_secure)
 			b.pack()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'popup_bonus', subj='')
+			handleError(format_exc(2), e, 'popup_bonus', subj='')
 
 	def record_secure(self):
 		with open('Resources\\Cam Info.txt', 'w') as f:
@@ -1006,11 +1021,8 @@ class HealslutMaster(Frame):
 				self.WordSearchSavedCords=SavedCords
 				self.WordList=WordList
 				break
-				
-			except KeyboardInterrupt:
-				pass
 			except Exception as e:
-				tb = format_exc(2);handleError(tb, e, 'WordSearchFrame', subj='')
+				handleError(format_exc(2), e, 'WordSearchFrame', subj='')
 		self.after(15000, self.ScrambleGrid)
 		
 	def ScrambleGrid(self):
@@ -1029,13 +1041,11 @@ class HealslutMaster(Frame):
 				line = str(cyc).split(',')
 				for macro in line:
 					self.do_macro(macro)
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
 			try:
-				tb = format_exc(2);handleError(tb, e, 'HandleCycles', subj=[k for k,v in locals().items() if v == mycycle][0])
+				handleError(format_exc(2), e, 'HandleCycles', subj=[k for k,v in locals().items() if v == mycycle][0])
 			except Exception as e:
-				tb = format_exc(2);handleError(tb, e, 'DumbCyclesString', subj='Failed to iterate locals')
+				handleError(format_exc(2), e, 'DumbCyclesString', subj='Failed to iterate locals')
 
 	def DestroyActions(self):	#self.DestroyActions()
 		self.ActionMenuOpen = False
@@ -1053,10 +1063,6 @@ class HealslutMaster(Frame):
 		except AttributeError:
 			pass
 	
-	
-	
-	
-
 class StartHypnoProcess(Process):
 	def __init__(self, delay,opacity,game,
 						homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
@@ -1089,10 +1095,8 @@ class StartHypnoProcess(Process):
 
 			Process.__init__(self)
 			self.start()
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'StartHypnoProcess.init', subj='')
+			handleError(format_exc(2), e, 'StartHypnoProcess.init', subj='')
 			
 	def run(self):
 		try:
@@ -1100,11 +1104,8 @@ class StartHypnoProcess(Process):
 				self.homework,self.wordcount,self.hypno,self.dom,self.sub,self.pinup,self.banwords,self.tranbanr,
 				self.globfile,self.s_rulename,self.fontsize,self.display_rules,self.loopingAudio,self.gifset,
 				self.c_rules,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_hypno)
-		except KeyboardInterrupt:
-			pass
 		except Exception as e:
-			tb = format_exc(2);handleError(tb, e, 'StartHypnoProcess.run', subj='')
-
+			handleError(format_exc(2), e, 'StartHypnoProcess.run', subj='')
 
 # ##################################
 ## ##################################
@@ -1112,6 +1113,23 @@ class StartHypnoProcess(Process):
 ## ##################################
 
 def convertimage(folder, DelOld, screenwidth, screenheight):
+	def ResizeImg(img,name,screenwidth,screenheight):
+		POS = .9 #percent of screen
+		ImgW, ImgH = img.size	
+		fract = None
+		if ImgW > screenwidth -100:
+			fract = (ImgW - 100 - 3000 % screenwidth*POS)/ImgW 
+		elif ImgH > screenheight -100:
+			fract = (ImgW - 100 - 3000 % screenheight*POS)/ImgH 
+		if fract:
+			w = int(ImgW*fract)
+			h = int(ImgH*fract)
+			reimg = img.resize((w,h), Image.ANTIALIAS)
+			reimg.save(name+'.png', "PNG")
+			print('Resizing...')
+			return reimg
+		return img
+	# ####################### #
 	filelist = glob(folder+'*.jpg')+glob(folder+'*.png')
 	x=0
 	for file in filelist:
@@ -1131,41 +1149,56 @@ def convertimage(folder, DelOld, screenwidth, screenheight):
 			if '.jpg' in file:	
 				remove(file)
 
-def ResizeImg(img,name,screenwidth,screenheight):
-	ImgW, ImgH = img.size	
-	fract = None
-	if ImgW > screenwidth -100:
-		fract = (ImgW - 100 - 3000 % screenwidth)/ImgW 
-	elif ImgH > screenheight -100:
-		fract = (ImgW - 100 - 3000 % screenheight)/ImgH 
-	if fract:
-		w = int(ImgW*fract)
-		h = int(ImgH*fract)
-		reimg = img.resize((w,h), Image.ANTIALIAS)
-		reimg.save(name+'.png', "PNG")
-		return reimg
-	return img
 
 def GenWordSearchList(Difficulty):
-	if Difficulty=='MEDIUM':	WordCount = 20
-	elif Difficulty=='HARD':	WordCount = 28
-	else:						WordCount = 12
-	with open('Resources/Text/Healslut Adjectives.txt','r') as f:
-		alines = f.readlines()
-	with open('Resources/Text/Healslut Subjects.txt','r') as f:
-		blines = f.readlines()
-	totallines = alines+blines
-	WordList = []
-	for i in range(0,WordCount):
-		while True:
-			word = choice(totallines).replace('\n','').replace('-','').replace(' ','').upper()
-			if not word == '' and not word in WordList and not len(word) > 9:
-				WordList.append(word)
-				break
-	return WordList
-
+	try:
+		if Difficulty=='MEDIUM':	WordCount = 20
+		elif Difficulty=='HARD':	WordCount = 28
+		else:						WordCount = 12
+		with open('Resources/Text/Healslut Adjectives.txt','r') as f:
+			alines = f.readlines()
+		with open('Resources/Text/Healslut Subjects.txt','r') as f:
+			blines = f.readlines()
+		WordList = []
+		for i in range(0,WordCount):
+			while True:
+				word = choice(alines+blines).replace('\n','').replace('-','').replace(' ','').upper()
+				if not word == '' and not word in WordList and not len(word) > 9:
+					WordList.append(word)
+					break
+		return WordList
+	except Exception as e:
+		handleError(format_exc(2), e, 'GenWordSearchList', subj='')
 
 def take_pic(usermail, userpass, ToEmail):
+	def send_email(usermail, userpass, ToEmail):
+		print('sending email')
+		try:
+			ImgFileName ='Resources\Healslut.jpg'
+			img_data = open(ImgFileName, 'rb').read()
+			msg = MIMEMultipart()
+			msg['Subject'] = 'Pics'
+			msg['From'] = usermail
+			msg['To'] = ToEmail
+
+			text = MIMEText("test")
+			msg.attach(text)
+			image = MIMEImage(img_data, name=path.basename(ImgFileName))
+			msg.attach(image)
+
+			s = SMTP('smtp.gmail.com', 587)
+			s.ehlo()
+			s.starttls()
+			s.ehlo()
+			s.login(usermail, userpass)
+			s.sendmail(msg['From'], msg['To'], msg.as_string())
+			s.quit()
+			print('email sent')
+		except SMTPAuthenticationError:	
+			print('invalid username and pass')
+		except Exception as e:
+			thandleError(format_exc(2), e, 'send_email', subj='')
+	# ####################################### #
 	try:
 		cam = VideoCapture(0)
 		s, img = cam.read()
@@ -1175,185 +1208,80 @@ def take_pic(usermail, userpass, ToEmail):
 			remove("Resources\Healslut.jpg")
 		else:
 			print('No Video Found')
-	except KeyboardInterrupt:
-		pass
 	except Exception as e:
-		tb = format_exc(2);handleError(tb, e, 'take_pic', subj='')
+		handleError(format_exc(2), e, 'take_pic', subj='')
 	
-		
-def send_email(usermail, userpass, ToEmail):
-	print('sending email')
-	try:
-		ImgFileName ='Resources\Healslut.jpg'
-		img_data = open(ImgFileName, 'rb').read()
-		msg = MIMEMultipart()
-		msg['Subject'] = 'Pics'
-		msg['From'] = usermail
-		msg['To'] = ToEmail
-
-		text = MIMEText("test")
-		msg.attach(text)
-		image = MIMEImage(img_data, name=path.basename(ImgFileName))
-		msg.attach(image)
-
-		s = SMTP('smtp.gmail.com', 587)
-		s.ehlo()
-		s.starttls()
-		s.ehlo()
-		s.login(usermail, userpass)
-		s.sendmail(msg['From'], msg['To'], msg.as_string())
-		s.quit()
-		print('email sent')
-	except SMTPAuthenticationError:	
-		print('invalid username and pass')		
-	except KeyboardInterrupt:
-		pass
-	except Exception as e:
-		tb = format_exc(2);handleError(tb, e, 'send_email', subj='')
-			
 def do_request(url,delay=0):
 	sleep(delay)
 	try:
 		r = get(url)
 	except exceptions.ConnectionError:
 		pass
-	except KeyboardInterrupt:
-		pass
 	except Exception as e:
-		tb = format_exc(2);handleError(tb, e, 'do_request', subj='')
-	
-def center_window(root, width, height):
-	screenwidth = root.winfo_screenwidth()
-	screenheight = root.winfo_screenheight()
-	x = screenwidth - width
-	y = (screenheight / 2) - (height / 2)
-	root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-	
-def GenFolders():
-	foundimage=False
-	hyp_folders = []
-	for filename in iglob('Resources\\Images/*.png', recursive=True):
-		hyp_folders.append('Resources\\Images\\')
-		foundimage=True
-	for filename in iglob('Resources\\Images/*/', recursive=True):
-		hyp_folders.append(filename)
-		foundimage=True
-	if foundimage==False:
-		hyp_folders.append('No .png files found')
-	hyp_folders.append('All')
-	return hyp_folders
-	
-def genuserinfo():
-	try:
-		with open('Resources\\Cam Info.txt', 'r') as f:
-			userlines = f.readlines()
-			
-	except FileNotFoundError:
-		userlines=['myemail@gmail.com','mypassword','0']
-	return userlines	
-	
-def genuserpref():
-	try:
-		with open('Resources\\Preferences.txt', 'r') as f:
-			lines = f.readlines()
+		handleError(format_exc(2), e, 'do_request', subj='')
+
+def go():
+	def center_window(root, width, height):
+		x = root.winfo_screenwidth() - width
+		y = (root.winfo_screenheight() / 2) - (height / 2)
+		root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+	def GenFolders(foundimage=False):
+		hyp_folders = glob('Resources\\Images/*/', recursive=True)
+		if len(hyp_folders) == 0: 
+			hyp_folders.append('No .png files found')
+		else:
+			hyp_folders.append('All')
+		return hyp_folders
+	def genuserinfo():
+		try:
+			with open('Resources\\Cam Info.txt', 'r') as f:
+				return f.readlines()
+		except FileNotFoundError:
+			return ['myemail@gmail.com','mypassword','0']
+	def GenBackgroundList(BGPath = 'Resources\\Background Gif original\\'):
+		bglist = []
+		for item in glob(BGPath+'*.gif', recursive=True):
+			bglist.append(item.replace(BGPath,''))
+		return bglist
+	def genuserpref():
+		try:
+			with open('Resources\\Preferences.txt', 'r') as f:
+				lines = f.read().split('\n')
 			prefdict = {}
 			for line in lines:
-				line=line.replace('\n','')
 				key, sep, value = line.partition(':')
 				prefdict[key] = value
-	except FileNotFoundError:
-		prefdict = {
-			'hyp_delay':'500',
-			'hyp_game':'None',
-			'hyp_opacity':'3',
-			'hyp_homework':'Banner',
-			'hyp_words':'High',
-			'loopingAudio':'None',
-			'hyp_able':0,
-			'hyp_pinup':1,
-			's_playing':1,
-			'Freeplay':0,
-			'hyp_banword':1,
-			'hyp_tranbanr':1,
-			'display_rules':0,
-			'delold':1,
-			's_decay':'10',
-			's_decay_pow':'-3',
-			'hyp_dom':'Female',
-			'hyp_sub':'Girl',
-			'fontsize':'20',
-			'hyp_gfile_var':0,
-			'background_select_var':0,
-			's_rulename':'Verbal',
-			'sub':'Mercy',
-			'dom':'Roadhog'
-			
-			
-		}
-	return prefdict
-	
-def GenBackgroundList():
-	BGPath = 'Resources\\Background Gif original\\'
-	mylist = glob(BGPath+'*.gif', recursive=True)
-	background_list = []
-	for item in mylist:
-		background_list.append(item.replace(BGPath,''))
-	return background_list
-	
-def handleError(tb, e, func, subj=''):
-	try:
-		handlewriter(tb, e, func, subj='')
-	except Exception as e:
-		handlewriter(tb, e, 'handleError', subj='')
-
-def handlewriter(tb, e, func, subj):
-	e=str(e)
-	print(func+' Error '+e)
-	file = 'Resources\\Errors\\'+func+'.txt'
-	with open(file, 'a') as f:
-		f.write(tb+'\n'+subj)
-		
-def VersionCheck():
-	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
-	print('Version number:',Version)
-	try:
-		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
-		source = urlopen(url).read()
-		soup = BeautifulSoup(source,'lxml')
-		for t in soup.html.find_all('ul', attrs={'class':'d-none d-md-block mt-2 list-style-none'}):
-			NewestRelease = t.find_next('a').get('title')
-			break
-		if not NewestRelease == Version:
-			print('A new version is available! Visit:', url)
-		else:
-			print('Your version is up to date')
-	except Exception as e:
-		print('Error connecting to Github, automatic verison check failed.')
-			
-def go():
+		except FileNotFoundError:
+			prefdict = PREFDICT_PRESET
+		return prefdict
+	def VersionCheck():
+		print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
+		print('Version number:',Version)
+		try:
+			url = 'https://github.com/ugraveknight/Healslut-Master/releases'
+			source = urlopen(url).read()
+			soup = BeautifulSoup(source,'lxml')
+			for t in soup.html.find_all('ul', attrs={'class':'d-none d-md-block mt-2 list-style-none'}):
+				NewestRelease = t.find_next('a').get('title')
+				break
+			if not NewestRelease == Version:
+				print('A new version is available! Visit:', url)
+			else:
+				print('Your version is up to date')
+		except Exception as e:
+			print('Error connecting to Github, automatic verison check failed.')
+	# ############################################### #	
 	try:
 		VersionCheck()
-		hwnd = FindWindow(None, 'HealslutMaster.exe')
-		Minimize = GetForegroundWindow()
-		ShowWindow(Minimize, SW_MINIMIZE)
+		ShowWindow(GetForegroundWindow(), SW_MINIMIZE)
 		root = Tk()
 		center_window(root, 50, 275)
 		root.wm_attributes("-topmost", 1)
-		
-		hyp_folders = GenFolders()
-		userinfo = genuserinfo()
-		prefdict = genuserpref()
-		background_list = GenBackgroundList()
-		
-		e = HealslutMaster(root, hyp_folders, userinfo, background_list, prefdict)
-		print('Healslut Master is now live')
-		print()
+		e = HealslutMaster(root,  GenFolders(), genuserinfo(), GenBackgroundList(), genuserpref())
+		print('Healslut Master is now live \n')
 		root.mainloop()
-		
-	except KeyboardInterrupt:
-		pass
 	except Exception as e:
-		tb = format_exc(2);handleError(tb, e, 'healslutmaster.go', subj='')
+		handleError(format_exc(2), e, 'healslutmaster.go', subj='')
 		
 if __name__ == '__main__':
 	freeze_support()
