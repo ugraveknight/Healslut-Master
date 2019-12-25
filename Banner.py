@@ -195,8 +195,8 @@ def create_banner(delay,dom,sub,humiliation,color_list,banwords,
 		root.geometry('%dx%d' % (width, height))
 		root.configure(background="#000000")
 		root.title("Healslut Banner")
+		set_clickthrough("Healslut Banner")
 		root.wm_attributes("-topmost", 1)
-		set_clickthrough('Healslut Banner')
 		root.attributes('-alpha', 1)
 		e = Banner(root,delay,dom,sub,humiliation,color_list,
 					banwords,wordcount,tranbanr,homework,output,
