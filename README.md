@@ -352,6 +352,7 @@ Version 1.4.3
 		to look at
 	-	Fixed an issue where Write for me lines would exceed the lengh of the box that
 		they are displayed within
+	-	Added many more entries into the Humiliation.txt and Subject.txt files
 		
 Version 1.4.2
 		--- Menu Functions
