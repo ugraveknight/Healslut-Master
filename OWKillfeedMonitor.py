@@ -3,34 +3,22 @@ from glob import glob
 from itertools import cycle
 from time import sleep, time
 	
-def TreatSub(info,name,ListOfCycles,c_killfeed):
-	info_values = \
-	{
-		'SubDeath' : 0,
-		'DomDeath' : 1,
-		'TeamDeath': 2,
-		'Assist'   : 3,
-		'Kill'     : 4,
-	}
-	i = info_values.get(info, '')
-	try:
-		c_killfeed.send(next(ListOfCycles[i]))
-	except StopIteration:
-		pass
-
-def TrackDeath(name,TeamColor,Sub,Dom,ListOfCycles,c_killfeed):
+def TreatSub(info,name,c_killfeed):
+	c_killfeed.send(info)
+	
+def TrackDeath(name,TeamColor,Sub,Dom,c_killfeed):
 	print('Death:',TeamColor,name)
 	TreatStr = 'DomDeath'  if name == Dom.replace('Resources\\Killfeed\\Overwatch\\','').replace('.png','') and TeamColor == 'Blue' else \
 			   'SubDeath'  if name == Sub else \
 			   'TeamDeath' if TeamColor == 'Blue' else 'Kill'
-	print(TreatStr,TeamColor,name)
-	TreatSub(TreatStr,name,ListOfCycles,c_killfeed) if TreatStr != '' else 0
+	if TeamColor == 'Blue':
+		TreatSub(TreatStr,name,c_killfeed) if TreatStr != '' else 0
 	
 def GenTeamColor(im, x, y):
 	BorderRed,_,BorderBlue = im.getpixel((int(x), int(y)))
 	return 'Red' if BorderRed > BorderBlue else 'Blue'
 
-def Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,BorderPixels,Debug=False):
+def Main(im,Files,Sub,Dom,Cords,c_killfeed,KFPath,BorderPixels,Debug=False):
 	try:
 		newtime = time() if Debug==True else 0
 		for file in Files:
@@ -43,34 +31,18 @@ def Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,BorderPixels,Debu
 					if red > 250 and green > 245 and      blue > 240 or \
 					   red > 250 and green < 20  and 30 < blue < 50:
 						name = file.replace(KFPath,'').replace('.png','')
-						if TeamColor == 'Blue':
-							TrackDeath(name,TeamColor,Sub,Dom,ListOfCycles,c_killfeed)
+						TrackDeath(name,TeamColor,Sub,Dom,c_killfeed)
 				else:
 					TeamColor = GenTeamColor(im, x-BorderPixels[0], y)	#BorderPixels = 15 on 2560
 					name = file.replace(KFPath,'').replace('.png','')
-					print(Sub,name)
 					if Sub in name and TeamColor == 'Blue':
-						TreatSub('Assist',name,ListOfCycles,c_killfeed)
+						TreatSub('Assist',name,c_killfeed)
 	except KeyboardInterrupt:
 		pass
 
 ###########################################
 # ####################################### #
 ###########################################	
-
-def GenCycles():
-	GamesPath = 'Resources\\Healslut Games\\Overwatch '
-	with open(GamesPath+'DeathSub.txt', 'r') as f:
-		SubCycle = cycle(f.readlines())
-	with open(GamesPath+'DeathDom.txt', 'r') as f:
-		DomCycle = cycle(f.readlines())
-	with open(GamesPath+'DeathTeam.txt', 'r') as f:
-		TeamCycle = cycle(f.readlines())
-	with open(GamesPath+'DeathAssist.txt', 'r') as f:
-		AssistCycle = cycle(f.readlines())
-	with open(GamesPath+'DeathKill.txt', 'r') as f:
-		KillsCycle = cycle(f.readlines())
-	return [SubCycle,DomCycle,TeamCycle,AssistCycle,KillsCycle]
 
 def GenCords(self,screen_x=0,screen_y=0):	#Imported
 	screen_x = self.master.winfo_screenwidth() if screen_x == 0 else screen_x
@@ -94,18 +66,19 @@ def RunTest():	#Debug
 	import multiprocessing as mp
 	from pyautogui import screenshot
 	p_killfeed, c_killfeed = mp.Pipe()
-	ListOfCycles = GenCycles()
 	Cords, BorderPixels = GenCords('',1920,1080)
 	Freeplay=False
 	Sub = 'Mercy'
 	Dom = 'Ana'
-	KFPath = 'Resources\\Killfeed\\OW - 1920\\'
-	Files = glob(KFPath+'*.png') if Freeplay == True else \
-				[KFPath+Sub+'.png', KFPath+Dom+'.png']
+	KFPath = 'Resources\\Killfeed\\2560x1440\\Overwatch\\'
+	if Freeplay == True:
+		Files = glob(KFPath+'*.png')
+	else:
+		Files = [KFPath+Sub+'.png', KFPath+Dom+'.png']
 	while True:
 		sleep(5)
 		im = screenshot()
-		Main(im,Files,Sub,Dom,Cords,ListOfCycles,c_killfeed,KFPath,BorderPixels)
+		Main(im,Files,Sub,Dom,Cords,c_killfeed,KFPath,BorderPixels)
 		if p_killfeed.poll() == True:
 			print(p_killfeed.recv())
 
