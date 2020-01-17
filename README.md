@@ -17,7 +17,6 @@
     
     ###################### Instructions #####################
 
-
 I made this program so that all people could enjoy the healslut kink even when they
 may not be able to coordinate with a partner. 
 
@@ -335,24 +334,39 @@ feedback.
 
 	####################### Change Log #######################
 
+Version 1.4.4
+		--- Menu Functions
+	-	Added an option to change the users desktop background while using the overlay for
+		full immersion 
+	-	Added an 'Unlimited' feature in the word count which extends the previous maximum
+		amount of words by 52
+	-	Fixed a bug which would sometimes put either the banner, words, or rules on the wrong
+		layer
+		
+		--- The Killfeed Monitor
+	-	Added support for the death of the submissive in League of Legends
+
 Version 1.4.3
 		--- Menu Functions
-	-	Fixed compadibility on 1366x768 monitors. Killfeed Functionality is not yet 
-		supported for this monitor szie
+	-	Fixed compatibility  on 1366x768 monitors. Killfeed Functionality is not yet 
+		supported for this monitor size
 	- 	Changed global transparent color to #f7e9f1, a light pink, which should mitigate 
 		the cases where a pinup becomes completely transparent
 	-	Retooled the setting Image Flash Delay into Cycle Delay, which now acts more 
-		consistantly with its name
+		consistently  with its name
 	-	The Convert Images function will now resize images too large to be displayed
 		on your screen. It may a take a while to run thought
 	-	Rebuilt the settings menu to organize all of the hodge-podge features ive added
-		on this last year. My hope is that this will help me build more consistant 
+		on this last year. My hope is that this will help me build more consistent 
 		features in the future
-	-	Refactored a bunch of old code so that it is more easliy maintanable and easier
+	-	Refactored a bunch of old code so that it is more easily  maintainable  and easier
 		to look at
-	-	Fixed an issue where Write for me lines would exceed the lengh of the box that
+	-	Fixed an issue where Write for me lines would exceed the length  of the box that
 		they are displayed within
 	-	Added many more entries into the Humiliation.txt and Subject.txt files
+	-	Reworked the Healslut Games so they would live inside individual folders
+	-	Fixed the UI to properly block out Enable Pinups when Turbo Hypno is active
+	-	Fixed Write for me to retain focus in between sentances
 		
 Version 1.4.2
 		--- Menu Functions
@@ -483,6 +497,8 @@ u/iateacrayon 	(https://www.reddit.com/r/iateacrayon/wiki/list)
 	- for their wiki/list of all those fetishes
 this-is-embarrassing 	(https://github.com/this-is-embarrassing)
 	- did some sexy jazz to the code, much sharper now.
-
+Assistant
+	- Handled some of the less code intensive menial work
+	
 And you, the user. <3
 
