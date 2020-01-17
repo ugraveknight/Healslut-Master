@@ -106,14 +106,17 @@ def PrintSavedCords(SavedCords):	#PrintSavedCords(SavedCords)
 		print(Cords, Letter)
 	
 def GenXWord(WordList,Difficulty,width,height,SavedCords):
-	grid = GenBlankGrid(Difficulty,width,height,SavedCords)
-	SavedCords = {}
-	for word in WordList:
-		word = word.upper()
-		#print(word)
-		grid, SavedCords = put_word(word,grid,Difficulty,SavedCords,width,height)
-		if not grid:
-			return False
+	try:
+		grid = GenBlankGrid(Difficulty,width,height,SavedCords)
+		SavedCords = {}
+		for word in WordList:
+			word = word.upper()
+			#print(word)
+			grid, SavedCords = put_word(word,grid,Difficulty,SavedCords,width,height)
+			if not grid:
+				return False
+	except TypeError:
+		GenXWord(WordList,Difficulty,width,height,SavedCords)
 	return grid,SavedCords
 	
 def GenWordSearchList(Difficulty):
