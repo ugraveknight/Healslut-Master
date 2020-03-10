@@ -23,7 +23,9 @@ import WordSearch
 import HealslutPackages as HP
 	
 URL='http://localhost.lovense.com:20010/'
-			
+	
+HSDEBUG = False
+		
     ###########################  Info  ##############################
     #                                                               #
     #                   Created by u/Graveknight1                   #
@@ -54,66 +56,43 @@ URL='http://localhost.lovense.com:20010/'
 	
 #go to to https://www.reddit.com/r/iateacrayon/wiki/list for images broad range of images
 #thanks to Lewd-Zko	(twitter.com/LewdZko) for the image of crystal which was modified and placed on the wordsearch page
-#thanks also to Assistant
+#thanks also to Assistant.
 
-PREFDICT_PRESET = \
-	{
-	'hyp_delay':'500',
-	'hyp_game':'None',
-	'hyp_opacity':'3',
-	'hyp_homework':'Banner',
-	'hyp_words':'High',
-	'loopingAudio':'None',
-	'hyp_able':0,
-	'hyp_pinup':1,
-	's_playing':1,
-	'Freeplay':0,
-	'hyp_banword':1,
-	'hyp_tranbanr':1,
-	'display_rules':0,
-	'delold':1,
-	's_decay':'10',
-	's_decay_pow':'-3',
-	'hyp_dom':'Female',
-	'hyp_sub':'Girl',
-	'fontsize':'20',
-	'hyp_gfile_var':0,
-	'background_select_var':0,
-	's_rulename':'Verbal',
-	'sub':'Mercy',
-	'dom':'Roadhog',
-	'UseHSBackground':+0
-	}
 				
 class HealslutMaster(Frame):
-	def __init__(self,master,hyp_folders,userinfo,background_list,prefdict,*pargs):
+	def __init__(self,master,hyp_folders,userinfo,background_list,prefdict,
+					Insults,Praise,*pargs):
 		Frame.__init__(self, master, *pargs)
 		try:
 			self.master = master
 			self.master.overrideredirect(1)
-			self.SetupVars(background_list,prefdict,hyp_folders,userinfo)
+			self.SetupVars(background_list,prefdict,hyp_folders,userinfo,Insults,Praise)
 			self.SetupMenu()
 			self.SavePref()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'healslutmaster.init', subj='')
 	
-	def SetupVars(self,background_list,prefdict,hyp_folders,userinfo):
-		self.p_hypno, self.c_hypno = Pipe()
-		self.p_killfeed, self.c_killfeed = Pipe()
-		self.p_Vibe, self.c_Vibe = Pipe()
-		self.p_vid, self.c_vid = Pipe()
-		self.p_txt, self.c_txt = Pipe()
-		self.p_pinup, self.c_pinup = Pipe()
-		self.p_homework, self.c_homework = Pipe()
+	def SetupVars(self,background_list,prefdict,hyp_folders,userinfo,Insults,Praise):
+		self.p_hypno,		self.c_hypno = Pipe()
+		self.p_killfeed,	self.c_killfeed = Pipe()
+		self.p_Vibe,		self.c_Vibe = Pipe()
+		self.p_vid,			self.c_vid = Pipe()
+		self.p_txt,			self.c_txt = Pipe()
+		self.p_pinup,		self.c_pinup = Pipe()
+		self.p_homework,	self.c_homework = Pipe()
+		self.p_wordknt,		self.c_wordknt = Pipe()
+		self.p_CharSelect,	self.c_CharSelect = Pipe()
 		
 		self.background_list = background_list
 		self.background_select = StringVar(self.master)
+		if len(background_list) < int(prefdict['background_select_var']):
+			prefdict['background_select_var'] = 0
 		self.background_select_var = int(prefdict['background_select_var'])
 		self.background_select.set(background_list[self.background_select_var])
 		
 		self.screenwidth = self.master.winfo_screenwidth()
 		self.screenheight = self.master.winfo_screenheight()		
-		
+
 		self.hyp_delay = StringVar(self.master)
 		self.hyp_delay.set(prefdict['hyp_delay'])
 		self.hyp_game = StringVar(self.master)
@@ -126,6 +105,8 @@ class HealslutMaster(Frame):
 		self.hyp_words.set(prefdict['hyp_words'])
 		self.loopingAudio = StringVar(self.master)
 		self.loopingAudio.set(prefdict['loopingAudio'])
+		self.AudioType = StringVar(self.master)
+		self.AudioType.set(prefdict['AudioType'])
 		self.hyp_able = IntVar(self.master)
 		self.hyp_able.set(int(prefdict['hyp_able']))
 		self.hyp_pinup = IntVar(self.master)
@@ -150,6 +131,8 @@ class HealslutMaster(Frame):
 		self.hyp_dom.set(prefdict['hyp_dom'])
 		self.hyp_sub = StringVar(self.master)
 		self.hyp_sub.set(prefdict['hyp_sub'])
+		self.FemSex = StringVar(self.master)
+		self.FemSex.set(prefdict['FemSex'])
 		self.fontsize = StringVar(self.master)
 		self.fontsize.set(prefdict['fontsize'])
 		self.HSSub = StringVar(self.master)
@@ -162,7 +145,7 @@ class HealslutMaster(Frame):
 		if self.UseHSBackground.get() == 1:
 			HP.HandleOSBackground(1)
 		self.Alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-		self.KillFeedPath = 'Resources\\Killfeed\\%sx%s\\Overwatch\\'%(self.screenwidth,self.screenheight)
+		self.KillFeedPath = path.abspath('Resources\\Killfeed\\%sx%s\\Overwatch'%(self.screenwidth,self.screenheight))+'\\'
 		self.convfolder = StringVar(self.master)
 		self.convfolder.set('                                              ')
 		self.s_rulename = StringVar(self.master)
@@ -193,8 +176,9 @@ class HealslutMaster(Frame):
 		self.AirSpeed = 0
 		
 		self.rulesets = []
-		for filename in iglob('Resources\\Healslut Games\\*\\', recursive=True):
-			filename = filename.replace('Resources\\Healslut Games\\','').replace('\\','')
+		Filepath = path.abspath('Resources\\Healslut Games')
+		for filename in iglob(Filepath+'\\*\\', recursive=True):
+			filename = filename.split(Filepath)[-1].replace('\\','')
 			self.rulesets.append(filename)	
 		self.rewardcycle = []
 		self.punishcycle = []
@@ -202,7 +186,45 @@ class HealslutMaster(Frame):
 		self.air_decaytimer=time()
 		
 		self.usermail,self.userpass,self.usersecure,self.ToEmail = HP.SetupEmail(userinfo)
-			
+		self.Insults = Insults
+		self.Praise = Praise
+
+	def LoadPreDict(self):
+		Filepath = path.abspath('Resources/Healslut Games/'+self.s_rulename.get()+'/Preferences.txt')
+		for i in glob(Filepath):
+			self.ResetPrefDict(HP.GenUserPref(i))
+	def ResetPrefDict(self,prefdict):
+		print('resetting vars')
+		self.background_select_var = int(prefdict['background_select_var'])
+		self.background_select.set(self.background_list[self.background_select_var])
+		self.hyp_delay.set(prefdict['hyp_delay'])
+		self.hyp_game.set(prefdict['hyp_game'])
+		self.hyp_opacity.set(prefdict['hyp_opacity'])
+		self.hyp_homework.set(prefdict['hyp_homework'])
+		self.hyp_words.set(prefdict['hyp_words'])
+		self.loopingAudio.set(prefdict['loopingAudio'])
+		self.AudioType.set(prefdict['AudioType'])
+		self.hyp_able.set(int(prefdict['hyp_able']))
+		self.hyp_pinup.set(int(prefdict['hyp_pinup']))
+		self.UseActionMenu.set(int(prefdict['s_playing']))
+		self.Freeplay.set(int(prefdict['Freeplay']))
+		self.hyp_banword.set(int(prefdict['hyp_banword']))
+		self.hyp_tranbanr.set(int(prefdict['hyp_tranbanr']))
+		self.display_rules.set(int(prefdict['display_rules']))
+		self.delold.set(int(prefdict['delold']))
+		self.s_decay.set(prefdict['s_decay'])
+		self.s_decay_pow.set(prefdict['s_decay_pow'])
+		self.hyp_dom.set(prefdict['hyp_dom'])
+		self.hyp_sub.set(prefdict['hyp_sub'])
+		self.FemSex.set(prefdict['FemSex'])
+		self.fontsize.set(prefdict['fontsize'])
+		self.HSSub.set(prefdict['sub'])
+		self.HSDom.set(prefdict['dom'])
+		self.UseHSBackground.set(prefdict['UseHSBackground'])		
+		self.Old_UseHSBackground = int(prefdict['UseHSBackground'])
+		self.s_rulename.set(prefdict['s_rulename'])
+		self.hyp_gfile_var = int(prefdict['hyp_gfile_var'])
+	
 	def SetupMenu(self):
 		def StartMoveMM(event):
 			self.MMy = event.y
@@ -279,27 +301,39 @@ class HealslutMaster(Frame):
 						if self.p_killfeed.poll() == True:
 							self.HandleCycles(self.KillfeedCycleDict[self.p_killfeed.recv()])
 					if self.hyp_game.get() == 'LoL':
-						file = 'Resources/Killfeed/%sx%s/LOL/'%(self.screenwidth,self.screenheight)
-						LoLKillfeedMonitor.SubDeath(file,self.c_killfeed)
+						Filepath = path.abspath('Resources/Killfeed/%sx%s/LOL'%(self.screenwidth,self.screenheight))+'/'
+						LoLKillfeedMonitor.SubDeath(Filepath,self.c_killfeed)
 						if self.p_killfeed.poll() == True:
+							print('Killfeed event detected!')
 							self.HandleCycles(self.KillfeedCycleDict[self.p_killfeed.recv()])
 					#if self.hyp_game.get() == 'WoW':
 						#Stuff
 					vibespeed = self.BaseSpeed+self.VibeSpeed
-					rotaspeed = self.BaseSpeed+self.RotrSpeed
+					rotrspeed = self.BaseSpeed+self.RotrSpeed
+					if self.BaseSpeed > 70: self.p_wordknt.send(6)
+					else:					self.p_wordknt.send(self.wordcountInt)
 					CheckDecay()
-					print('Vibe: %s, Rotate: %s'%(vibespeed,rotaspeed), end="\r")
+					print('Vibe: %s, Rotate: %s'%(vibespeed,rotrspeed), end="\r")
 				if not self.c_Vibe.poll():
 						#This is the area where we will communicate to the buttplug server
-					for url in [URL+'Vibrate?v=%s'%(vibespeed),URL+'RotateAntiClockwise?v=%s'%(rotaspeed),URL+'AirAuto?v=%s'%(self.AirSpeed)]:
+					for url in [URL+'Vibrate?v=%s'%(vibespeed),URL+'RotateAntiClockwise?v=%s'%(rotrspeed),URL+'AirAuto?v=%s'%(self.AirSpeed)]:
 						if self.OverlayActive and not self.c_Vibe.poll():	#a chance to break midway through
 							Thread(target=HP.DoRequest, args=(url,1)).start()	
 					if self.OverlayActive:
 						self.after(2500, vibeloop)
 			except Exception as e:
 				HP.HandleError(format_exc(2), e, 'vibeloop', subj='')	
+		def SelectLoop():
+			xFound = OWVibe.CheckLoadingScreen(self.p_CharSelect)
+			if self.OverlayActive:
+				if xFound == True:
+					print('Found it')
+					self.after(300000, SelectLoop)
+				else:
+					self.after(500, SelectLoop)
 		# ################################# #
 		try:	
+			if HSDEBUG: print('Clearing Vibe Pipe')
 			while self.c_Vibe.poll() == True:
 				self.c_Vibe.recv()
 			if self.hyp_game.get() == 'OW':
@@ -311,11 +345,13 @@ class HealslutMaster(Frame):
 				else:
 					self.KillFeedFiles = \
 					[
-						self.KillFeedPath+self.HSSub.get()+'.png', 
-						self.KillFeedPath+self.HSSub.get()+' Assist.png', 
-						self.KillFeedPath+self.HSDom.get()+'.png'
+						path.abspath(self.KillFeedPath+self.HSSub.get()+'.png'), 
+						path.abspath(self.KillFeedPath+self.HSSub.get()+' Assist.png'), 
+						path.abspath(self.KillFeedPath+self.HSDom.get()+'.png')
 					]
+			if HSDEBUG: print('Launching vibeloop')
 			vibeloop()
+			#SelectLoop()	#$ character select loop, will be used with banner one day
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'LaunchVibe', subj='')
 
@@ -336,35 +372,36 @@ class HealslutMaster(Frame):
 				homework = str(self.hyp_homework.get())
 				hypno = self.hyp_able.get()
 				wordcount = str(self.hyp_words.get())
+				if   wordcount == 'None': 		wordcount = 0
+				elif wordcount == 'Low': 		wordcount = 1
+				elif wordcount == 'Medium': 	wordcount = 2
+				elif wordcount == 'High': 		wordcount = 3
+				elif wordcount == 'Very High': 	wordcount = 4
+				elif wordcount == 'Max': 		wordcount = 5
+				elif wordcount == 'Unlimited': 	wordcount = 6
+				self.wordcountInt = wordcount
 				dom = str(self.hyp_dom.get())
 				sub = str(self.hyp_sub.get())
 				pinup = self.hyp_pinup.get()
 				banwords = self.hyp_banword.get()
 				tranbanr = self.hyp_tranbanr.get()
-				globfile = self.hyp_gfile.get()
+				globfile = path.abspath(self.hyp_gfile.get())
 				s_rulename = self.s_rulename.get()
 				fontsize = self.fontsize.get()
 				display_rules = self.display_rules.get()
 				loopingAudio = self.loopingAudio.get()
-				loopingAudio = 0 if loopingAudio == 'None' else 1 if loopingAudio == 'List' else 2
-				
-				if   wordcount == 'None': wordcount = 0
-				elif wordcount == 'Low': wordcount = 1
-				elif wordcount == 'Medium': wordcount = 2
-				elif wordcount == 'High': wordcount = 3
-				elif wordcount == 'Very High': wordcount = 4
-				elif wordcount == 'Max': wordcount = 5
-				elif wordcount == 'Unlimited': wordcount = 6
-				#if wordcount == 'None' else 1 if wordcount == 'Low' else 2 if wordcount == 'Medium' \
-				#	   else 3 if wordcount == 'High' else 4 if wordcount == 'Very High' else 5
-				
-				pinup = 0 if hypno == 2 else pinup
+				if   loopingAudio == 'None':	loopingAudio = 0
+				elif loopingAudio == 'List':	loopingAudio = 1
+				elif loopingAudio == 'Shuffle':	loopingAudio = 2
+				AudioType = self.AudioType.get()
 				gifset = self.background_select.get().replace('.gif','')
+				FemSex = str(self.FemSex.get())
 				
 				StartHypnoProcess(delay,opacity,game,
 							homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
-							globfile,s_rulename,fontsize,display_rules,loopingAudio,gifset,
-							self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_hypno)
+							globfile,s_rulename,fontsize,display_rules,loopingAudio,AudioType,
+							gifset,FemSex,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,
+							self.c_wordknt,self.c_CharSelect,self.c_hypno)
 				self.EstablishRules()
 				self.LaunchVibe()
 			else:
@@ -374,7 +411,8 @@ class HealslutMaster(Frame):
 			
 	def EstablishRules(self):
 		def GenButtonLines(rulefilename):
-			with open('Resources\\Healslut Games\\'+rulefilename, 'r') as f:
+			Filepath = path.abspath('Resources\\Healslut Games\\'+rulefilename)
+			with open(Filepath, 'r') as f:
 				self.templines = f.readlines()
 				if '.jpg' in self.templines[0].replace('\n',''):
 					icon = self.templines[0].replace('\n','')
@@ -520,7 +558,7 @@ class HealslutMaster(Frame):
 				self.note.add(self.tab2, text = "Rules and Games")
 				self.note.add(self.tab3, text = "Text and Vibrator")
 				self.note.place(x=50,y=0)
-								
+
 					# Paypal box
 				self.bgPaypal = Label(self.EditMenu, bg='gray75')
 				self.bgPaypal.place(x=10,y=height-65)
@@ -532,8 +570,7 @@ class HealslutMaster(Frame):
 				w.configure(state=DISABLED)
 				
 					# Exit button
-				self.button = Button(self.EditMenu, text="Dismiss", command=CloseEditMenu)
-				self.button.place(x=width-115,y=height-65)
+				Button(self.EditMenu, text="Dismiss", command=CloseEditMenu).place(x=width-115,y=height-65)
 				self.after(25, UpdateEditMenu)
 			else:
 				if self.OverlayActive:
@@ -544,9 +581,10 @@ class HealslutMaster(Frame):
 		
 	def SetupTab1(self):
 		def GenGifCycle(event=None):
-			self.globpath = 'Resources\\Hypno Gif\\'+self.background_select.get().replace('.gif','')+'\\*.gif'
 			self.gifcyclist = []
-			for myimage in sorted(glob(self.globpath, recursive=True)):
+			i = self.background_select.get().replace('.gif','').split('\\')[-1]
+			Filepath = 'Resources\\Hypno Gif\\'+i+'\\*.gif'
+			for myimage in sorted(glob(Filepath, recursive=True)):
 				self.gifcyclist.append(ImageTk.PhotoImage(Image.open(myimage).resize((250, 250), Image.LANCZOS)))
 			self.GifCycle = cycle(self.gifcyclist)
 		def HandleImgConvert():
@@ -564,7 +602,8 @@ class HealslutMaster(Frame):
 		def FormatGifs():
 			print('Formatting Gifs...')
 			mywidth,myheight = int(self.textwdith.get()),int(self.textheight.get())
-			HP.ExtractFrames(mywidth,myheight,'Resources\\Background Gif original\\')
+			Filepath = path.abspath('Resources\\Background Gif Original')
+			HP.ExtractFrames(mywidth,myheight,Filepath)
 			self.background_list = HP.GenBackgroundList()
 			print('Done.')
 		# ########################### #
@@ -618,11 +657,12 @@ class HealslutMaster(Frame):
 		# ############################# #
 		owlvl = 250
 		Message(self.tab2, text='Rule set').place(x=25,y=20)
-		Message(self.tab2, text='Rule Font Size').place(x=25,y=70)
-		Message(self.tab2, text='Game',aspect=200).place(x=25,y=120)
+		Message(self.tab2, text='Rule Font Size').place(x=25,y=120)
+		Message(self.tab2, text='Game',aspect=200).place(x=25,y=170)
+		Button(self.tab2, text="Load Premade Rules", command=self.LoadPreDict).place(x=40,y=70)
 		OptionMenu(self.tab2, self.s_rulename, *self.rulesets).place(x=125,y=20)
-		OptionMenu(self.tab2, self.fontsize, '12', '18', '20', '24', '30').place(x=125,y=70)
-		OptionMenu(self.tab2, self.hyp_game, 'None', 'OW', 'LoL').place(x=125,y=120)
+		OptionMenu(self.tab2, self.fontsize, '12', '18', '20', '24', '30').place(x=125,y=120)
+		OptionMenu(self.tab2, self.hyp_game, 'None', 'OW', 'LoL').place(x=125,y=170)
 		GenKillfeedList()
 		Message(self.tab2, text='Sub Character').place(x=25,y=owlvl)
 		Message(self.tab2, text='Dom Character').place(x=300,y=owlvl)
@@ -636,21 +676,26 @@ class HealslutMaster(Frame):
 		Radiobutton(self.tab2, text="Transparent Rules", variable=self.display_rules,value=1).place(x=300,y=100)
 		Radiobutton(self.tab2, text="Opaque Rules", variable=self.display_rules,value=2).place(x=300,y=125)
 		Checkbutton(self.tab2, text="Use ActionMenu", variable=self.UseActionMenu).place(x=300,y=150)
+				
 	def SetupTab3(self):
 		Message(self.tab3, text='Dom Gender'			).place(x=25, y=20)
 		Message(self.tab3, text='Self Gender'			).place(x=25, y=70)
-		Message(self.tab3, text='Write For Me'			).place(x=25, y=120)
-		Message(self.tab3, text='Word Count'			).place(x=25, y=170)
-		Message(self.tab3, text='Looping Audio'			).place(x=25, y=220)
-		Message(self.tab3, text='Speed Decay Timer'		).place(x=350,y=20)
-		Message(self.tab3, text='Speed Decay Strengh'	).place(x=350,y=70)
+		Message(self.tab3, text='Sex'					).place(x=25, y=120)
+		Message(self.tab3, text='Write For Me'			).place(x=300, y=20)
+		Message(self.tab3, text='Word Count'			).place(x=300, y=70)
+		Message(self.tab3, text='Looping Audio'			).place(x=575, y=20)
+		Message(self.tab3, text='Track Type'			).place(x=575, y=70)
+		Message(self.tab3, text='Speed Decay Timer'		).place(x=800,y=20)
+		Message(self.tab3, text='Speed Decay Strengh'	).place(x=800,y=70)
 		OptionMenu( self.tab3, self.hyp_dom, "None", "Male", "Female").place(x=125,y=20)
 		OptionMenu( self.tab3, self.hyp_sub, "Sub", "Boy", "Girl").place(x=125,y=70)
-		OptionMenu( self.tab3, self.hyp_homework, "Never", "Not Often", "Often", "Very Often", "Always", "Banner").place(x=125,y=120)
-		OptionMenu( self.tab3, self.hyp_words, "None", "Low", "Medium", "High", "Very High", "Max", "Unlimited").place(x=125,y=170)
-		OptionMenu( self.tab3, self.loopingAudio, "None", "List", "Shuffle").place(x=125,y=220)
-		OptionMenu( self.tab3, self.s_decay, '0', '3', '10', '30', '45', '60', '75', '90').place(x=450,y=20)
-		OptionMenu( self.tab3, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '3/4', '1/2', '1/4').place(x=450,y=70)
+		OptionMenu( self.tab3, self.FemSex, "None", "Bimbo", "Sissy").place(x=125,y=120)
+		OptionMenu( self.tab3, self.hyp_homework, "Never", "Not Often", "Often", "Very Often", "Always", "Banner").place(x=400,y=20)
+		OptionMenu( self.tab3, self.hyp_words, "None", "Low", "Medium", "High", "Very High", "Max", "Unlimited").place(x=400,y=70)
+		OptionMenu( self.tab3, self.loopingAudio, "None", "List", "Shuffle").place(x=675,y=20)
+		OptionMenu( self.tab3, self.AudioType, "Either", "Music", "Spoken").place(x=675,y=70)
+		OptionMenu( self.tab3, self.s_decay, '0', '3', '10', '30', '45', '60', '75', '90').place(x=900,y=20)
+		OptionMenu( self.tab3, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '3/4', '1/2', '1/4').place(x=900,y=70)
 		Checkbutton(self.tab3, text="Transparent Banner", variable=self.hyp_tranbanr).place(x=350,y=150)
 		Checkbutton(self.tab3, text="Transparent Words",  variable=self.hyp_banword).place(x=350,y=175)
 		
@@ -660,7 +705,8 @@ class HealslutMaster(Frame):
 	
 	def BuildActionMenu(self):
 		def GenButtonImage(filename):
-			tempphoto = Image.open('Resources\\Buttonlabels\\'+filename)
+			Filepath = path.abspath('Resources\\Buttonlabels\\'+filename)
+			tempphoto = Image.open(Filepath)
 			tempphoto = tempphoto.resize((50, 50), Image.LANCZOS)
 			return ImageTk.PhotoImage(tempphoto)
 		def StartMoveAM(event):
@@ -673,7 +719,8 @@ class HealslutMaster(Frame):
 			self.ActionMenu.geometry("+%s+%s" % (x, y))
 		# ##################################### #
 		if self.ActionMenuOpen == False and self.UseActionMenu.get() == 1:
-			if path.isfile('Resources/Healslut Games/'+self.s_rulename.get()+'/ButtonA.txt'):
+			Filepath = path.abspath('Resources/Healslut Games/'+self.s_rulename.get()+'/ButtonA.txt')
+			if path.isfile(Filepath):
 				self.ActionMenuOpen = True
 				self.ActionMenu = Toplevel(self, bg=HP.TRANS_CLR(), highlightthickness=0)
 				self.ActionMenu.overrideredirect(True)
@@ -739,9 +786,10 @@ class HealslutMaster(Frame):
 				
 	def CheckForPictue(self,line):
 		def ConfigCamInfo():
-			with open('Resources\\Cam Info.txt', 'r') as f:
+			Filepath = path.abspath('Resources\\Cam Info.txt')
+			with open(Filepath, 'r') as f:
 				Lines = f.read().split('\n')
-			with open('Resources\\Cam Info.txt', 'w') as f:
+			with open(Filepath, 'w') as f:
 				for line in Lines:
 					if not line == '0':
 						f.write(line+'\n')
@@ -820,8 +868,8 @@ class HealslutMaster(Frame):
 				self.WSFrame.bg.pack(fill=X)
 				WordListStr1 = '\n\n\n'
 				WordListStr2 = ''
-				img = 'Resources/ButtonLabels/Misc/WordSearchBackgroundDark.png'
-				image = Image.open(img)
+				Filepath = path.abspath('Resources/ButtonLabels/Misc/WordSearchBackgroundDark.png')
+				image = Image.open(Filepath)
 				self.WordSearchImg = ImageTk.PhotoImage(image)
 				self.WordSearchBackground = self.WSFrame.bg.create_image(width/2, height/2, image=self.WordSearchImg)
 				
@@ -846,20 +894,29 @@ class HealslutMaster(Frame):
 
 	def HandleCycles(self,mycycle):
 		def do_macro(macro):
-			print(macro)
 			if '$playsound' in macro:
 				file = macro.replace('$playsound ','')
 				try:
-					playsound('Resources\\Audio\\'+file, False)
+					Filepath = path.abspath('Resources\\Audio\\'+file)
+					playsound(Filepath, False)
 				except PlaysoundException:
 					print(file, 'not found in Resources\\Audio\\')
 			if '$playvideo' in macro:
 				file = macro.replace('$playvideo ','')
-				filename = 'Resources\\Video\\'+ file
-				self.p_vid.send(filename)
+				Filepath = path.abspath('Resources\\Video\\'+file)
+				self.p_vid.send(Filepath)
 			if '$text' in macro:
 				macro=macro+' '
 				text = macro.replace('$text','').upper()
+				self.p_txt.send(text)
+			if '$RandText' in macro:
+				text = macro.replace('$RandText-','').upper()
+				if 'INSULT' in text:
+					line = HP.SetWrittenLine(self.Insults,self.hyp_dom.get(),self.hyp_sub.get(),self.FemSex.get())
+					text = text.replace('INSULT','')+' '+line
+				elif 'PRAISE' in text:
+					line = HP.SetWrittenLine(self.Praise,self.hyp_dom.get(),self.hyp_sub.get(),self.FemSex.get())
+					text = text.replace('PRAISE','')+' '+line
 				self.p_txt.send(text)
 			if '$+vibe' in macro:
 				self.VibeSpeed += int(macro.replace('$+vibe',''))
@@ -874,8 +931,8 @@ class HealslutMaster(Frame):
 			if '$-air' in macro:
 				self.AirSpeed -= int(macro.replace('$-air',''))
 			if '$pinup' in macro:
-				pin = 'Resources\\Images\\'+macro.replace('$pinup ','')+'\\'
-				self.p_pinup.send(pin)
+				Filepath = path.abspath('Resources\\Images\\'+macro.replace('$pinup ',''))+'\\'
+				self.p_pinup.send(Filepath)
 			if '$picture' in macro:
 				Thread(target=HP.TakePic, args=(self.usermail, self.userpass, self.ToEmail)).start()
 			if '$writeforme' in macro:
@@ -954,6 +1011,7 @@ class HealslutMaster(Frame):
 			'hyp_homework:'+str(self.hyp_homework.get()),
 			'hyp_words:'+str(self.hyp_words.get()),
 			'loopingAudio:'+str(self.loopingAudio.get()),
+			'AudioType:'+str(self.AudioType.get()),
 			'hyp_able:'+str(self.hyp_able.get()),
 			'hyp_pinup:'+str(self.hyp_pinup.get()),
 			's_playing:'+str(self.UseActionMenu.get()),
@@ -966,6 +1024,7 @@ class HealslutMaster(Frame):
 			's_decay_pow:'+str(self.s_decay_pow.get()),
 			'hyp_dom:'+str(self.hyp_dom.get()),
 			'hyp_sub:'+str(self.hyp_sub.get()),
+			'FemSex:'+str(self.FemSex.get()),
 			'fontsize:'+str(self.fontsize.get()),
 			'hyp_gfile_var:'+str(self.hyp_gfile_var),
 			'background_select_var:'+str(self.background_select_var),
@@ -974,7 +1033,8 @@ class HealslutMaster(Frame):
 			'dom:'+str(self.HSDom.get()),
 			'UseHSBackground:'+str(self.UseHSBackground.get())
 			]
-		with open('Resources\\Preferences.txt', 'w') as f:
+		Filepath = path.abspath('Resources\\Preferences.txt')
+		with open(Filepath, 'w') as f:
 			for line in PrefDictList:
 				f.write(line+'\n')	
 				
@@ -991,8 +1051,9 @@ class HealslutMaster(Frame):
 class StartHypnoProcess(Process):
 	def __init__(self, delay,opacity,game,
 						homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
-						globfile,s_rulename,fontsize,display_rules,loopingAudio,gifset,
-						c_vid,c_txt,c_pinup,c_homework,c_hypno):
+						globfile,s_rulename,fontsize,display_rules,loopingAudio,AudioType,
+						gifset,FemSex,c_vid,c_txt,c_pinup,c_homework,c_wordknt,c_CharSelect,
+						c_hypno):
 		try:
 			self.delay = delay
 			self.opacity = opacity
@@ -1010,11 +1071,15 @@ class StartHypnoProcess(Process):
 			self.fontsize = fontsize
 			self.display_rules = display_rules
 			self.loopingAudio = loopingAudio
+			self.AudioType = AudioType
 			self.gifset = gifset
+			self.FemSex = FemSex
 			self.c_vid = c_vid
 			self.c_txt = c_txt
 			self.c_pinup = c_pinup
 			self.c_homework = c_homework
+			self.c_wordknt = c_wordknt
+			self.c_CharSelect = c_CharSelect
 			self.c_hypno = c_hypno	
 
 			Process.__init__(self)
@@ -1027,28 +1092,46 @@ class StartHypnoProcess(Process):
 			print('Launching HypnoTherapy Layer...')
 			HypnoTherapy.launch(self.delay,self.opacity,self.game,
 				self.homework,self.wordcount,self.OverlayActive,self.dom,self.sub,self.pinup,self.banwords,self.tranbanr,
-				self.globfile,self.s_rulename,self.fontsize,self.display_rules,self.loopingAudio,self.gifset,
-				self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_hypno)
+				self.globfile,self.s_rulename,self.fontsize,self.display_rules,self.loopingAudio,self.AudioType,self.gifset,
+				self.FemSex,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_wordknt,self.c_CharSelect,self.c_hypno)
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'StartHypnoProcess.run', subj='')
 
 # ##################################
 ## ##################################
 # ##################################
-		
+
 def go():
 	try:
 		HP.VersionCheck()
 		ShowWindow(GetForegroundWindow(), SW_MINIMIZE)
 		root = Tk()
-		HP.CenterWindow(root, 50, 275)
+		root.geometry('%dx%d+%d+%d' % HP.CenterWindow(root, 50, 275))
 		root.wm_attributes("-topmost", 1)
-		e = HealslutMaster(root,  HP.GenFolders(), HP.GenUserInfo(), HP.GenBackgroundList(), HP.GenUserPref())
+		Insults,Praise = HP.GenInsultsNPraise()
+		e = HealslutMaster(root,  HP.GenFolders(), HP.GenUserInfo(), 
+			HP.GenBackgroundList(), HP.GenUserPref(), Insults, Praise)
 		print('Healslut Master is now live \n')
 		root.mainloop()
 	except Exception as e:
 		HP.HandleError(format_exc(2), e, 'healslutmaster.go', subj='')
+
+
+#def PrepChecklist(self):
+#	self.Checklist = Toplevel(self.master)
+
+#	self.lbl2 = Label(self.Checklist, text='Healslut Checklist')
+#	self.lbl2.place(x=25,y=25)
+#	self.lbl3 = Label(self.Checklist, text='\N{check mark}Mercy Skin Set to Imp')
+#	self.lbl3.place(x=25,y=50)
+#	self.lbl3 = Label(self.Checklist, text='\N{check mark}Mercy Emote Set to Relax')
+#	self.lbl3.place(x=25,y=75)
+#	self.lbl3 = Label(self.Checklist, text='\N{check mark}Mercy Spray Set to Arrow')
+#	self.lbl3.place(x=25,y=100)
+#	self.lbl3 = Label(self.Checklist, text='\N{check mark}Melee and Weapon Switch Buttons Unbinded')
+#	self.lbl3.place(x=25,y=125)
 		
 if __name__ == '__main__':
 	freeze_support()
 	go()
+	
