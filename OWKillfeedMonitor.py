@@ -47,12 +47,12 @@ def Main(im,Files,Sub,Dom,Cords,c_killfeed,KFPath,BorderPixels,Debug=False):
 def GenCords(self,screen_x=0,screen_y=0):	#Imported
 	screen_x = self.master.winfo_screenwidth() if screen_x == 0 else screen_x
 	screen_y = self.master.winfo_screenheight() if screen_y == 0 else screen_y
-	StartXPos = int(screen_x*.75)
-	EndXPos = int(screen_x*.25)
-	EndYPos = int(screen_y*.25)
-	KillFeedBorderPixels = [int(screen_x*.005859375),
-							int(screen_x*.01367875),
-							int(screen_x*.02734375)]
+	StartXPos = int(screen_x * .75)
+	EndXPos = int(screen_x * .25)
+	EndYPos = int(screen_y * .25)
+	KillFeedBorderPixels = [int(screen_x * .005859375),
+							int(screen_x * .01367875),
+							int(screen_x * .02734375)]
 	return (StartXPos,0, EndXPos, EndYPos), KillFeedBorderPixels
 
 def LogTime(file,Files,newtime):	#Debug
