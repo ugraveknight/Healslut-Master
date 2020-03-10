@@ -1,14 +1,19 @@
 from tkinter import *
 from random import choice, randint
 from time import time
+from os import path
+from PIL import Image, ImageTk
 from traceback import format_exc
+from win32gui import FindWindow, SetWindowLong
+from win32con import WS_EX_LAYERED, WS_EX_TRANSPARENT, GWL_EXSTYLE
 
 import HealslutPackages as HP
 
 class Banner(Frame):
 	def __init__(self, master, delay, dom, sub, humiliation, color_list, 
 					banwords, wordcount, tranbanr, homework, output, 
-					display_rules, fontsize, c_images, c_txt, c_hypno, *pargs):
+					display_rules, fontsize, c_images, c_txt, c_wordknt,
+					c_CharSelect, c_hypno, *pargs):
 		try:
 			self.master = master
 			self.screenwidth = self.master.winfo_screenwidth()
@@ -27,18 +32,20 @@ class Banner(Frame):
 			self.fontsize = fontsize
 			self.c_images = c_images
 			self.c_txt = c_txt
+			self.c_wordknt = c_wordknt
+			self.c_CharSelect = c_CharSelect
 			self.c_hypno = c_hypno
 			self.banner_var = 4		
 			self.freshtext = False
 			self.endtime = time()
 			self.InsaneWordsA = 1
 			self.InsaneWordsB = 1
-			
 			self.master.wm_attributes("-topmost", 1)
 			self.master.wm_attributes("-transparentcolor", HP.TRANS_CLR_ALT())
 			self.screen_width = self.screenwidth
 			self.screen_height = self.screenheight
 			self.master.geometry('%dx%d+%d+%d' % (self.screen_width, self.screen_height, 0, 0))
+			self.TextWidth = self.screen_width-300
 			self.master.overrideredirect(1)
 			self.banner = Canvas(self.master, bg=HP.TRANS_CLR_ALT(), width=495, height=200,highlightthickness=0)
 			self.banner.pack(fill=BOTH, expand=YES)
@@ -54,9 +61,11 @@ class Banner(Frame):
 	
 	def BuildText(self):
 		if self.banwords == 0:
-			with open('Resources\\Text\\Healslut Adjectives.txt', 'r') as a:
+			Filepath = path.abspath('Resources\\Text\\Healslut Adjectives.txt')
+			with open(Filepath, 'r') as a:
 				self.alines=a.readlines()
-			with open('Resources\\Text\\Healslut Subjects.txt', 'r') as s:
+			Filepath = path.abspath('Resources\\Text\\Healslut Subjects.txt')
+			with open(Filepath, 'r') as s:
 				self.slines=s.readlines()
 				
 			self.TopTextA = self.banner.create_text(0, 0, text='')
@@ -72,60 +81,59 @@ class Banner(Frame):
 			self.RgtTextB = self.banner.create_text(0, 0, text='')
 			self.RgtTextC = self.banner.create_text(0, 0, text='')
 			
-			if self.wordcount > 5:
-				self.TAa = self.banner.create_text(0, 0, text='')
-				self.TBa = self.banner.create_text(0, 0, text='')
-				self.TCa = self.banner.create_text(0, 0, text='')
-				self.TDa = self.banner.create_text(0, 0, text='')
-				self.TEa = self.banner.create_text(0, 0, text='')
-				self.TFa = self.banner.create_text(0, 0, text='')
-				self.TGa = self.banner.create_text(0, 0, text='')
-				self.THa = self.banner.create_text(0, 0, text='')
-				self.TIa = self.banner.create_text(0, 0, text='')
-				self.TJa = self.banner.create_text(0, 0, text='')
-				self.TKa = self.banner.create_text(0, 0, text='')
-				self.TLa = self.banner.create_text(0, 0, text='')
-				self.TMa = self.banner.create_text(0, 0, text='')
-				self.TNa = self.banner.create_text(0, 0, text='')
-				self.TOa = self.banner.create_text(0, 0, text='')
-				self.TPa = self.banner.create_text(0, 0, text='')
-				self.TQa = self.banner.create_text(0, 0, text='')
-				self.TRa = self.banner.create_text(0, 0, text='')
-				self.TSa = self.banner.create_text(0, 0, text='')
-				self.TTa = self.banner.create_text(0, 0, text='')
-				self.TUa = self.banner.create_text(0, 0, text='')
-				self.TVa = self.banner.create_text(0, 0, text='')
-				self.TWa = self.banner.create_text(0, 0, text='')
-				self.TXa = self.banner.create_text(0, 0, text='')
-				self.TYa = self.banner.create_text(0, 0, text='')
-				self.TZa = self.banner.create_text(0, 0, text='')
-				self.TAb = self.banner.create_text(0, 0, text='')
-				self.TBb = self.banner.create_text(0, 0, text='')
-				self.TCb = self.banner.create_text(0, 0, text='')
-				self.TDb = self.banner.create_text(0, 0, text='')
-				self.TEb = self.banner.create_text(0, 0, text='')
-				self.TFb = self.banner.create_text(0, 0, text='')
-				self.TGb = self.banner.create_text(0, 0, text='')
-				self.THb = self.banner.create_text(0, 0, text='')
-				self.TIb = self.banner.create_text(0, 0, text='')
-				self.TJb = self.banner.create_text(0, 0, text='')
-				self.TKb = self.banner.create_text(0, 0, text='')
-				self.TLb = self.banner.create_text(0, 0, text='')
-				self.TMb = self.banner.create_text(0, 0, text='')
-				self.TNb = self.banner.create_text(0, 0, text='')
-				self.TOb = self.banner.create_text(0, 0, text='')
-				self.TPb = self.banner.create_text(0, 0, text='')
-				self.TQb = self.banner.create_text(0, 0, text='')
-				self.TRb = self.banner.create_text(0, 0, text='')
-				self.TSb = self.banner.create_text(0, 0, text='')
-				self.TTb = self.banner.create_text(0, 0, text='')
-				self.TUb = self.banner.create_text(0, 0, text='')
-				self.TVb = self.banner.create_text(0, 0, text='')
-				self.TWb = self.banner.create_text(0, 0, text='')
-				self.TXb = self.banner.create_text(0, 0, text='')
-				self.TYb = self.banner.create_text(0, 0, text='')
-				self.TZb = self.banner.create_text(0, 0, text='')
-			
+			self.TAa = self.banner.create_text(0, 0, text='')
+			self.TBa = self.banner.create_text(0, 0, text='')
+			self.TCa = self.banner.create_text(0, 0, text='')
+			self.TDa = self.banner.create_text(0, 0, text='')
+			self.TEa = self.banner.create_text(0, 0, text='')
+			self.TFa = self.banner.create_text(0, 0, text='')
+			self.TGa = self.banner.create_text(0, 0, text='')
+			self.THa = self.banner.create_text(0, 0, text='')
+			self.TIa = self.banner.create_text(0, 0, text='')
+			self.TJa = self.banner.create_text(0, 0, text='')
+			self.TKa = self.banner.create_text(0, 0, text='')
+			self.TLa = self.banner.create_text(0, 0, text='')
+			self.TMa = self.banner.create_text(0, 0, text='')
+			self.TNa = self.banner.create_text(0, 0, text='')
+			self.TOa = self.banner.create_text(0, 0, text='')
+			self.TPa = self.banner.create_text(0, 0, text='')
+			self.TQa = self.banner.create_text(0, 0, text='')
+			self.TRa = self.banner.create_text(0, 0, text='')
+			self.TSa = self.banner.create_text(0, 0, text='')
+			self.TTa = self.banner.create_text(0, 0, text='')
+			self.TUa = self.banner.create_text(0, 0, text='')
+			self.TVa = self.banner.create_text(0, 0, text='')
+			self.TWa = self.banner.create_text(0, 0, text='')
+			self.TXa = self.banner.create_text(0, 0, text='')
+			self.TYa = self.banner.create_text(0, 0, text='')
+			self.TZa = self.banner.create_text(0, 0, text='')
+			self.TAb = self.banner.create_text(0, 0, text='')
+			self.TBb = self.banner.create_text(0, 0, text='')
+			self.TCb = self.banner.create_text(0, 0, text='')
+			self.TDb = self.banner.create_text(0, 0, text='')
+			self.TEb = self.banner.create_text(0, 0, text='')
+			self.TFb = self.banner.create_text(0, 0, text='')
+			self.TGb = self.banner.create_text(0, 0, text='')
+			self.THb = self.banner.create_text(0, 0, text='')
+			self.TIb = self.banner.create_text(0, 0, text='')
+			self.TJb = self.banner.create_text(0, 0, text='')
+			self.TKb = self.banner.create_text(0, 0, text='')
+			self.TLb = self.banner.create_text(0, 0, text='')
+			self.TMb = self.banner.create_text(0, 0, text='')
+			self.TNb = self.banner.create_text(0, 0, text='')
+			self.TOb = self.banner.create_text(0, 0, text='')
+			self.TPb = self.banner.create_text(0, 0, text='')
+			self.TQb = self.banner.create_text(0, 0, text='')
+			self.TRb = self.banner.create_text(0, 0, text='')
+			self.TSb = self.banner.create_text(0, 0, text='')
+			self.TTb = self.banner.create_text(0, 0, text='')
+			self.TUb = self.banner.create_text(0, 0, text='')
+			self.TVb = self.banner.create_text(0, 0, text='')
+			self.TWb = self.banner.create_text(0, 0, text='')
+			self.TXb = self.banner.create_text(0, 0, text='')
+			self.TYb = self.banner.create_text(0, 0, text='')
+			self.TZb = self.banner.create_text(0, 0, text='')
+		
 			self.x_cen = int(self.screenwidth*.5)
 			self.x_lef = int(self.screenwidth*.4)
 			self.x_rgt = int(self.screenwidth*.6)
@@ -145,12 +153,20 @@ class Banner(Frame):
 					self.linecolor = choice(self.color_list)
 				self.banner.delete(self.tmp_banner)
 				self.tmp_banner = self.banner.create_text(self.screen_width/2, self.screen_height/1.3, 
-													text=self.written_line.upper(),anchor=CENTER,
+													text=self.written_line.upper(),width=self.TextWidth,anchor=CENTER,
 													font=("Impact", 44), fill=self.linecolor)
 			if self.banwords == 0:
 				self.maintext_var = True
 				self.update_text()
+				if self.c_wordknt.poll() == True:
+					self.wordcount = self.c_wordknt.recv()
+					if not self.wordcount == 6:
+						self.clear_screen()
 				self.master.after(int(self.delay/2), self.update_text)
+			if self.c_CharSelect.poll() == True:
+				self.c_CharSelect.recv()
+				self.i = ImageTk.PhotoImage(Image.open('CharacterSelect.png'))
+				self.CharSelect = self.banner.create_image(0,0, image=self.i)
 			if self.c_txt.poll() == True:
 				pipetext = self.c_txt.recv()
 				text_count, sep, self.mytext = pipetext.partition(' ')
@@ -160,7 +176,7 @@ class Banner(Frame):
 				self.linecolor = choice(self.color_list)
 				self.banner.delete(self.maintext)
 				self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, 
-													text=self.mytext,anchor=CENTER,
+													text=self.mytext,width=self.TextWidth,anchor=CENTER,
 													font=("Impact", 50), fill=self.linecolor)
 			elif self.freshtext == True:
 				self.freshtext = False
@@ -368,17 +384,135 @@ class Banner(Frame):
 				self.TZb = self.banner.create_text(RandX(),RandY(),text=LineText(),font=HP.FONT3(),fill=self.GenColor(),justify=CENTER)
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'banner.UnleashWords', subj='')
+			
+	def clear_screen(self):
+		if self.banwords == 0:
+			self.banner.delete(self.TAa)
+			self.banner.delete(self.TBa)
+			self.banner.delete(self.TCa)
+			self.banner.delete(self.TDa)
+			self.banner.delete(self.TEa)
+			self.banner.delete(self.TFa)
+			self.banner.delete(self.TGa)
+			self.banner.delete(self.THa)
+			self.banner.delete(self.TIa)
+			self.banner.delete(self.TJa)
+			self.banner.delete(self.TKa)
+			self.banner.delete(self.TLa)
+			self.banner.delete(self.TMa)
+			self.banner.delete(self.TNa)
+			self.banner.delete(self.TOa)
+			self.banner.delete(self.TPa)
+			self.banner.delete(self.TQa)
+			self.banner.delete(self.TRa)
+			self.banner.delete(self.TSa)
+			self.banner.delete(self.TTa)
+			self.banner.delete(self.TUa)
+			self.banner.delete(self.TVa)
+			self.banner.delete(self.TWa)
+			self.banner.delete(self.TXa)
+			self.banner.delete(self.TYa)
+			self.banner.delete(self.TZa)
+			self.banner.delete(self.TAb)
+			self.banner.delete(self.TBb)
+			self.banner.delete(self.TCb)
+			self.banner.delete(self.TDb)
+			self.banner.delete(self.TEb)
+			self.banner.delete(self.TFb)
+			self.banner.delete(self.TGb)
+			self.banner.delete(self.THb)
+			self.banner.delete(self.TIb)
+			self.banner.delete(self.TJb)
+			self.banner.delete(self.TKb)
+			self.banner.delete(self.TLb)
+			self.banner.delete(self.TMb)
+			self.banner.delete(self.TNb)
+			self.banner.delete(self.TOb)
+			self.banner.delete(self.TPb)
+			self.banner.delete(self.TQb)
+			self.banner.delete(self.TRb)
+			self.banner.delete(self.TSb)
+			self.banner.delete(self.TTb)
+			self.banner.delete(self.TUb)
+			self.banner.delete(self.TVb)
+			self.banner.delete(self.TWb)
+			self.banner.delete(self.TXb)
+			self.banner.delete(self.TYb)
+			self.banner.delete(self.TZb)
+			self.TAa = self.banner.create_text(0, 0, text='')
+			self.TBa = self.banner.create_text(0, 0, text='')
+			self.TCa = self.banner.create_text(0, 0, text='')
+			self.TDa = self.banner.create_text(0, 0, text='')
+			self.TEa = self.banner.create_text(0, 0, text='')
+			self.TFa = self.banner.create_text(0, 0, text='')
+			self.TGa = self.banner.create_text(0, 0, text='')
+			self.THa = self.banner.create_text(0, 0, text='')
+			self.TIa = self.banner.create_text(0, 0, text='')
+			self.TJa = self.banner.create_text(0, 0, text='')
+			self.TKa = self.banner.create_text(0, 0, text='')
+			self.TLa = self.banner.create_text(0, 0, text='')
+			self.TMa = self.banner.create_text(0, 0, text='')
+			self.TNa = self.banner.create_text(0, 0, text='')
+			self.TOa = self.banner.create_text(0, 0, text='')
+			self.TPa = self.banner.create_text(0, 0, text='')
+			self.TQa = self.banner.create_text(0, 0, text='')
+			self.TRa = self.banner.create_text(0, 0, text='')
+			self.TSa = self.banner.create_text(0, 0, text='')
+			self.TTa = self.banner.create_text(0, 0, text='')
+			self.TUa = self.banner.create_text(0, 0, text='')
+			self.TVa = self.banner.create_text(0, 0, text='')
+			self.TWa = self.banner.create_text(0, 0, text='')
+			self.TXa = self.banner.create_text(0, 0, text='')
+			self.TYa = self.banner.create_text(0, 0, text='')
+			self.TZa = self.banner.create_text(0, 0, text='')
+			self.TAb = self.banner.create_text(0, 0, text='')
+			self.TBb = self.banner.create_text(0, 0, text='')
+			self.TCb = self.banner.create_text(0, 0, text='')
+			self.TDb = self.banner.create_text(0, 0, text='')
+			self.TEb = self.banner.create_text(0, 0, text='')
+			self.TFb = self.banner.create_text(0, 0, text='')
+			self.TGb = self.banner.create_text(0, 0, text='')
+			self.THb = self.banner.create_text(0, 0, text='')
+			self.TIb = self.banner.create_text(0, 0, text='')
+			self.TJb = self.banner.create_text(0, 0, text='')
+			self.TKb = self.banner.create_text(0, 0, text='')
+			self.TLb = self.banner.create_text(0, 0, text='')
+			self.TMb = self.banner.create_text(0, 0, text='')
+			self.TNb = self.banner.create_text(0, 0, text='')
+			self.TOb = self.banner.create_text(0, 0, text='')
+			self.TPb = self.banner.create_text(0, 0, text='')
+			self.TQb = self.banner.create_text(0, 0, text='')
+			self.TRb = self.banner.create_text(0, 0, text='')
+			self.TSb = self.banner.create_text(0, 0, text='')
+			self.TTb = self.banner.create_text(0, 0, text='')
+			self.TUb = self.banner.create_text(0, 0, text='')
+			self.TVb = self.banner.create_text(0, 0, text='')
+			self.TWb = self.banner.create_text(0, 0, text='')
+			self.TXb = self.banner.create_text(0, 0, text='')
+			self.TYb = self.banner.create_text(0, 0, text='')
+			self.TZb = self.banner.create_text(0, 0, text='')
+			
 def create_banner(delay,dom,sub,humiliation,color_list,banwords,
 						wordcount,tranbanr,homework,output,
-						display_rules,fontsize,c_images,c_txt,c_hypno):
+						display_rules,fontsize,c_images,c_txt,
+						c_wordknt,c_CharSelect,c_hypno):
 	try:
 		root = Tk()
 		root.geometry('%dx%d' % (root.winfo_screenwidth(), root.winfo_screenheight()))
 		root.configure(background=HP.TRANS_CLR_ALT())
 		root.title("Healslut Banner")
-		#HP.SetClickthrough("Healslut Banner")	#$ doesnt work anyway
+		SetClickthrough()
 		e = Banner(root,delay,dom,sub,humiliation,color_list,banwords,wordcount,tranbanr,
-							homework,output,display_rules,fontsize,c_images,c_txt,c_hypno)
+							homework,output,display_rules,fontsize,c_images,c_txt,c_wordknt,
+							c_CharSelect,c_hypno)
 		root.mainloop()
 	except Exception as e:
 		HP.HandleError(format_exc(2), e, 'create_banner', subj='')
+
+def SetClickthrough(windowname="Healslut Banner"):	#I want this to be in HP, but doesnt work when imported
+	try:
+		hwnd = FindWindow(None, windowname)
+		windowStyles = WS_EX_LAYERED | WS_EX_TRANSPARENT
+		SetWindowLong(hwnd, GWL_EXSTYLE, windowStyles)
+	except Exception as e:
+		HP.HandleError(format_exc(2), e, 'Banner_SetClickthrough', subj='')		
