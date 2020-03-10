@@ -1,4 +1,4 @@
-from pyautogui import screenshot
+from pyautogui import screenshot,locateOnScreen
 from time import sleep
 from ctypes import windll
 	
@@ -35,7 +35,8 @@ def GenPositions():		#Imported
 	user32 = windll.user32
 	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 	userx, usery = screensize
-	oripos =	[
+	oripos = \
+	[
 		'400,1320',
 		'415,1320',
 		'445,1320',
@@ -45,7 +46,8 @@ def GenPositions():		#Imported
 		'570,1310',
 		'600,1305',
 		'610,1305',
-		'630,1305']	
+		'630,1305'
+	]
 	positions = {}
 	for value in oripos:	
 		x,sep,y=value.partition(',')
@@ -63,5 +65,18 @@ def RunTest():		#Debug
 		print(base_speed, markslist)
 		sleep(1)
 		
+def CheckLoadingScreen(p_CharSelect):
+	try:
+		if locateOnScreen('Resources/Loading Screen Tip.png', confidence=0.9):
+			p_CharSelect.send(True)
+			return True
+	except TypeError:
+		pass
+		
 if __name__ == '__main__':	
-	RunTest()
+	#RunTest()
+	from multiprocessing import Pipe
+	p_CharSelect,c_CharSelect = Pipe()
+	while True:
+		CheckLoadingScreen(p_CharSelect)
+		sleep(1)
