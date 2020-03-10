@@ -33,8 +33,9 @@ directory consistent with the list below.
 			This folder can be filled with any sounds you'd like to tie to 
 			your punishments and rewards. There is a file named 'Punishment 
 			Buzz.mp3' which is used to play a failure sound when the user 
-			fails to fill out the writeforme entry box correctly. All files
-			in this folder must be .mp3 files.
+			fails to fill out the writeforme entry box correctly. There is
+			likewise a file called Reward Chime.mp3 which plays when the user
+			completes the writeforme. All files	in this folder must be .mp3s.
 		--- Background Gif Originals
 			This folder contains the original .gif files that will be converted
 			to background slides using the buildin Convert Gifs function
@@ -113,7 +114,9 @@ their own by placing them into the Resources/Tracks/ folder
 			#### The Text ####
 
 In order to customize the text that will be displayed in the write for me and banner functions
-edit the Humiliation.txt file. Below is a key for using gender specific terms with the text file
+edit the Humiliation.txt file as well as the Feminization.txt file. Not into the Sissy/Bimbo Kink?
+Simply set Sex to None and you'll still get to enjoy the traditional humiliation text without sissy 
+or bimbo overtones! Below is a key for using gender specific terms with the text file
 
 m99s = masters/mistresses
 m99 = master/mistress
@@ -131,6 +134,13 @@ dom gender preference = Female
 m00 = sub/boy/girl
 p00s = parts/balls/tits
 p00 = part/dick/cunt
+
+o99 = girlfriend/boyfriend
+r00 = he/she
+f99 = sissy/bimbo
+f99s = sissies/bimbos
+f00 = clitty/fuckhole
+w00 = man/woman
 
 self gender pronoun = boy
 	example 'My p00 makes me a good m00' = My dick makes me a good boy
@@ -152,8 +162,8 @@ the end of the file, it starts over from the top.
 		Playsound can find any file inside of the Resources/Audio/ folder. a good
 		example would look like this. $playsound Good Girl.mp3.
 	---  $playvideo [video file.mp4]
-		Playsound can find any file inside of the Resources/Video/ folder. a good
-		example would look like this. $playsound titfuck.mp4.
+		playvideo can find any file inside of the Resources/Video/ folder. a good
+		example would look like this. $playvideo titfuck.mp4.
 		
 		You can play video and audio simultaneously by using the commands below. 
 		To make this work, you may have to create custom audio from the original
@@ -315,6 +325,14 @@ of the gif than of the converter. for this, i am searching for a remedy.
 
 
 
+			#### Desktop Background ####
+			
+The checkbox which controls whether or not to chnage your desktop background on launch/close can be found in the
+edit menu. To configure your own background or slutty background, simply replace the original ones packaged with 
+your download. It is important to use the correct file type .png as no other file type is currently supported. You
+can use microsoft paint or paint.net to convert jpgs into pngs by selecting the 'Save As' Option.
+
+
 	################### Errors and Concerns ##################	
 
 Some users on older machines report lagging. The best thing to do if you encouter lag is to disable the 
@@ -333,6 +351,44 @@ feedback.
 
 
 	####################### Change Log #######################
+
+Version 1.4.5
+		--- Text Functions
+	-	Introducing the new Sissy/Bimbo Hypo Text package that is over 150 lines! To implement 
+		this package a number of new replacement codes have been added. To use this, select 
+		either Sissy/Bimbo rather than None in the Feminization option
+		-	New Code: o99=girlfriend/boyfriend	(subsex=male / subsex=female)
+		-	New Code: r00=he/she				(subsex=male / subsex=female)
+		-	New Code: f99=sissy/bimbo			(subsex=male / subsex=female)
+		-	New Code: f99s=sissies/bimbos		(subsex=male / subsex=female)
+		-	New Code: f00=clitty/fuckhole		(subsex=male / subsex=female)
+		-	New Code: w00=man/woman				(subsex=male / subsex=female)
+
+		--- Overlay Functions
+	-	Added Reward Chime.mp3 to balance the Punishment Buzz file. This helps lay the groundwork
+		for more complete default rulesets
+	-	Customize Punishment/Reward macros
+			$RandText-Insult
+			$RandText-Praise
+	-	Write For Me now keeps track of your successful inputs vs failures, and plays tone to reward
+		completed lines
+	-	Attempted to fix a bug which affects users by falsly declaring that the program cannot
+		locate certain resources
+		
+		--- The Killfeed Monitor
+	-	Added support for the death of the submissive in League of Legends in 1920x1080
+
+		--- Menu Functions
+	-	Updated the version checker to exclude WIP and prerelease versions
+	-	Fixed a bug that would allow the user to open two overlays at once
+	-	Added a few new background gifs, removed others that didnt convert well
+	-	Added a new text set 'feminization' which has bimbo/sissy related lines. To exclude
+		these, one only needs to set their sex to None
+	-	Added a feature to load presets that will come in handy once the LoL and OW premade 
+		rules are finished
+	
+
+
 
 Version 1.4.4
 		--- Menu Functions
@@ -492,13 +548,13 @@ I'd like to provide a menu selector for download soundgasm files
 	######################## Credits ########################
 
 Lewd-Zko 	(twitter.com/LewdZko) 
-	- for the image of their OC crystal which was modified and placed on the wordsearch page
+	- 	for the image of their OC crystal which was modified and placed on the wordsearch page
 u/iateacrayon 	(https://www.reddit.com/r/iateacrayon/wiki/list)
-	- for their wiki/list of all those fetishes
+	- 	for their wiki/list of all those fetishes
 this-is-embarrassing 	(https://github.com/this-is-embarrassing)
-	- did some sexy jazz to the code, much sharper now.
-Assistant
-	- Handled some of the less code intensive menial work
-	
+	- 	did some sexy jazz to the code, much sharper now.
+u/Anonymous2150
+	- 	Helping
+		
 And you, the user. <3
 
