@@ -17,46 +17,50 @@ from requests import get, exceptions
 from cv2 import VideoCapture, imwrite
 
 def TRANS_CLR(): 	return '#f7e9f1'
-def TRANS_CLR_ALT():return '#000000'
+def TRANS_CLR_ALT():return '#000000' #000000 for black, #777778
 def FONT0():		return ("Impact", 44)
 def FONT1():		return ("Impact", 28)
 def FONT2():		return ("Impact", 20)
 def FONT3():		return ("Impact", 15)
-def VERSION():		return 'v1.4.4'
+def VERSION():		return 'v1.4.5'
 
-def SetWrittenLine(humiliation, dom='Female', sub='Girl'):
+def SetWrittenLine(Lines,dom=['None','Male','Female'][2],sub=['Sub','Boy','Girl'][2],FemSex=['Bimbo','Sissy'][0], Writing=False):
 	try:
-		line=(choice(humiliation)).strip('\n')
-		if line == '': 
-			line='i love being a healslut'
-		if '99' in line:
-			gendervar = randint(1,2) if dom == 'None' else 0
-			if dom == 'Male' or gendervar == 1:
-				ReplaceList = ['masters','master','his','his','sir','cocks','cock']
-			elif dom == 'Female' or gendervar == 2:
-				ReplaceList = ['mistresses','mistress','hers','her','miss','pussies','pussy']
-			BaseList = ['m99s','m99','s99s','s99','n99','p99s','p99']
-			for i in range(0,len(BaseList)):
-				line = line.replace(BaseList[i], ReplaceList[i])
-		if '00' in line:
-			if   sub == 'Sub' : ReplaceList = ['sub','parts','part']
-			elif sub == 'Boy' : ReplaceList = ['boy','balls','dick']
-			elif sub == 'Girl': ReplaceList = ['girl','tits','cunt']
-			BaseList = ['m00','p00s','p00']
-			for i in range(0,len(BaseList)):
-				line = line.replace(BaseList[i], ReplaceList[i])
-		return line	
+		line=(choice(Lines))
+		if line == '': line='i love being a healslut'
+		if '99' or '00' in line:
+			ReplaceDict = {}
+			if dom == 'None': dom = 'Male' if randint(1,2) == 1 else 'Female'
+			if   dom == 'Male':
+				i = {'m99s':'masters',   'm99':'master',  's99s':'his', 's99':'his','n99':'sir', 'p99s':'cocks',  'p99':'cock'}
+			elif dom == 'Female':
+				i = {'m99s':'mistresses','m99':'mistress','s99s':'hers','s99':'her','n99':'miss','p99s':'pussies','p99':'pussy'}
+			ReplaceDict.update(i)
+			if   sub == 'Sub' : i = {'m00':'sub','p00s':'parts','p00':'part'}
+			elif sub == 'Boy' : i = {'m00':'boy','p00s':'balls','p00':'dick'}
+			elif sub == 'Girl': i = {'m00':'girl','p00s':'tits','p00':'cunt'}
+			ReplaceDict.update(i)
+			if   FemSex == 'Sissy': 
+				i = {'o99':'girlfriend','f99':'sissy','f99s':'sissies','r00':'he', 'f00':'clitty', 'w00': 'man'}
+			elif FemSex == 'Bimbo': 
+				i = {'o99':'boyfriend', 'f99':'bimbo','f99s':'bimbos', 'r00':'she','f00':'fuckhole','w00':'woman'}
+			ReplaceDict.update(i)
+			for k,v in ReplaceDict.items():
+				line = line.replace(k, v)
+		if len(line) > 35 and Writing == True:
+			return SetWrittenLine(Lines,dom,sub,FemSex)
+		else:
+			return line	
 	except Exception as e:
 		HandleError(format_exc(2), e, 'SetWrittenLine', subj='')
 
-def SetClickthrough(windowname="Healslut Hypnotherapy"):
-	try:
-		hwnd = FindWindow(None, windowname)
-		windowStyles = WS_EX_LAYERED | WS_EX_TRANSPARENT
-		SetWindowLong(hwnd, GWL_EXSTYLE, windowStyles)
-	except Exception as e:
-		HandleError(format_exc(2), e, 'SetClickthrough', subj='')
-
+def GenInsultsNPraise():
+	with open('Resources\\Text\\Insults.txt','r') as f:
+		Insults = f.read().split('\n')
+	with open('Resources\\Text\\Praise.txt','r') as f:
+		Praise = f.read().split('\n')
+	return Insults,Praise
+		
 def RemoveClickthrough(windowname="Healslut Hypnotherapy"):
 	try:
 		hwnd = FindWindow(None, windowname)
@@ -85,20 +89,30 @@ def StopVibe():
 	for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
 		Thread(target=HP.DoRequest, args=(url,5)).start()
 	
-def ExtractFrames(mywidth,myheight,filepath):
-	for OGGif in glob(filepath+'*.gif', recursive=True):
-		OGGif=OGGif.replace(filepath,'')
-		print(OGGif)
-		frame = Image.open(filepath+OGGif)
+def ExtractFrames(mywidth,myheight,Filepath):
+	for OGGif in glob(Filepath+'\\*.gif', recursive=True):
+		frame = Image.open(OGGif)
 		nframes = 0
 		namecount = 0.1
 		while frame:
-			sizeframe = frame.resize((mywidth,myheight))
-			FileDst = 'Resources\Hypno Gif\\'+OGGif.replace('.gif','')+'\\'
+			if 'POV' in path.basename(OGGif):
+				wx = (mywidth-50)/frame.width
+				hx = (myheight-50)/frame.height
+				if wx > hx:
+					Tup = (int(frame.width*hx),int(frame.height*hx))
+				else:
+					Tup = (int(frame.width*wx),int(frame.height*wx))
+				sizeframe = frame.resize(Tup,Image.ANTIALIAS)
+			else:
+				sizeframe = frame.resize((mywidth,myheight),Image.ANTIALIAS)
+			
+			FileDst = OGGif.replace('Resources\Background Gif Original','Resources\Hypno Gif').replace('.gif','')+'\\'
 			if not path.exists(FileDst):
 				makedirs(FileDst)
 			cnt = str(namecount) if len(str(namecount)) == 4 else '0'+str(namecount)
-			sizeframe.save('%s/%s-%s.gif'%(FileDst,path.basename(OGGif), cnt),'GIF')
+			OutFile = '%s/%s-%s.gif'%(FileDst,path.basename(OGGif).replace('.gif','').replace('/',''), cnt)
+			print(OutFile)
+			sizeframe.save(OutFile,'GIF',quality=95)
 			nframes += 1
 			namecount = round(namecount+.1,1)
 			try:
@@ -140,7 +154,7 @@ def ConvertImg(folder, DelOld, screenwidth, screenheight):
 	if DelOld == 1:
 		print('clearing old .jpgs and resizing images too large for your screen...')
 		for file in filelist:
-			if '.jpg' in file:	
+			if '.jpg' in file:
 				remove(file)
 
 def HandleOSBackground(Value):
@@ -158,9 +172,11 @@ def GenWordSearchList(Difficulty):
 		if Difficulty=='MEDIUM':	WordCount = 20
 		elif Difficulty=='HARD':	WordCount = 28
 		else:						WordCount = 12
-		with open('Resources/Text/Healslut Adjectives.txt','r') as f:
+		Filepath = path.abspath('Resources/Text/Healslut Adjectives.txt')
+		with open(Filepath,'r') as f:
 			alines = f.readlines()
-		with open('Resources/Text/Healslut Subjects.txt','r') as f:
+		Filepath = path.abspath('Resources/Text/Healslut Subjects.txt')
+		with open(Filepath,'r') as f:
 			blines = f.readlines()
 		WordList = []
 		for i in range(0,WordCount):
@@ -192,8 +208,8 @@ def TakePic(usermail, userpass, ToEmail):
 	def send_email(usermail, userpass, ToEmail):
 		print('sending email')
 		try:
-			ImgFileName ='Resources\Healslut.jpg'
-			img_data = open(ImgFileName, 'rb').read()
+			Filepath = path.abspath('Resources\Healslut.jpg')
+			img_data = open(Filepath, 'rb').read()
 			msg = MIMEMultipart()
 			msg['Subject'] = 'Pics'
 			msg['From'] = usermail
@@ -201,7 +217,7 @@ def TakePic(usermail, userpass, ToEmail):
 
 			text = MIMEText("test")
 			msg.attach(text)
-			image = MIMEImage(img_data, name=path.basename(ImgFileName))
+			image = MIMEImage(img_data, name=path.basename(Filepath))
 			msg.attach(image)
 
 			s = SMTP('smtp.gmail.com', 587)
@@ -241,7 +257,7 @@ def DoRequest(url,delay=0):
 def CenterWindow(root, width, height):
 	x = root.winfo_screenwidth() - width
 	y = (root.winfo_screenheight() / 2) - (height / 2)
-	root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+	return (width, height, x, y)
 def GenFolders(foundimage=False):
 	hyp_folders = glob('Resources\\Images/*/', recursive=True)
 	if len(hyp_folders) == 0: 
@@ -251,18 +267,53 @@ def GenFolders(foundimage=False):
 	return hyp_folders
 def GenUserInfo():
 	try:
-		with open('Resources\\Cam Info.txt', 'r') as f:
+		Filepath = path.abspath('Resources\\Cam Info.txt')
+		with open(Filepath, 'r') as f:
 			return f.readlines()
 	except FileNotFoundError:
 		return ['myemail@gmail.com','mypassword','0']
-def GenBackgroundList(BGPath = 'Resources\\Background Gif original\\'):
+def GenBackgroundList(BGPath='Resources\\Background Gif Original'):
 	bglist = []
-	for item in glob(BGPath+'*.gif', recursive=True):
-		bglist.append(item.replace(BGPath,''))
+	Filepath = path.abspath(BGPath)
+	for item in glob(Filepath+'/*.gif', recursive=True):
+		NewPath = item.split('Resources\\Background Gif Original\\')[-1]
+		bglist.append(NewPath)
 	return bglist
-def GenUserPref():
+
+PREFDICT_PRESET = \
+	{
+	'hyp_delay':'500',
+	'hyp_game':'None',
+	'hyp_opacity':'3',
+	'hyp_homework':'Banner',
+	'hyp_words':'High',
+	'loopingAudio':'None',
+	'AudioType':'Either',
+	'hyp_able':0,
+	'hyp_pinup':1,
+	's_playing':1,
+	'Freeplay':0,
+	'hyp_banword':1,
+	'hyp_tranbanr':1,
+	'display_rules':0,
+	'delold':1,
+	's_decay':'10',
+	's_decay_pow':'-3',
+	'hyp_dom':'Female',
+	'hyp_sub':'Girl',
+	'FemSex':'None',
+	'fontsize':'20',
+	'hyp_gfile_var':0,
+	'background_select_var':0,
+	's_rulename':'Overwatch Helpful',
+	'sub':'Mercy',
+	'dom':'Roadhog',
+	'UseHSBackground':0
+	}	
+
+def GenUserPref(PrefFilePath='Resources\\Preferences.txt'):
 	try:
-		with open('Resources\\Preferences.txt', 'r') as f:
+		with open(PrefFilePath, 'r') as f:
 			lines = f.read().split('\n')
 		prefdict = {}
 		for line in lines:
@@ -271,6 +322,7 @@ def GenUserPref():
 	except FileNotFoundError:
 		prefdict = PREFDICT_PRESET
 	return prefdict
+	
 def VersionCheck():
 	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
 	print('Version number:',VERSION())
@@ -278,9 +330,8 @@ def VersionCheck():
 		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
 		source = urlopen(url).read()
 		soup = BeautifulSoup(source,'lxml')
-		for t in soup.html.find_all('ul', attrs={'class':'d-none d-md-block mt-2 list-style-none'}):
-			NewestRelease = t.find_next('a').get('title')
-			break
+		t = soup.html.find('a', attrs={'class':'border-0 Label--outline-green'})
+		NewestRelease = 'v'+t.find_next('a').get('href').split('/')[-1]
 		if not NewestRelease == VERSION():
 			print('A new version is available! Visit:', url)
 		else:
@@ -290,3 +341,9 @@ def VersionCheck():
 
 
 
+if __name__ == '__main__':
+	with open('Resources\\Text\\Feminization.txt', 'r') as f:
+		HypnoLines = f.read().split('\n')
+	with open('Resources\\Text\\Humiliation.txt', 'r') as f:
+		Humiliation = f.read().split('\n')
+	line = SetWrittenLine(HypnoLines+Humiliation)
