@@ -13,21 +13,23 @@ from playsound import playsound
 from cv2 import VideoCapture, cvtColor, COLOR_BGR2RGBA
 from mutagen.mp3 import MP3
 from traceback import format_exc
+from win32gui import FindWindow, SetWindowLong
+from win32con import WS_EX_LAYERED, WS_EX_TRANSPARENT, GWL_EXSTYLE
 
 from Banner import create_banner
 import HealslutPackages as HP
 
-DEBUG = False
+HSDEBUG = False
 
 class Hypnotherapy(Frame):
 	def __init__(self, master, image_files, delay, opacity, game, 
 				homework, wordcount, hypno, dom, sub, pinup, banwords,
 				tranbanr, s_rulename, fontsize, display_rules, loopingAudio,
-				gifset, c_vid, c_txt, c_pinup, c_homework, c_hypno, *pargs):
+				AudioType, gifset, FemSex, c_vid, c_txt, c_pinup, c_homework, 
+				c_wordknt, c_CharSelect, c_hypno, *pargs):
 		Frame.__init__(self, master, *pargs)
 		try:
-			
-			if DEBUG: print('Prepping Hypnotherapy Variables')
+			if HSDEBUG: print('Prepping Hypnotherapy Variables')
 			self.master = master
 			self.screenwidth = self.master.winfo_screenwidth()
 			self.screenheight = self.master.winfo_screenheight()
@@ -36,8 +38,13 @@ class Hypnotherapy(Frame):
 			self.opacity = opacity
 			self.game = game
 			self.homework = homework
+			self.wordcountOriginal = wordcount
 			self.wordcount = wordcount
 			self.HWRemain = 0
+			self.HWDisplay = StringVar(self.master)
+			self.HWDisplay.set('')
+			self.HWCompleted = 0
+			self.HWTotal = 0
 			self.pinupvar = 0
 			self.banner_var = 4		
 			self.InsaneWordsA = 1
@@ -51,6 +58,8 @@ class Hypnotherapy(Frame):
 			self.playingvideo = False
 			self.vs = None
 			self.NxtHWTime=time()+5
+			self.c_wordknt = c_wordknt
+			self.c_CharSelect = c_CharSelect
 			self.c_hypno = c_hypno
 			self.enable_hypno = hypno
 			self.prefer_dom = dom
@@ -66,11 +75,14 @@ class Hypnotherapy(Frame):
 			self.fontsize = fontsize
 			self.display_rules = display_rules
 			self.loopingAudio = loopingAudio
+			self.AudioType = AudioType
 			self.gifset = gifset
+			self.FemSex = FemSex
 			self.output = ''
 			self.p_PinupAssassin, self.c_PinupAssassin = Pipe()
+			self.TextWidth = self.screenwidth-300
 			
-			if DEBUG: print('Configuring Hypnotherapy Overlay')
+			if HSDEBUG: print('Configuring Hypnotherapy Overlay')
 			self.master.overrideredirect(1)
 			self.make_background()
 			self.formatgif()
@@ -81,24 +93,24 @@ class Hypnotherapy(Frame):
 			self.pinup()
 			self.setup_text()
 			
-			if DEBUG: print('Prepping Background Loop')
+			if HSDEBUG: print('Prepping Background Loop')
 			self.updategif()
 			
-			if DEBUG: print('Prepping Slides Loop')
+			if HSDEBUG: print('Prepping Slides Loop')
 			self.slides()
 			
-			if DEBUG: print('Prepping Audio Loop')
+			if HSDEBUG: print('Prepping Audio Loop')
 			self.setaudioloop()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'hypno.init', subj='')
 		
 	def make_background(self):
-		self.x_cen = int(self.screenwidth*.5)
-		self.x_lef = int(self.screenwidth*.4)
-		self.x_rgt = int(self.screenwidth*.6)
-		self.y_cen = int(self.screenheight*.5)
-		self.y_upr = int(self.screenheight*.33)
-		self.y_low = int(self.screenheight*.66)
+		self.x_cen = int(self.screenwidth  * .5)
+		self.x_lef = int(self.screenwidth  * .4)
+		self.x_rgt = int(self.screenwidth  * .6)
+		self.y_cen = int(self.screenheight * .5)
+		self.y_upr = int(self.screenheight * .33)
+		self.y_low = int(self.screenheight * .66)
 		
 		self.bg = Canvas(self,width=self.screenwidth,height=self.screenheight, highlightthickness=0)
 		if self.enable_hypno >= 1:
@@ -106,16 +118,21 @@ class Hypnotherapy(Frame):
 		else:
 			self.bg.config(bg=HP.TRANS_CLR())
 		self.bg.pack(fill=BOTH, expand=YES)
+		_,_,x,y = HP.CenterWindow(self.master, 50, 275)
+		self.HWx, self.HWy = x+50, y+290
+		self.HWTxt = self.bg.create_text(self.HWx, self.HWy,text='',fill='yellow',font=('impact bold', 12),anchor=E)
 		
 	def formatgif(self):
-		imagelist = glob('Resources\\Hypno Gif\\'+self.gifset+'\\*.gif', recursive=True)		
+		Filepath = path.abspath('Resources\\Hypno Gif')
+		print(self.gifset)
+		imagelist = glob(Filepath+'\\'+self.gifset+'\\*.gif', recursive=True)		
 		self.gifcycle = [(PhotoImage(file=image)) for image in imagelist]
 		self.gifcycle = cycle(self.gifcycle)
 		
 	def build_ports(self):
 		self.master.wm_attributes("-transparentcolor", HP.TRANS_CLR())
 		if self.game == 'OW':
-			self.bg.ChatPort = Canvas(self.bg,bg=HP.TRANS_CLR(),width=650,height=200,highlightthickness=0)
+			self.bg.ChatPort = Canvas(self.bg,bg=HP.TRANS_CLR(),width=650,height=450,highlightthickness=0)
 			self.bg.ChatPort.place(relx=0, rely=1, anchor=SW)
 			self.bg.KillfeedPort = Canvas(self.bg,bg=HP.TRANS_CLR(),width=800,height=800,highlightthickness=0)
 			self.bg.KillfeedPort.place(relx=.75, rely=.25, anchor=SW)
@@ -128,15 +145,18 @@ class Hypnotherapy(Frame):
 		self.bg.right_port.place(relx=1, rely=.5, anchor=E)	
 
 	def build_rules(self):
-		with open('Resources\\Healslut Games\\'+self.s_rulename+'\\Rules.txt', 'r') as f:
+		Filepath = path.abspath('Resources\\Healslut Games\\'+self.s_rulename+'\\Rules.txt')
+		with open(Filepath, 'r') as f:
 			lines = f.readlines()
 			for line in lines:
 				self.output = self.output+line
 	
 	def setup_text(self):
-		with open('Resources\\Text\\Healslut Adjectives.txt', 'r') as a:
+		Filepath = path.abspath('Resources\\Text\\Healslut Adjectives.txt')
+		with open(Filepath, 'r') as a:
 			self.alines=a.readlines()
-		with open('Resources\\Text\\Healslut Subjects.txt', 'r') as s:
+		Filepath = path.abspath('Resources\\Text\\Healslut Subjects.txt')
+		with open(Filepath, 'r') as s:
 			self.slines=s.readlines()
 		
 		self.TopTextA = self.bg.create_text(0, 0, text='')
@@ -151,7 +171,7 @@ class Hypnotherapy(Frame):
 		self.RgtTextA = self.bg.create_text(0, 0, text='')
 		self.RgtTextB = self.bg.create_text(0, 0, text='')
 		self.RgtTextC = self.bg.create_text(0, 0, text='')
-		if self.wordcount > 5 and self.banwords == 1:
+		if self.banwords == 1:
 			self.TAa = self.bg.create_text(0, 0, text='')
 			self.TBa = self.bg.create_text(0, 0, text='')
 			self.TCa = self.bg.create_text(0, 0, text='')
@@ -214,47 +234,55 @@ class Hypnotherapy(Frame):
 			try:
 				self.banner_var+=1
 				if self.banner_var >= 4:
-					self.BannerLine = HP.SetWrittenLine(self.humiliation, self.prefer_dom, self.prefer_sub)
+					self.BannerLine = HP.SetWrittenLine(self.Humiliation, self.prefer_dom, self.prefer_sub)
 					self.banner_var = 0
 					self.linecolor = choice(self.color_list)
 				self.bg.delete(self.tmp_banner)
 				self.tmp_banner = self.bg.create_text(self.screenwidth/2, self.screenheight/1.3, 
-													text=self.BannerLine.upper(),anchor=CENTER,
+													text=self.BannerLine.upper(),width=self.TextWidth,anchor=CENTER,
 													font=("Impact", 44), fill=self.linecolor)
 			except Exception as e:
 				HP.HandleError(format_exc(2), e, 'RunTransBanner', subj='')
 			self.master.after(self.delay, RunTransBanner)
 		# ################################################# #
 		try:
-			with open('Resources\\Text\\Humiliation.txt', 'r') as f:
-				self.humiliation = f.readlines()
-			self.color_list = []
-			with open('Resources\\Text\\Text Colors.txt', 'r') as f:
-				colors = f.readlines()
-				for line in colors:
-					self.color_list.append(line.strip('\n'))
+			Filepath = path.abspath('Resources\\Text\\Humiliation.txt')
+			with open(Filepath, 'r') as f:
+				self.Humiliation = f.read().split('\n')
+			if self.FemSex != 'None':
+				Filepath = path.abspath('Resources\\Text\\Feminization.txt')
+				with open(Filepath, 'r') as f:
+					self.Humiliation += f.read().split('\n')
+			Filepath = path.abspath('Resources\\Text\\Text Colors.txt')
+			with open(Filepath, 'r') as f:
+				self.color_list = f.read().split('\n')
 			self.c_images, self.p_images = Pipe()
-			if self.homework == 'Banner' and self.tranbanr == 0 or self.banwords == 0 or self.display_rules == 2:
-				if DEBUG: print('Starting Banner Layer...')
-				dom = self.prefer_dom
-				sub = self.prefer_sub
-				delay = self.delay
-				humiliation = self.humiliation
-				banwords = self.banwords
-				color_list = self.color_list
-				wordcount = self.wordcount
-				tranbanr = self.tranbanr
-				homework = self.homework
-				output = self.output
-				display_rules = self.display_rules
-				fontsize = self.fontsize
-				c_images = self.c_images
-				c_txt = self.c_txt
-				c_hypno = self.c_hypno
-				Thread(target=create_banner, args=(delay,dom,sub,humiliation,
-								color_list,banwords,wordcount,tranbanr,homework,
-								output,display_rules,fontsize,c_images,c_txt,
-								c_hypno)).start()
+				
+				#we need it to start all the time because of c_txt
+			#if self.homework == 'Banner' and self.tranbanr == 0 or self.banwords == 0 or self.display_rules == 2:
+				
+			if HSDEBUG: print('Starting Banner Layer...')
+			dom = self.prefer_dom
+			sub = self.prefer_sub
+			delay = self.delay
+			Humiliation = self.Humiliation
+			banwords = self.banwords
+			color_list = self.color_list
+			wordcount = self.wordcount
+			tranbanr = self.tranbanr
+			homework = self.homework
+			output = self.output
+			display_rules = self.display_rules
+			fontsize = self.fontsize
+			c_images = self.c_images
+			c_txt = self.c_txt
+			c_wordknt = self.c_wordknt
+			c_CharSelect = self.c_CharSelect
+			c_hypno = self.c_hypno
+			Thread(target=create_banner, args=(delay,dom,sub,Humiliation,
+							color_list,banwords,wordcount,tranbanr,homework,
+							output,display_rules,fontsize,c_images,c_txt,
+							c_wordknt,c_CharSelect,c_hypno)).start()
 			if self.tranbanr == 1 and self.homework == 'Banner':
 				self.tmp_banner = self.bg.create_text(0, 0, text='')
 				RunTransBanner()
@@ -263,7 +291,13 @@ class Hypnotherapy(Frame):
 			
 	def setaudioloop(self):
 		if not self.loopingAudio == 0:
-			self.audiolist = glob('Resources/Tracks/*.mp3', recursive=True)
+			Filepath = path.abspath('Resources/Tracks')
+			if self.AudioType == 'Spoken':
+				self.audiolist = glob(Filepath+'/Spoken/*.mp3')
+			elif self.AudioType == 'Music':
+				self.audiolist = glob(Filepath+'/Music/*.mp3')
+			else:
+				self.audiolist = glob(Filepath+'/Spoken/*.mp3')+glob(Filepath+'/Music/*.mp3')
 			self.audiocycle = cycle(self.audiolist)
 			self.after(25, self.runaudioloop)
 		
@@ -298,6 +332,7 @@ class Hypnotherapy(Frame):
 	def slides(self):
 		try:
 			if self.c_hypno.poll() == True:
+				if HSDEBUG: print('Ending...\n')
 				self.master.quit()
 			if self.enable_pinup == 1 and not self.playingvideo == True:
 				self.handleimages()
@@ -320,6 +355,10 @@ class Hypnotherapy(Frame):
 				self.after(self.delay, self.slides)
 			if not self.DoingHW==True:
 				self.breathe_transp()
+			if self.c_wordknt.poll() == True and self.banwords == 1:
+				self.wordcount = self.c_wordknt.recv()
+				if not self.wordcount == 6:
+					self.clear_screen()
 			self.assign_homework()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'slides', subj='')
@@ -380,7 +419,7 @@ class Hypnotherapy(Frame):
 		self.RgtTextA = self.bg.create_text(0, 0, text='')
 		self.RgtTextB = self.bg.create_text(0, 0, text='')
 		self.RgtTextC = self.bg.create_text(0, 0, text='')
-		if self.wordcount > 5 and self.banwords == 1:
+		if self.banwords == 1:
 			self.bg.delete(self.TAa)
 			self.bg.delete(self.TBa)
 			self.bg.delete(self.TCa)
@@ -534,10 +573,15 @@ class Hypnotherapy(Frame):
 				print('homework=', self.HWRemain)
 				self.DoingHW = True
 				self.master.overrideredirect(1)
-				if self.do_homework == 'Always':
-					oldtop = self.top
+				#if self.do_homework == 'Always':
+				#	oldtop = self.top
+				try:
+					self.top.destroy()
+				except AttributeError:
+					pass
 				self.master.wm_attributes("-transparentcolor", "#000000")
 				self.master.attributes('-alpha', 1)
+				#self.HWLbl.config(bg=HP.TRANS_CLR_ALT())
 				self.bg.right_port.config(bg=HP.TRANS_CLR_ALT())
 				self.bg.right_port.place(relx=1, rely=.5, anchor=E)	
 				if self.enable_hypno == 0:
@@ -550,7 +594,7 @@ class Hypnotherapy(Frame):
 				if self.game == 'LoL':
 					self.bg.KillfeedPort.config(bg=HP.TRANS_CLR_ALT())
 					
-				self.written_line = HP.SetWrittenLine(self.humiliation, self.prefer_dom, self.prefer_sub)
+				self.written_line = HP.SetWrittenLine(self.Humiliation, self.prefer_dom, self.prefer_sub, Writing=True)
 				if len(self.written_line) < 33:
 					width, height = 1200,150
 				else:
@@ -558,9 +602,6 @@ class Hypnotherapy(Frame):
 				x = (self.screenwidth/2) - (width/2)
 				y = (self.screenheight/2) - (height/2)
 				self.GenTopLevel(width, height, x, y)
-				
-				if self.do_homework == 'Always':
-					oldtop.destroy()
 				
 				Label(self.top, text='"'+self.written_line.lower()+'"', font=('Arial', 38, 'italic'), bg='gray30').pack(fill=BOTH)
 
@@ -586,7 +627,7 @@ class Hypnotherapy(Frame):
 					self.bg.KillfeedPort.config(bg=HP.TRANS_CLR())
 				self.bg.config(bg=HP.TRANS_CLR())
 				self.bg.right_port.config(bg=HP.TRANS_CLR())
-				HP.SetClickthrough()
+				SetClickthrough()
 			if self.DoingHW==True:
 				self.top.lift()
 				self.top.e.focus_set()
@@ -610,7 +651,16 @@ class Hypnotherapy(Frame):
 			self.top.e.delete(0, END)
 			desired_var = self.written_line.lower().strip()
 			input_var = self.user_line.lower().strip()
+			self.HWTotal += 1
 			if input_var == desired_var:
+				self.HWCompleted += 1
+				self.bg.delete(self.HWTxt)
+				self.HWTxt = self.bg.create_text(self.HWx, self.HWy,text=str(self.HWCompleted)+'/'+str(self.HWTotal),fill='yellow',font=('impact bold', 12),anchor=E)
+				try:
+					Filepath = path.abspath('Resources\\Audio\\Reward Chime.mp3')
+					playsound(Filepath, False)
+				except Exception:
+					pass
 				self.user_line=''
 				if self.homework == 'Always':
 					self.do_homework()
@@ -619,13 +669,17 @@ class Hypnotherapy(Frame):
 					self.top.destroy() 
 				self.DoingHW=False
 			elif '[]' in input_var:	# a cheat to escape Write For Me
-				self.HWRemain = 0
+				self.bg.delete(self.HWTxt)
+				self.HWTxt = self.bg.create_text(self.HWx, self.HWy,text=str(self.HWCompleted)+'/'+str(self.HWTotal),fill='yellow',font=('impact bold', 12),anchor=E)
 				self.do_homework()
 				self.top.destroy() 
 				self.DoingHW=False
 			else:
+				self.bg.delete(self.HWTxt)
+				self.HWTxt = self.bg.create_text(self.HWx, self.HWy,text=str(self.HWCompleted)+'/'+str(self.HWTotal),fill='yellow',font=('impact bold', 12),anchor=E)
 				try:
-					playsound('Resources\\Audio\\Punishment Buzz.mp3', False)
+					Filepath = path.abspath('Resources\\Audio\\Punishment Buzz.mp3')
+					playsound(Filepath, False)
 				except Exception:
 					pass
 		except Exception as e:
@@ -888,7 +942,8 @@ def GenHomework(homework,DoingHW,NxtHWTime,HWRemain):
 def GenImageFiles(globfile,pinup):
 	if pinup == 1:
 		if globfile == 'All':
-			image_files = glob('Resources/Images/*/*.png', recursive=True)
+			Filepath = path.abspath('Resources/Images')
+			image_files = glob(+'/*/*.png', recursive=True)
 			print('All images found:', len(image_files))
 		else:
 			image_files = glob(globfile+'/*.png', recursive=True)
@@ -901,7 +956,8 @@ def GenImageFiles(globfile,pinup):
 def launch(delay,opacity,game,homework,wordcount,hypno,
 				dom,sub,pinup,banwords,tranbanr,globfile,
 				s_rulename,fontsize,display_rules,loopingAudio,
-				gifset,c_vid,c_txt,c_pinup,c_homework,c_hypno):
+				AudioType,gifset,FemSex,c_vid,c_txt,c_pinup,c_homework,
+				c_wordknt,c_CharSelect,c_hypno):
 	try:
 		root = Tk()
 		width = root.winfo_screenwidth()
@@ -912,22 +968,32 @@ def launch(delay,opacity,game,homework,wordcount,hypno,
 		root.title("Healslut Hypnotherapy")
 		root.wm_attributes("-topmost", 1)
 		
-		if DEBUG: print('Cloaking Hypnotherapy Background...')
-		HP.SetClickthrough()
+		if HSDEBUG: print('Cloaking Hypnotherapy Background...')
+		SetClickthrough()
+		if HSDEBUG: print('Cloaking Complete.')
 		image_files = GenImageFiles(globfile,pinup)
 		if c_hypno.poll() == True:
+			print('Exiting before we even started')
 			exit()
 		
-		if DEBUG: print('Building Hypnotherapy Object...')
+		if HSDEBUG: print('Building Hypnotherapy Object...')
 		e = Hypnotherapy(root, image_files, delay, opacity, game, homework, 
 					wordcount, hypno, dom, sub, pinup, banwords, tranbanr, 
-					s_rulename, fontsize, display_rules, loopingAudio,
-					gifset,c_vid, c_txt, c_pinup, c_homework, c_hypno)
+					s_rulename, fontsize, display_rules, loopingAudio, AudioType,
+					gifset, FemSex, c_vid, c_txt, c_pinup, c_homework, c_wordknt, 
+					c_CharSelect, c_hypno)
 		e.pack(fill=BOTH, expand=YES)
-		if DEBUG: print('Hypnotherapy Mainloop...')
 		root.mainloop()
 	except Exception as e:
 		HP.HandleError(format_exc(2), e, 'Hypnotherapy.launch', subj='')
-		
+
+def SetClickthrough(windowname="Healslut Hypnotherapy"): #I want this to be in HP, but doesnt work when imported
+	try:
+		hwnd = FindWindow(None, windowname)
+		windowStyles = WS_EX_LAYERED | WS_EX_TRANSPARENT
+		SetWindowLong(hwnd, GWL_EXSTYLE, windowStyles)
+	except Exception as e:
+		HP.HandleError(format_exc(2), e, 'Hypnotherapy_SetClickthrough', subj='')		
+
 if __name__ == '__main__':
 	pass
