@@ -327,13 +327,14 @@ def VersionCheck():
 	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
 	print('Version number:',VERSION())
 	try:
-		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
+		url = 'https://github.com/ugraveknight/Healslut-Master/releases.atom'
 		source = urlopen(url).read()
 		soup = BeautifulSoup(source,'lxml')
-		t = soup.html.find('a', attrs={'class':'border-0 Label--outline-green'})
-		NewestRelease = 'v'+t.find_next('a').get('href').split('/')[-1]
+		entry = soup.feed.entry
+		newest_release_url = entry.link.get('href')
+		NewestRelease = 'v' + newest_release_url.split('/')[-1]
 		if not NewestRelease == VERSION():
-			print('A new version is available! Visit:', url)
+			print('A new version is available! Visit:', newest_release_url)
 		else:
 			print('Your version is up to date')
 	except Exception as e:
