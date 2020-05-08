@@ -16,7 +16,7 @@ from pyautogui import screenshot
 from random import randint
 
 import HypnoTherapy
-import OWVibe
+import OverwatchVibe #OWVibe doesn't exist#
 import OWKillfeedMonitor
 import LoLKillfeedMonitor
 import WordSearch
