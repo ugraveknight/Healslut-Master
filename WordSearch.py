@@ -1,8 +1,138 @@
+from tkinter import *
 from string import ascii_lowercase, ascii_uppercase
 from random import randrange, choice
+from traceback import format_exc
+from os import path
+from PIL import Image, ImageTk
 
-	# rough verison pulled from https://github.com/chongkim/wordsearch/blob/master/python/wordsearch_generator3.py
+import HealslutPackages as HP
+
+	# rough verison pulled from https://github.com/chongkim/parent/blob/master/python/wordsearch_generator3.py
 	# Shame I'm posting this on my nsfw account, this is actually some good code.
+
+
+
+class WordSearchLibs:
+	def __init__(self,parent,screenwidth,screenheight):
+		self.parent = parent
+		self.screenwidth = screenwidth
+		self.screenheight = screenheight
+		self.WSx, self.WSy = None, None
+		self.WSActive = False
+		
+		#self.WordSearchFrame()
+
+	def StartMoveWS(self,event):
+		self.WSx, self.WSy = event.x, event.y
+		
+	def StopMoveWS(self,event):
+		self.WSx, self.WSy = None, None
+		
+	def WordSearchOnMotion(self,event):
+		x = self.parent.WSFrame.winfo_x() + event.x - self.WSx
+		y = self.parent.WSFrame.winfo_y() + event.y - self.WSy
+		self.parent.WSFrame.geometry("+%s+%s" % (x, y))
+		
+	def WordSearchFrame(self,Difficulty):
+		if self.WSActive == True:
+			self.WSActive = False
+			self.Die()
+		else:
+			self.WSActive = True
+			self.Difficulty = Difficulty
+			while True:
+				try:
+						# # # # # # # # # # #
+						# Build the window  #
+						# # # # # # # # # # #
+					width, height = 800,738
+					WordList = GenWordSearchList(Difficulty)
+					self.parent.WSFrame = Toplevel(self.parent, bg=HP.TRANS_CLR(), highlightthickness=0)
+					self.parent.WSFrame.wm_title("Word Search")
+					self.parent.WSFrame.overrideredirect(True)
+					self.parent.WSFrame.wm_attributes("-topmost", 1)
+					self.parent.WSFrame.wm_attributes("-transparentcolor", HP.TRANS_CLR())
+					x = (self.screenwidth  / 2) - (width  / 2)
+					y = (self.screenheight / 2) - (height / 2)
+					self.parent.WSFrame.geometry('%dx%d+%d+%d' % (width, height, x, y))
+					
+						# # # # # # # #
+						# MOVING GRIP #
+						# # # # # # # #
+					self.grip = Label(self.parent.WSFrame, height=1, bg='Gray50', text="< Hold to Move >", font=('Times', 8))
+					self.grip.pack(fill=X)
+					self.grip.bind("<ButtonPress-1>", self.StartMoveWS)
+					self.grip.bind("<ButtonRelease-1>", self.StopMoveWS)
+					self.grip.bind("<B1-Motion>", self.WordSearchOnMotion)
+					
+						# # # # # # # # # # #
+						# Window Background #
+						# # # # # # # # # # #
+					self.parent.WSFrame.bg = Canvas(self.parent.WSFrame, bg='light blue', width=300, height=height*2)
+					self.parent.WSFrame.bg.pack(fill=X)
+					Filepath = path.abspath('Resources/ButtonLabels/Misc/WordSearchBackgroundDark.png')
+					image = Image.open(Filepath)
+					self.WordSearchImg = ImageTk.PhotoImage(image)
+					self.parent.WSFrame.bg.create_image(width/2, height/2, image=self.WordSearchImg)
+					
+						# # # # # # # # # # #
+						# parent Legend #
+						# # # # # # # # # # #
+					WordListStr1, WordListStr2 = GenWordList(WordList)
+					FontColor = 'pink'
+					self.parent.WSFrame.bg.create_text((5,height/2), font=('Impact', 14),
+						text=WordListStr1, fill=FontColor, justify=LEFT, anchor=W)
+					self.parent.WSFrame.bg.create_text((width-5,height/2), font=('Impact', 14),
+						text=WordListStr2, fill=FontColor, justify=RIGHT, anchor=E)
+					
+						# # # # # # # # # # # # #
+						# parent Play Area  #
+						# # # # # # # # # # # # #
+					grid,SavedCords = Main(WordList,Difficulty)
+					self.WordSearchBG = self.parent.WSFrame.bg.create_text((width/2,height/2), fill='#FF7FED', font=("Courier", 16, "bold"),
+						text="\n".join(map(lambda row: " ".join(row), grid)))
+					
+					self.WordSearchSavedCords=SavedCords
+					self.WordList=WordList
+					break
+				except Exception as e:
+					HP.HandleError(format_exc(2), e, 'WordSearchFrame', subj='')
+			self.parent.after(15000, self.ScrambleGrid)
+
+	def ScrambleGrid(self):
+		try:
+			#grid=self.WordSearchGrid
+			if self.WSActive == True:
+				width, height = GenDimensions(self.WordList,self.Difficulty)
+				grid = GenBlankGrid(self.Difficulty,width,height,self.WordSearchSavedCords)
+				self.parent.WSFrame.bg.itemconfig(self.WordSearchBG, text="\n".join(map(lambda row: " ".join(row), grid)))
+				self.parent.after(30000, self.ScrambleGrid)
+		except TclError as e:
+			pass
+		except Exception as e:
+			HP.HandleError(format_exc(2), e, 'ScrambleGrid', subj='')
+		
+	def Die(self):
+		try:
+			self.parent.WSFrame.destroy()
+		except AttributeError:
+			pass
+
+def GenWordList(WordList):
+	WordListStr1 = '\n\n\n'
+	WordListStr2 = ''
+	
+	for word in WordList[0:int(len(WordList)*.5)]:
+		WordListStr1 += word+'\n'
+	for word in WordList[int(len(WordList)*.5):-1]:
+		WordListStr2 += word+'\n'
+		
+	WordListStr2+='\n\n\n'
+	return WordListStr1, WordListStr2
+
+# ######################################### #
+#############################################
+# ######################################### #
 
 def GenDimensions(WordList,Difficulty,width=5,height=5):
 	for word in WordList:
@@ -118,27 +248,28 @@ def GenXWord(WordList,Difficulty,width,height,SavedCords):
 	except TypeError:
 		GenXWord(WordList,Difficulty,width,height,SavedCords)
 	return grid,SavedCords
-	
+
 def GenWordSearchList(Difficulty):
-	if Difficulty=='MEDIUM':
-		WordCount = 20
-	elif Difficulty=='HARD':
-		WordCount = 28
-	else:
-		WordCount = 12
-	with open('Resources/Text/Healslut Adjectives.txt','r') as f:
-		alines = f.readlines()
-	with open('Resources/Text/Healslut Subjects.txt','r') as f:
-		blines = f.readlines()
-	totallines = alines+blines
-	WordList = []
-	for i in range(0,WordCount):
-		while True:
-			word = choice(totallines).replace('\n','').replace('-','').replace(' ','').upper()
-			if not word == '' and not word in WordList and not len(word) > 9:
-				WordList.append(word)
-				break
-	return WordList
+	try:
+		if Difficulty=='MEDIUM':	WordCount = 20
+		elif Difficulty=='HARD':	WordCount = 28
+		else:						WordCount = 12
+		Filepath = path.abspath('Resources/Text/Healslut Adjectives.txt')
+		with open(Filepath,'r') as f:
+			alines = f.readlines()
+		Filepath = path.abspath('Resources/Text/Healslut Subjects.txt')
+		with open(Filepath,'r') as f:
+			blines = f.readlines()
+		WordList = []
+		for i in range(0,WordCount):
+			while True:
+				word = choice(alines+blines).replace('\n','').replace('-','').replace(' ','').upper()
+				if not word == '' and not word in WordList and not len(word) > 9:
+					WordList.append(word)
+					break
+		return WordList
+	except Exception as e:
+		HandleError(format_exc(2), e, 'GenWordSearchList', subj='')
 	
 def Main(WordList='',Difficulty='',SavedCords=''):	
 	if WordList=='':
