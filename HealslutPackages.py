@@ -3,9 +3,10 @@ from win32con import WS_EX_LAYERED, WS_EX_TRANSPARENT, GWL_EXSTYLE
 from traceback import format_exc
 from random import randint, choice
 from os import remove, path, makedirs
-from PIL import Image
+from PIL import Image, ImageTk
 from bs4 import BeautifulSoup
 from urllib.request import urlopen	
+from threading import Thread
 from ctypes import windll
 from time import sleep
 from glob import iglob, glob
@@ -15,13 +16,19 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from requests import get, exceptions
 from cv2 import VideoCapture, imwrite
+from sys import exit
+from itertools import cycle
 
-def TRANS_CLR(): 	return '#f7e9f1'
-def TRANS_CLR_ALT():return '#000000' #000000 for black, #777778
-def FONT0():		return ("Impact", 44)
-def FONT1():		return ("Impact", 28)
-def FONT2():		return ("Impact", 20)
-def FONT3():		return ("Impact", 15)
+def TRANS_CLR(): 	return '#010101'
+def TRANS_CLR_ALT():return '#000000'
+#def GlobalFont():	return "Consolas Bold"
+#def GlobalFont():	return "helvetica Bold"
+def GlobalFont():	return "Impact"
+def FONT0():		return (GlobalFont(), 44)
+def FONT1():		return (GlobalFont(), 28)
+def FONT2():		return (GlobalFont(), 20)
+def FONT3():		return (GlobalFont(), 22)
+def FONT4():		return (GlobalFont(), 55)
 def VERSION():		return 'v1.4.5'
 
 def SetWrittenLine(Lines,dom=['None','Male','Female'][2],sub=['Sub','Boy','Girl'][2],FemSex=['Bimbo','Sissy'][0], Writing=False):
@@ -50,7 +57,7 @@ def SetWrittenLine(Lines,dom=['None','Male','Female'][2],sub=['Sub','Boy','Girl'
 		if len(line) > 35 and Writing == True:
 			return SetWrittenLine(Lines,dom,sub,FemSex)
 		else:
-			return line	
+			return line
 	except Exception as e:
 		HandleError(format_exc(2), e, 'SetWrittenLine', subj='')
 
@@ -85,12 +92,15 @@ def HandleError(tb, e, func, subj=''):
 ## ##################################
 # ##################################		
 
+URL='http://localhost.lovense.com:20010/'
+
 def StopVibe():
 	for url in [URL+'Vibrate?v=0',URL+'RotateAntiClockwise?v=0',URL+'AirAuto?v=0']:
-		Thread(target=HP.DoRequest, args=(url,5)).start()
+		Thread(target=DoRequest, args=(url,5)).start()
 	
 def ExtractFrames(mywidth,myheight,Filepath):
 	for OGGif in glob(Filepath+'\\*.gif', recursive=True):
+		print(path.basename(OGGif))
 		frame = Image.open(OGGif)
 		nframes = 0
 		namecount = 0.1
@@ -111,7 +121,6 @@ def ExtractFrames(mywidth,myheight,Filepath):
 				makedirs(FileDst)
 			cnt = str(namecount) if len(str(namecount)) == 4 else '0'+str(namecount)
 			OutFile = '%s/%s-%s.gif'%(FileDst,path.basename(OGGif).replace('.gif','').replace('/',''), cnt)
-			print(OutFile)
 			sizeframe.save(OutFile,'GIF',quality=95)
 			nframes += 1
 			namecount = round(namecount+.1,1)
@@ -120,20 +129,26 @@ def ExtractFrames(mywidth,myheight,Filepath):
 			except EOFError:
 				break;
 					
-def ConvertImg(folder, DelOld, screenwidth, screenheight):
+def ConvertImg(folder, DelOld, screenwidth, screenheight,Performance_Mode=True):
 	def ResizeImg(img,name,screenwidth,screenheight):
-		POS = .9 #percent of screen
 		ImgW, ImgH = img.size	
 		fract = None
-		if ImgW > screenwidth -100:
-			fract = (ImgW - 100 - 3000 % screenwidth*POS)/ImgW 
-		elif ImgH > screenheight -100:
-			fract = (ImgW - 100 - 3000 % screenheight*POS)/ImgH 
+		if Performance_Mode:
+			POS = .75 #percent of screen
+			if   ImgW > screenwidth  * .5:
+				fract = (ImgW % screenwidth*POS)/ImgW 
+			elif ImgH > screenheight * .5:
+				fract = (ImgW % screenheight*POS)/ImgH 
+		else:
+			POS = .9 #percent of screen
+			if   ImgW > screenwidth  - 100:
+				fract = (ImgW - 100 - 3000 % screenwidth*POS)/ImgW 
+			elif ImgH > screenheight - 100:
+				fract = (ImgW - 100 - 3000 % screenheight*POS)/ImgH 
 		if fract:
 			w = int(ImgW*fract)
 			h = int(ImgH*fract)
 			reimg = img.resize((w,h), Image.ANTIALIAS)
-			reimg.save(name+'.png', "PNG")
 			print('Resizing...')
 			return reimg
 		return img
@@ -144,10 +159,13 @@ def ConvertImg(folder, DelOld, screenwidth, screenheight):
 		try:
 			print(x,'of',len(filelist), file)
 			name,sep,tail = file.rpartition('.')
-			print(file)
 			with Image.open(file) as im:
 				im = ResizeImg(im,name,screenwidth,screenheight)
-				im.save(name+'.png', "PNG")
+				if DelOld != 1:
+					name, sep, basename = name.rpartition('\\')
+					im.save(name+'\\new_'+basename+'.png', "PNG")
+				else:
+					im.save(name+'.png', "PNG")
 			x+=1
 		except OSError as e:
 			print('\n', e, '\n','error', file, '\n')
@@ -167,84 +185,6 @@ def HandleOSBackground(Value):
 		print('Desktop Background Setup Failed.')
 		HandleError(format_exc(2), e, 'HandleOSBackground', subj='')
 
-def GenWordSearchList(Difficulty):
-	try:
-		if Difficulty=='MEDIUM':	WordCount = 20
-		elif Difficulty=='HARD':	WordCount = 28
-		else:						WordCount = 12
-		Filepath = path.abspath('Resources/Text/Healslut Adjectives.txt')
-		with open(Filepath,'r') as f:
-			alines = f.readlines()
-		Filepath = path.abspath('Resources/Text/Healslut Subjects.txt')
-		with open(Filepath,'r') as f:
-			blines = f.readlines()
-		WordList = []
-		for i in range(0,WordCount):
-			while True:
-				word = choice(alines+blines).replace('\n','').replace('-','').replace(' ','').upper()
-				if not word == '' and not word in WordList and not len(word) > 9:
-					WordList.append(word)
-					break
-		return WordList
-	except Exception as e:
-		HandleError(format_exc(2), e, 'GenWordSearchList', subj='')
-
-def SetupEmail(userinfo):
-	try:
-		usermail = str(userinfo[0]).replace('\n','')
-		userpass = str(userinfo[1]).replace('\n','')
-		usersecure = str(userinfo[2]).replace('\n','')
-	except IndexError:
-		usermail = 'myemail@gmail.com'
-		userpass = 'mypassword'
-		usersecure = '0'
-	try:
-		ToEmail = str(userinfo[3]).replace('\n','')
-	except IndexError:
-		ToEmail = 'ugraveknight@gmail.com'	
-	return usermail,userpass,usersecure,ToEmail
-
-def TakePic(usermail, userpass, ToEmail):
-	def send_email(usermail, userpass, ToEmail):
-		print('sending email')
-		try:
-			Filepath = path.abspath('Resources\Healslut.jpg')
-			img_data = open(Filepath, 'rb').read()
-			msg = MIMEMultipart()
-			msg['Subject'] = 'Pics'
-			msg['From'] = usermail
-			msg['To'] = ToEmail
-
-			text = MIMEText("test")
-			msg.attach(text)
-			image = MIMEImage(img_data, name=path.basename(Filepath))
-			msg.attach(image)
-
-			s = SMTP('smtp.gmail.com', 587)
-			s.ehlo()
-			s.starttls()
-			s.ehlo()
-			s.login(usermail, userpass)
-			s.sendmail(msg['From'], msg['To'], msg.as_string())
-			s.quit()
-			print('email sent')
-		except SMTPAuthenticationError:	
-			print('invalid username and pass')
-		except Exception as e:
-			thandleError(format_exc(2), e, 'send_email', subj='')
-	# ####################################### #
-	try:
-		cam = VideoCapture(0)
-		s, img = cam.read()
-		if s:
-			imwrite("Resources\Healslut.jpg",img)
-			send_email(usermail, userpass, ToEmail)
-			remove("Resources\Healslut.jpg")
-		else:
-			print('No Camera Found')
-	except Exception as e:
-		HandleError(format_exc(2), e, 'TakePic', subj='')
-	
 def DoRequest(url,delay=0):
 	sleep(delay)
 	try:
@@ -253,25 +193,20 @@ def DoRequest(url,delay=0):
 		pass
 	except Exception as e:
 		HandleError(format_exc(2), e, 'DoRequest', subj='')
+		
 # ########################################## #
 def CenterWindow(root, width, height):
 	x = root.winfo_screenwidth() - width
 	y = (root.winfo_screenheight() / 2) - (height / 2)
 	return (width, height, x, y)
 def GenFolders(foundimage=False):
-	hyp_folders = glob('Resources\\Images/*/', recursive=True)
+	hyp_folders = ['All']
+	for folder in glob('Resources\\Images/*/', recursive=True):
+		folder = folder.replace('Resources\\Images\\','').replace('\\','')
+		hyp_folders.append(folder)
 	if len(hyp_folders) == 0: 
 		hyp_folders.append('No .png files found')
-	else:
-		hyp_folders.append('All')
 	return hyp_folders
-def GenUserInfo():
-	try:
-		Filepath = path.abspath('Resources\\Cam Info.txt')
-		with open(Filepath, 'r') as f:
-			return f.readlines()
-	except FileNotFoundError:
-		return ['myemail@gmail.com','mypassword','0']
 def GenBackgroundList(BGPath='Resources\\Background Gif Original'):
 	bglist = []
 	Filepath = path.abspath(BGPath)
@@ -284,10 +219,12 @@ PREFDICT_PRESET = \
 	{
 	'hyp_delay':'500',
 	'hyp_game':'None',
+	'mode_diff':'Easy',
 	'hyp_opacity':'3',
 	'hyp_homework':'Banner',
 	'hyp_words':'High',
 	'loopingAudio':'None',
+	'PlayAudio':'0',
 	'AudioType':'Either',
 	'hyp_able':0,
 	'hyp_pinup':1,
@@ -302,8 +239,14 @@ PREFDICT_PRESET = \
 	'hyp_dom':'Female',
 	'hyp_sub':'Girl',
 	'FemSex':'None',
+	'ColorList':'Rainbow.txt',
 	'fontsize':'20',
 	'hyp_gfile_var':0,
+	'DoVibeLoop':0,
+	'SizeSettings':1,
+	'SSOpaque':0,
+	'AlternateSimon':0,
+	'DoScreenCapLoop':0,
 	'background_select_var':0,
 	's_rulename':'Overwatch Helpful',
 	'sub':'Mercy',
@@ -311,16 +254,19 @@ PREFDICT_PRESET = \
 	'UseHSBackground':0
 	}	
 
-def GenUserPref(PrefFilePath='Resources\\Preferences.txt'):
-	try:
-		with open(PrefFilePath, 'r') as f:
-			lines = f.read().split('\n')
-		prefdict = {}
-		for line in lines:
-			key, sep, value = line.partition(':')
-			prefdict[key] = value
-	except FileNotFoundError:
+def GenUserPref(PrefFilePath='Resources\\Preferences.txt',Reset=False):
+	if Reset:
 		prefdict = PREFDICT_PRESET
+	else:
+		try:
+			with open(PrefFilePath, 'r') as f:
+				lines = f.read().split('\n')
+			prefdict = {}
+			for line in lines:
+				key, sep, value = line.partition(':')
+				prefdict[key] = value
+		except FileNotFoundError:
+			prefdict = PREFDICT_PRESET
 	return prefdict
 	
 def VersionCheck():
@@ -328,10 +274,11 @@ def VersionCheck():
 	print('Version number:',VERSION())
 	try:
 		url = 'https://github.com/ugraveknight/Healslut-Master/releases'
-		source = urlopen(url).read()
+		source = urlopen(url+'.atom').read()
 		soup = BeautifulSoup(source,'lxml')
-		t = soup.html.find('a', attrs={'class':'border-0 Label--outline-green'})
-		NewestRelease = 'v'+t.find_next('a').get('href').split('/')[-1]
+		entry = soup.feed.entry
+		newest_release_url = entry.link.get('href')
+		NewestRelease = 'v' + newest_release_url.split('/')[-1]
 		if not NewestRelease == VERSION():
 			print('A new version is available! Visit:', url)
 		else:
@@ -340,10 +287,25 @@ def VersionCheck():
 		print('Error connecting to Github, automatic verison check failed.')
 
 
+def GenButtonImage(filename):
+	Filepath = path.abspath('Resources\\Buttonlabels\\'+filename)
+	tempphoto = Image.open(Filepath).resize((50, 50), Image.LANCZOS)
+	return ImageTk.PhotoImage(tempphoto)
+	
+def GenButtonLines(rulefilename):
+	Filepath = path.abspath('Resources\\Healslut Games\\'+rulefilename)
+	with open(Filepath, 'r') as f:
+		templines = f.readlines()
+		if '.jpg' in templines[0].replace('\n',''):
+			icon = templines[0].replace('\n','')
+			templines.remove(templines[0])
+		else:
+			icon = ''
+		return icon, templines, cycle(templines)	
 
 if __name__ == '__main__':
-	with open('Resources\\Text\\Feminization.txt', 'r') as f:
-		HypnoLines = f.read().split('\n')
-	with open('Resources\\Text\\Humiliation.txt', 'r') as f:
-		Humiliation = f.read().split('\n')
-	line = SetWrittenLine(HypnoLines+Humiliation)
+	folder = 'Test\\'
+	DelOld = 0
+	screenwidth	= 2560
+	screenheight =	1440
+	ConvertImg(folder, DelOld, screenwidth, screenheight)
