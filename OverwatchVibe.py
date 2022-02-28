@@ -31,7 +31,7 @@ def go(positions, markslist, im):
 # ####################################### #
 ###########################################	
 
-def GenPositions():		#Imported
+def GenPositions(screenwidth,screenheight):		#Imported
 	user32 = windll.user32
 	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 	userx, usery = screensize
@@ -51,14 +51,14 @@ def GenPositions():		#Imported
 	positions = {}
 	for value in oripos:	
 		x,sep,y=value.partition(',')
-		x = round((userx/2560) * int(x))
-		y = round((usery/1440) * int(y))
+		x = round((userx/screenwidth) * int(x))
+		y = round((usery/screenheight) * int(y))
 		positions.update({x:y})
 	return positions
 	
 def RunTest():		#Debug
 	markslist = [0,0,0,0]
-	positions = GenPositions()
+	positions = GenPositions(3440,1440)
 	while True:
 		im = screenshot()
 		markslist, base_speed = go(positions,markslist,im)
