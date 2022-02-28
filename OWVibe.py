@@ -30,7 +30,7 @@ def go(positions, markslist, im):
 ###########################################
 # ####################################### #
 ###########################################	
-
+ 
 def GenPositions(screenwidth,screenheight):		#Imported
 	user32 = windll.user32
 	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
