@@ -196,27 +196,6 @@ the end of the file, it starts over from the top.
 		This simple macro allow you to change your pinup source folder on the go! to use
 		it, you will specify your desired folder name. For the Healslut folder, include 
 		the following line in your punish/reward or button file "$pinup Healslut"
-	---  $picture
-		This function takes a picture from your webcam and sends it to an email of your choice.
-		This function was made deliberately more difficult to use to protect the privacy of 
-		users who don’t want to share images of themselves or their subs. The first time you 
-		use this function, a warning will appear telling you that you need to enable less secure 
-		access to the gmail account that you will be sending pictures from. Follow the 
-		link and sign in using the account you wish to use. It must be a gmail account.
-		A text file has been created in the Resources\ folder called Cam Info.txt will be
-		created. Fill out your login information to the gmail account you wish to use in 
-		the format laid out for you. In order to keep the warning from appearing again,
-		ensure that the third line equals 1. In the fourth line of the Cam Info.txt file
-		you will have the option of specifing who you would like to receive your image. if you
-		leave this line blank, your image will be sent to me*. Most users create a new email 
-		account and use it exclusively for this purpose.
-			*None of your information is shared with me and I will never attempt to communicate 
-			with those of you who use this function. 
-			
-			This program will never take a picture of you without your consent. It is included
-			only for those who would find the exposure or punishment exciting. If there is no 
-			Cam Info.txt file, this function has not been used or attempted.
-
 	---  $writeforme[number]
 		This sets the remaining number of lines to whichever number you've selected. You can
 		type lines in between matches and set the number of remaining lines to 0 once the 
@@ -230,9 +209,17 @@ the end of the file, it starts over from the top.
 		SO, its easy to use, you just enter '$wordsearch easy' and then it will generate a word
 		seach based on words within the Healslut Subjects and Healslut Adjectives files.
 		Running '$wordsearch easy' again will close the window.
+	---  $simonsays[0-99]
+		Big thanks to the user who suggested this, it was really fun to make. All you need to do
+		is call '$simonsays4' to trigger the game which will then beep out four colors. You can
+		delete the frame by pressing the '.' key and manually start a new game by pressing the 
+		'0' key. 
 	--- $dicerolls
 		This simple tweak to the $text macro allows the user to roll dice for the purpose of 
 		playing Faproulette or anything else! '$diceroll8 6d10' shows six 10 sided dice for 8
+		seconds
+	--- $wait[number]
+		specify a number of seconds to wait before proceeding such as '$wait 5' to wait five
 		seconds
 
 Here is a good example of the lines you'd want to include in the punishments and rewards
@@ -352,7 +339,60 @@ feedback.
 
 	####################### Change Log #######################
 
+Version 2.0.0
+		--- Text Functions
+	-	Added the option to select different colorsets for onscreen text
+	-	Added color presets
+		
+		--- Menu Functions
+	-	Better response time when exiting overlay
+	-	Overhauled the edit menu to account for better organization
+		
+		--- Refactored a LOT of code
+	-	Fixed a bug where showing 'All' Pinup images would do nothing
+	-	Hypno background no longer stutters during new pinup
+	-	Write For Me broken out into its own subprocess, making it more responsive
+	-	Addressed an issue where the on screen text had an aliased white border
+	-	Removed the hypno bg main menu port, made the menu always on top anyway
+	-	retooled the edit menu options
+	-	Fixed an issue where an on fire meter over 70% full wouldnt register extra on
+		screen words
+	-	Fixed an issue with the on fire meter where it was forcing 2560x1440 rather than
+		checking native resolution
+	-	Fixed an issue with the killfeed monitor that cause it to register the same event
+		multiple times
+	-	Fixed an issue with the killfeed monitor that cause it to register an event
+		as something else entirely
+	-	Fixed a bug where changing Action Menu rulesets would keep old buttons on screen
+	-	Fixed an issue where the pinup screen would crash if the BG wasnt active
+		
+		--- The Killfeed Monitor
+	-	Improved OW Killfeed capability, should be much more stable now.
+		
+		--- Punishments and Rewards
+	-	Removed $picture macro
+	-	Added $wait macro
+	-	Added $+Curve macro
+	-	Added $-Curve macro
+	-	Added $simonsays Game
+			- Use arrow keys to play
+			- manually start a new game by pressing 0 key or use $simonsays!
+			- added alternate control scheme incase you use arrow keys for your game!
+		
+	TODO
+			# verify that curve works
+			# add pipe option for changing word count
+			# add audio for videos that doesnt include ripping them
+			# test OW Killfeed capability
+			# create updated explaination chart of all edit buttons
+		
+		Known Bugs
+			[] no longer works consistently
+			homework score no longer displays
+			
+
 Version 1.4.5
+
 		--- Text Functions
 	-	Introducing the new Sissy/Bimbo Hypo Text package that is over 150 lines! To implement 
 		this package a number of new replacement codes have been added. To use this, select 
@@ -391,6 +431,7 @@ Version 1.4.5
 
 
 Version 1.4.4
+
 		--- Menu Functions
 	-	Added an option to change the users desktop background while using the overlay for
 		full immersion 
@@ -403,6 +444,7 @@ Version 1.4.4
 	-	Added support for the death of the submissive in League of Legends
 
 Version 1.4.3
+
 		--- Menu Functions
 	-	Fixed compatibility  on 1366x768 monitors. Killfeed Functionality is not yet 
 		supported for this monitor size
@@ -425,14 +467,17 @@ Version 1.4.3
 	-	Fixed Write for me to retain focus in between sentances
 		
 Version 1.4.2
+
 		--- Menu Functions
 	-	Fix to enable Killfeed Functionality on 1920x1080 Monitors
 
 Version 1.4.1
+
 		--- Menu Functions
 	-	Fixed an incompatibility issue with monitors shorter than 1440 pixels
 
 Version 1.4
+
 		--- Menu Functions
 	-	Fixed a bug where editing the overlay without closing it wouldnt close the 
 		action menu
@@ -455,6 +500,7 @@ Version 1.4
 			- Someone on the Subs team dies (Freeplay only)
 	
 Version 1.3
+
 		--- Menu Functions
 	-	Fixed a bug where closing the program while the overlay is active would
 		freeze instead of closing
@@ -477,6 +523,7 @@ Version 1.3
 			$pinup
 
 Version 1.2
+
 		--- Overlay Functions
 	-	Reduced lag between pinup images
 	-	Added background select option menu
@@ -484,6 +531,7 @@ Version 1.2
 	-	Added function to allow user to format gif size to their screen
 
 Version 1.1
+
 		--- Overlay Functions
 	-	Mutliprocess support to enable packaging into one file, and import fixes
 	-	Traceback
@@ -494,6 +542,7 @@ Version 1.1
 
 
 Version 1.0
+
 		--- Overlay Functions
 	-	Hypnotic Gif Background
 	-	Pinup images and folder selection
@@ -535,26 +584,19 @@ Version 1.0
 
 	######################## Forecast ########################
 
-Soon I intend to implement spoken lines from the users
+At one point I had intended to implement spoken lines from the users so you could have 
+a real voice telling you that you were a good boy or whatever. I no longer think that is 
+within the scope of this project. But perhaps a text to speech option is!
 
-I will work to enable the use of more vibrator brands. This will take time but I believe
-it will be worth it
-
-The program is pretty well optimized, but on slower computers a longer delay 
-between screenshots could be used.
-
-I'd like to provide a menu selector for download soundgasm files
+I will work to enable the use of more vibrator brands. 
 
 	######################## Credits ########################
 
 Lewd-Zko 	(twitter.com/LewdZko) 
 	- 	for the image of their OC crystal which was modified and placed on the wordsearch page
-u/iateacrayon 	(https://www.reddit.com/r/iateacrayon/wiki/list)
-	- 	for their wiki/list of all those fetishes
 this-is-embarrassing 	(https://github.com/this-is-embarrassing)
 	- 	did some sexy jazz to the code, much sharper now.
 u/Anonymous2150
-	- 	Helping
-		
+	- 	Handled a bunch of work, late hours, quality-tested 
+	
 And you, the user. <3
-
