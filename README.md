@@ -214,13 +214,23 @@ the end of the file, it starts over from the top.
 		is call '$simonsays4' to trigger the game which will then beep out four colors. You can
 		delete the frame by pressing the '.' key and manually start a new game by pressing the 
 		'0' key. 
-	--- $dicerolls
+	---  $dicerolls
 		This simple tweak to the $text macro allows the user to roll dice for the purpose of 
 		playing Faproulette or anything else! '$diceroll8 6d10' shows six 10 sided dice for 8
 		seconds
-	--- $wait[number]
+	---  $wait[number]
 		specify a number of seconds to wait before proceeding such as '$wait 5' to wait five
 		seconds
+	---  $wordknt [number]
+		This changes the menu option for how many on screen words you want to see. Dont use a 
+		number outside of the range below. Note that unlimited really means like 64. 
+				'None':0
+				'Low'1
+				'Medium':2
+				'High':3
+				'Very High':4
+				'Max':5
+				'Unlimited':6
 
 Here is a good example of the lines you'd want to include in the punishments and rewards
 
@@ -339,6 +349,41 @@ feedback.
 
 	####################### Change Log #######################
 
+Version 2.0.1
+		--- Text Functions
+	-	Added a bold border around all on screen text
+	-	Cleaned up the UI on the write for me window
+	-	Cleaned up the UI on the edit menu
+		
+		--- Menu Functions
+	-	Darkmode, baby!
+	-	So, I messed with the image format settings. It is supposed to sort through a folder
+		and resize all of the images larger than your screen and overwrite the old image. I 
+		have removed the delete jpg fuction. They dont need converted to png.
+	
+		--- Write For Me Functions
+	-	Added a pretty background
+	-	Restored functionality to the [] escape function
+	-	Restored functionality to the homework score
+
+		--- The Killfeed Monitor
+	-	League Killfeed shouldnt trigger in the end game screen any longer
+	
+		--- Overlay Functions
+	-	In order to reduce the lag which occurs in the program immediately before a large pinup image 
+		is loaded, the png to jpg function has been completely retooled. It no longer converts jpg to
+		png, and now simply resizes pngs, jpgs, jpegs to something which will fit on the screen.
+			- incidentally, this can now also be used to identify corrupted images.
+	
+	TODO
+			# verify that curve works
+			# add pipe option for changing word count
+			# add audio for videos that doesnt include ripping them
+			# test OW Killfeed capability
+			# create updated explaination chart of all edit buttons
+				
+		
+	
 Version 2.0.0
 		--- Text Functions
 	-	Added the option to select different colorsets for onscreen text
@@ -355,8 +400,7 @@ Version 2.0.0
 	-	Addressed an issue where the on screen text had an aliased white border
 	-	Removed the hypno bg main menu port, made the menu always on top anyway
 	-	retooled the edit menu options
-	-	Fixed an issue where an on fire meter over 70% full wouldnt register extra on
-		screen words
+	-	Fixed an issue where an on fire meter over 70% full wouldnt register extra on screen words
 	-	Fixed an issue with the on fire meter where it was forcing 2560x1440 rather than
 		checking native resolution
 	-	Fixed an issue with the killfeed monitor that cause it to register the same event
@@ -378,18 +422,22 @@ Version 2.0.0
 			- Use arrow keys to play
 			- manually start a new game by pressing 0 key or use $simonsays!
 			- added alternate control scheme incase you use arrow keys for your game!
-		
+	-	Added wordknt macro
+			- This changes the menu option for how many on screen words you want to see
+				'None':0
+				'Low'1
+				'Medium':2
+				'High':3
+				'Very High':4
+				'Max':5
+				'Unlimited':6
 	TODO
 			# verify that curve works
 			# add pipe option for changing word count
 			# add audio for videos that doesnt include ripping them
 			# test OW Killfeed capability
 			# create updated explaination chart of all edit buttons
-		
-		Known Bugs
-			[] no longer works consistently
-			homework score no longer displays
-			
+			# killfeed in league plays buzzer on loop while dead
 
 Version 1.4.5
 
@@ -600,3 +648,4 @@ u/Anonymous2150
 	- 	Handled a bunch of work, late hours, quality-tested 
 	
 And you, the user. <3
+
