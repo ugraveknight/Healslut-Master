@@ -108,10 +108,17 @@ class SimonSaysLibs:
 			self.BlueUnlit = RenderImage(Filepath,self.SizeSettings,NewSize)
 			Filepath = path.abspath(PathToFiles+'Blue_lit.png')
 			self.BlueLit   = RenderImage(Filepath,self.SizeSettings,NewSize)
+			
+			
+			
+			
 			Filepath = path.abspath(PathToFiles+'Purple_unlit.png')
 			self.PrupleUnlit = RenderImage(Filepath,self.SizeSettings,NewSize)
 			Filepath = path.abspath(PathToFiles+'Purple_lit.png')
 			self.PrupleLit   = RenderImage(Filepath,self.SizeSettings,NewSize)
+			
+			
+			
 			
 			height = height-10
 			self.r = self.parent.SSFrame.bg.create_image(width*.25, height*.5, image=self.RedLit)
@@ -210,12 +217,12 @@ class SimonSaysLibs:
 		if not 0 in self.PlayList and self.GameListCopy != []:
 			if self.PlayList == self.GameListCopy:
 				print('You win!')
-				self.PlaysoundWrapper('Reward Chime')
+				self.PlaysoundWrapper('Reward Chime.mp3')
 				self.GameListCopy = []
 				self.Die()
 			else:
 				print('You lose!')
-				self.PlaysoundWrapper('Punishment Buzz')
+				self.PlaysoundWrapper('Punishment Buzz.mp3')
 				self.NewGame(self.Length)
 			self.ResetPlayList()
 		
@@ -223,7 +230,6 @@ class SimonSaysLibs:
 			#  recent key, and you dont want to double press by mistake
 		if self.SSActive == True:
 			self.parent.after(125, self.ListenKeys)
-		print('Listing.....................')
 		
 		# Red
 	def LightRed(self):
@@ -272,18 +278,12 @@ class SimonSaysLibs:
 		self.SSActive = False
 	
 	def PlaysoundWrapper(self,Sound):
-		if not '.' in Sound:
-			try:
-				Filepath = path.abspath('Resources\\Audio\\%s.mp3'%Sound)
-				playsound(Filepath, False)
-			except Exception:
-				pass		
-		else:
-			try:
-				Filepath = path.abspath('Resources\\Audio\\%s'%Sound)
-				playsound(Filepath, False)
-			except Exception:
-				pass
+		try:
+			Filepath = path.abspath('Resources\\Audio\\%s'%Sound)
+			playsound(Filepath, False)
+		except Exception as e:
+			print(e, Sound)
+			pass		
 					
 def SetupUI(p_ss,AlternateSimon):
 	if AlternateSimon == 1:

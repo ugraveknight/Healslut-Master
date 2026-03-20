@@ -42,20 +42,11 @@ class Banner(Frame):
 			self.banner_var = 4		
 			self.freshtext = False
 			self.endtime = time()
+			
 			self.master.wm_attributes("-topmost", 1)
 			self.master.wm_attributes("-transparentcolor", HP.TRANS_CLR())
 			self.screen_width = self.screenwidth
 			self.screen_height = self.screenheight
-			self.master.geometry('%dx%d+%d+%d' % (self.screen_width, self.screen_height, 0, 0))
-			self.TextWidth = self.screen_width-300
-			self.master.overrideredirect(1)
-			self.banner = Canvas(self.master, bg=HP.TRANS_CLR(), width=495, height=200,highlightthickness=0)
-			self.banner.pack(fill=BOTH, expand=YES)
-			self.tmp_banner = self.banner.create_text(0, 0, text='')
-			self.maintext = self.banner.create_text(0, 0, text='')
-			if self.display_rules == 2:
-				self.banner.create_text(0, self.screen_height/2, text=self.output, font=(HP.GlobalFont(), self.fontsize), 
-							fill='hot pink',justify=LEFT, anchor=W)
 			
 			self.x_cen = int(self.screenwidth  * .5)
 			self.x_lef = int(self.screenwidth  * .4)
@@ -63,6 +54,32 @@ class Banner(Frame):
 			self.y_cen = int(self.screenheight * .5)
 			self.y_upr = int(self.screenheight * .33)
 			self.y_low = int(self.screenheight * .66)
+			
+			self.master.geometry('%dx%d+%d+%d' % (self.screen_width, self.screen_height, 0, 0))
+			self.TextWidth = self.screen_width-300
+			self.master.overrideredirect(1)
+			self.banner = Canvas(self.master, bg=HP.TRANS_CLR(), width=495, height=200,highlightthickness=0)
+			self.banner.pack(fill=BOTH, expand=YES)
+			
+			shdow = 2
+			self.BannerTexta = self.banner.create_text(self.screen_width/2+shdow, self.screen_height/1.3+shdow, text='', anchor=CENTER,font=HP.FONT0(),fill='#000000')
+			self.BannerTextb = self.banner.create_text(self.screen_width/2-shdow, self.screen_height/1.3-shdow, text='', anchor=CENTER,font=HP.FONT0(),fill='#000000')
+			self.BannerTextc = self.banner.create_text(self.screen_width/2+shdow, self.screen_height/1.3-shdow, text='', anchor=CENTER,font=HP.FONT0(),fill='#000000')
+			self.BannerTextd = self.banner.create_text(self.screen_width/2-shdow, self.screen_height/1.3+shdow, text='', anchor=CENTER,font=HP.FONT0(),fill='#000000')
+			self.BannerText = self.banner.create_text(self.screen_width/2, self.screen_height/1.3,anchor=CENTER, text='', font=HP.FONT0())
+			
+			self.maintexta = self.banner.create_text(self.screen_width*.5+shdow, self.screen_height*.4+shdow, text='', anchor=CENTER,font=HP.FONT4(),fill='#000000')
+			self.maintextb = self.banner.create_text(self.screen_width*.5-shdow, self.screen_height*.4-shdow, text='', anchor=CENTER,font=HP.FONT4(),fill='#000000')
+			self.maintextc = self.banner.create_text(self.screen_width*.5+shdow, self.screen_height*.4-shdow, text='', anchor=CENTER,font=HP.FONT4(),fill='#000000')
+			self.maintextd = self.banner.create_text(self.screen_width*.5-shdow, self.screen_height*.4+shdow, text='', anchor=CENTER,font=HP.FONT4(),fill='#000000')
+			self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, text='', anchor=CENTER,font=HP.FONT4())
+			
+			if self.display_rules == 2:
+				self.banner.create_text(0-2,self.y_cen-2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+				self.banner.create_text(0+2,self.y_cen+2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+				self.banner.create_text(0-2,self.y_cen+2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+				self.banner.create_text(0+2,self.y_cen-2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+				self.banner.create_text(0,  self.y_cen,  text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='hot pink',justify=LEFT,anchor=W)
 			
 			self.TextLibWrapper()
 			self.RunOpaqBanner()
@@ -76,19 +93,32 @@ class Banner(Frame):
 			self.x_cen,self.x_lef,self.x_rgt,self.y_cen,self.y_upr,self.y_low)
 	
 	def RunOpaqBanner(self):
+			
+			# The transparent Banner is definitely run at the Hypnotherapy layer...
+			# So I am eventually going to have to figure out what all of this code 
+			# does and destroy some of it? at least document it jesus what was I thinking...
+			
+			# in hindsight, Banner.py is a misnomer. This file should be called Opaque Layer.
+	
 		try:
+			# exit condition
 			if self.c_hypno.poll() == True:
 				self.master.quit()
+			
 			if self.tranbanr == 0 and self.homework == 'Banner':
 				self.banner_var+=1
 				if self.banner_var >= 4:
 					self.written_line = HP.SetWrittenLine(self.humiliation, self.dom, self.sub)
 					self.banner_var = 0
 					self.linecolor = choice(self.ColorList)
-				self.banner.delete(self.tmp_banner)
-				self.tmp_banner = self.banner.create_text(self.screen_width/2, self.screen_height/1.3, 
-													text=self.written_line.upper(),width=self.TextWidth,anchor=CENTER,
-													font=HP.FONT0(), fill=self.linecolor)
+				
+				self.banner.itemconfigure(self.BannerText,text=self.written_line.upper(),width=self.TextWidth,fill=self.linecolor)
+				self.banner.itemconfigure(self.BannerTexta,text=self.written_line.upper(),width=self.TextWidth)
+				self.banner.itemconfigure(self.BannerTextb,text=self.written_line.upper(),width=self.TextWidth)
+				self.banner.itemconfigure(self.BannerTextc,text=self.written_line.upper(),width=self.TextWidth)
+				self.banner.itemconfigure(self.BannerTextd,text=self.written_line.upper(),width=self.TextWidth)
+			
+			# this manages the wordknt macro, and on screen words when opaque
 			if self.banwords == 0:
 				self.TL.UpdateText(self.wordcount,True)
 				if self.c_wordknt.poll() == True:
@@ -98,26 +128,42 @@ class Banner(Frame):
 						self.TL.ClearScreen()
 						self.wordcount = newcount
 				self.master.after(int(self.delay/2), self.TL.UpdateText(self.wordcount))
+			
+			'''
+			# this is currently unused, pending the character selection functionality
 			if self.c_CharSelect.poll() == True:
 				self.c_CharSelect.recv()
 				self.i = ImageTk.PhotoImage(Image.open('CharacterSelect.png'))
 				self.CharSelect = self.banner.create_image(0,0, image=self.i)
+			'''
+			
+			# # # # # # # # # # # # # # # # # # # # # #
+			# This section plays to the $Text option. #
+			
+			# Check $Text Poll
 			if self.c_txt.poll() == True:
 				pipetext = self.c_txt.recv()
 				text_count, sep, self.mytext = pipetext.partition(' ')
 				self.endtime = time()+int(text_count)
 				self.freshtext = True
+			
+			# Initalize and recolor
 			if time() < self.endtime:
 				self.linecolor = choice(self.ColorList)
-				self.banner.delete(self.maintext)
-				self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, 
-													text=self.mytext,width=self.TextWidth,anchor=CENTER,
-													font=HP.FONT4(), fill=self.linecolor)
+				self.banner.itemconfigure(self.maintext, text=self.mytext,width=self.TextWidth,fill=self.linecolor)
+				self.banner.itemconfigure(self.maintexta,text=self.mytext,width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextb,text=self.mytext,width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextc,text=self.mytext,width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextd,text=self.mytext,width=self.TextWidth)
+			# Else, we remove the text
 			elif self.freshtext == True:
 				self.freshtext = False
-				self.banner.delete(self.maintext)
-				self.maintext = self.banner.create_text(self.screen_width*.5, self.screen_height*.4, 
-													text=' ')
+				self.banner.itemconfigure(self.maintext, text='',width=self.TextWidth,fill=self.linecolor)
+				self.banner.itemconfigure(self.maintexta,text='',width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextb,text='',width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextc,text='',width=self.TextWidth)
+				self.banner.itemconfigure(self.maintextd,text='',width=self.TextWidth)
+			
 			self.master.lift()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'RunOpaqBanner', subj='')

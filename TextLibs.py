@@ -32,6 +32,7 @@ class TextLibs:
 		self.BuildText()
 		
 	def BuildText(self):
+		self.ShadowOffset = 2
 		try:
 			Filepath = path.abspath('Resources\\Text\\Healslut Adjectives.txt')
 			with open(Filepath, 'r') as a:
@@ -40,80 +41,48 @@ class TextLibs:
 			with open(Filepath, 'r') as s:
 				self.slines=s.readlines()
 			
-			self.TopTextA = self.RandText.create_text(self.x_cen,self.y_upr, text='',font=HP.FONT0(),justify=CENTER)
-			self.BotTextA = self.RandText.create_text(self.x_cen,self.y_low, text='',font=HP.FONT0(),justify=CENTER)
-			self.LefTextA = self.RandText.create_text(0, 0,text='',font=HP.FONT1(),justify=CENTER)
-			self.RgtTextA = self.RandText.create_text(0, 0,text='',font=HP.FONT1(),justify=CENTER)
+			LengthofStandardWords = 12
+			LengthofUnlimitedWords = 52
 			
+			# # # # # # # # # # # # #
+			# The Background Border #
+			self.ShadowWordsList = \
+			[
+				[
+				self.RandText.create_text(self.x_cen+self.ShadowOffset,self.y_upr+self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen-self.ShadowOffset,self.y_upr-self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen-self.ShadowOffset,self.y_upr+self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen+self.ShadowOffset,self.y_upr-self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				],
+				[
+				self.RandText.create_text(self.x_cen+self.ShadowOffset,self.y_low+self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen-self.ShadowOffset,self.y_low-self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen-self.ShadowOffset,self.y_low+self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(self.x_cen+self.ShadowOffset,self.y_low-self.ShadowOffset, text='',font=HP.FONT0(),justify=CENTER,fill='#000000'),
+				],
+			]
+			for i in range(LengthofStandardWords+LengthofUnlimitedWords):
+				t = \
+				[
+				self.RandText.create_text(0,0, text='',font=HP.FONT1(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(0,0, text='',font=HP.FONT1(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(0,0, text='',font=HP.FONT1(),justify=CENTER,fill='#000000'),
+				self.RandText.create_text(0,0, text='',font=HP.FONT1(),justify=CENTER,fill='#000000'),
+				]
+				self.ShadowWordsList.append(t)
 			
-			self.TopTextB = self.RandText.create_text(0, 0,text='',font=HP.FONT2(),justify=CENTER)
-			self.TopTextC = self.RandText.create_text(0, 0,text='',font=HP.FONT2(),justify=CENTER)
-			self.BotTextB = self.RandText.create_text(0, 0,text='',font=HP.FONT2(),justify=CENTER)
-			self.BotTextC = self.RandText.create_text(0, 0,text='',font=HP.FONT2(),justify=CENTER)
+			# # # # # # # # # # #
+			#  Low to Max words #
+			self.StandardWordsList = \
+			[
+				self.RandText.create_text(self.x_cen,self.y_upr, text='',font=HP.FONT0(),justify=CENTER),
+				self.RandText.create_text(self.x_cen,self.y_low, text='',font=HP.FONT0(),justify=CENTER)
+			]
+			self.StandardWordsList += [self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER) for i in range(LengthofStandardWords-2)]
 			
-			self.LefTextB = self.RandText.create_text(0, 0,text='',font=HP.FONT3(),justify=CENTER)
-			self.LefTextC = self.RandText.create_text(0, 0,text='',font=HP.FONT3(),justify=CENTER)
-			self.RgtTextB = self.RandText.create_text(0, 0,text='',font=HP.FONT3(),justify=CENTER)
-			self.RgtTextC = self.RandText.create_text(0, 0,text='',font=HP.FONT3(),justify=CENTER)
-			
-			self.TAa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TBa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TCa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TDa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TEa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TFa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TGa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.THa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TIa = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			
-			self.TJa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TKa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TLa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TMa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TNa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TOa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TPa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TQa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TRa = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			
-			self.TSa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TTa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TUa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TVa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TWa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TXa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TYa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TZa = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			
-			
-			self.TAb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TBb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TCb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TDb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TEb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TFb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TGb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.THb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			self.TIb = self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER)
-			
-			self.TJb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TKb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TLb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TMb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TNb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TOb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TPb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TQb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			self.TRb = self.RandText.create_text(0, 0, text='',font=HP.FONT2(),justify=CENTER)
-			
-			self.TSb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TTb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TUb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TVb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TWb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TXb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TYb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
-			self.TZb = self.RandText.create_text(0, 0, text='',font=HP.FONT3(),justify=CENTER)
+			# # # # # # # # # # #
+			#  Unlimited words  #
+			self.UnlimitedWordsList = [self.RandText.create_text(0, 0, text='',font=HP.FONT1(),justify=CENTER) for i in range(LengthofUnlimitedWords)]
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'TextLib.BuildText', subj='')
 		
@@ -131,8 +100,17 @@ class TextLibs:
 					adjx1 = choice(self.alines).upper()
 					subx1 = choice(self.slines).upper()
 					
-					self.RandText.itemconfigure(self.TopTextA,text=adjx1,fill=colorx1)
-					self.RandText.itemconfigure(self.BotTextA,text=subx1,fill=colorx1)
+					self.ManageShadowWords(0,adjx1,self.x_cen,self.y_upr)
+					self.ManageShadowWords(1,subx1,self.x_cen,self.y_low)
+					
+					self.RandText.itemconfigure(self.StandardWordsList[0],text=adjx1,fill=colorx1)
+					self.RandText.itemconfigure(self.StandardWordsList[1],text=subx1,fill=colorx1)
+					self.RandText.coords(self.StandardWordsList[0],self.x_cen,self.y_upr)
+					self.RandText.coords(self.StandardWordsList[1],self.x_cen,self.y_low)
+					self.RandText.tag_raise(self.StandardWordsList[0])
+					self.RandText.tag_raise(self.StandardWordsList[1])
+					
+					
 										
 				if self.wordcount > 1:				# L+R words	
 					rx = float(randint(int(self.x_rgt*.9),int(self.x_rgt*1.1)))
@@ -143,11 +121,17 @@ class TextLibs:
 					adjy1 = choice(self.alines).upper()
 					suby1 = choice(self.slines).upper()
 					
-					self.RandText.itemconfigure(self.LefTextA,text=adjy1,fill=colory1)
-					self.RandText.itemconfigure(self.RgtTextA,text=suby1,fill=colory1)
-					self.RandText.coords(self.LefTextA,lx,ly)
-					self.RandText.coords(self.RgtTextA,rx,ry)
+					self.ManageShadowWords(2,adjy1,lx,ly)
+					self.ManageShadowWords(3,suby1,rx,ry)
 					
+					self.RandText.itemconfigure(self.StandardWordsList[2],text=adjy1,fill=colory1)
+					self.RandText.itemconfigure(self.StandardWordsList[3],text=suby1,fill=colory1)
+					self.RandText.coords(self.StandardWordsList[2],lx,ly)
+					self.RandText.coords(self.StandardWordsList[3],rx,ry)
+					self.RandText.tag_raise(self.StandardWordsList[2])
+					self.RandText.tag_raise(self.StandardWordsList[3])
+					
+										
 				if self.wordcount > 2:				#T+B extra words	
 					colorx2 = self.GenColor()
 					colorx3 = self.GenColor()
@@ -157,14 +141,24 @@ class TextLibs:
 					subx3 = choice(self.slines).upper()
 					Top_offset = randint(-30,30)
 					
-					self.RandText.itemconfigure(self.TopTextB,text=adjx2,fill=colorx2)
-					self.RandText.itemconfigure(self.TopTextC,text=subx2,fill=colorx2)
-					self.RandText.itemconfigure(self.BotTextB,text=adjx3,fill=colorx3)
-					self.RandText.itemconfigure(self.BotTextC,text=subx3,fill=colorx3)
-					self.RandText.coords(self.TopTextB,self.x_cen+Top_offset   ,self.y_upr-68)
-					self.RandText.coords(self.TopTextC,self.x_cen-Top_offset*-1,self.y_upr+20)
-					self.RandText.coords(self.BotTextB,self.x_cen+Top_offset   ,self.y_low-68)
-					self.RandText.coords(self.BotTextC,self.x_cen-Top_offset*-1,self.y_low+20)
+					self.ManageShadowWords(4,adjx2,self.x_cen+Top_offset   ,self.y_upr-68)
+					self.ManageShadowWords(5,subx2,self.x_cen-Top_offset*-1,self.y_upr+20)
+					self.ManageShadowWords(6,adjx3,self.x_cen+Top_offset   ,self.y_low-68)
+					self.ManageShadowWords(7,subx3,self.x_cen-Top_offset*-1,self.y_low+20)
+					
+					self.RandText.itemconfigure(self.StandardWordsList[4],text=adjx2,fill=colorx2)
+					self.RandText.itemconfigure(self.StandardWordsList[5],text=subx2,fill=colorx2)
+					self.RandText.itemconfigure(self.StandardWordsList[6],text=adjx3,fill=colorx3)
+					self.RandText.itemconfigure(self.StandardWordsList[7],text=subx3,fill=colorx3)
+					self.RandText.coords(self.StandardWordsList[4],self.x_cen+Top_offset   ,self.y_upr-68)
+					self.RandText.coords(self.StandardWordsList[5],self.x_cen-Top_offset*-1,self.y_upr+20)
+					self.RandText.coords(self.StandardWordsList[6],self.x_cen+Top_offset   ,self.y_low-68)
+					self.RandText.coords(self.StandardWordsList[7],self.x_cen-Top_offset*-1,self.y_low+20)
+					self.RandText.tag_raise(self.StandardWordsList[4])
+					self.RandText.tag_raise(self.StandardWordsList[5])
+					self.RandText.tag_raise(self.StandardWordsList[6])
+					self.RandText.tag_raise(self.StandardWordsList[7])
+					
 					
 				if self.wordcount > 3:			#L+R extra words
 					colory2 = self.GenColor()
@@ -176,14 +170,23 @@ class TextLibs:
 					Lef_offset = randint(-30,30)
 					Rgt_offset = randint(-30,30)
 					
-					self.RandText.itemconfigure(self.LefTextB,text=adjy2,fill=colory2)
-					self.RandText.itemconfigure(self.LefTextC,text=suby2,fill=colory2)
-					self.RandText.itemconfigure(self.RgtTextB,text=adjy3,fill=colory3)
-					self.RandText.itemconfigure(self.RgtTextC,text=suby3,fill=colory3)
-					self.RandText.coords(self.LefTextB,lx+Lef_offset   ,ly-45)
-					self.RandText.coords(self.LefTextC,lx+Lef_offset*-1,ly+18)
-					self.RandText.coords(self.RgtTextB,rx+Rgt_offset   ,ry-45)
-					self.RandText.coords(self.RgtTextC,rx+Rgt_offset*-1,ry+18)
+					self.ManageShadowWords(8,adjy2,lx+Lef_offset   ,ly-45)
+					self.ManageShadowWords(9,suby2,lx+Lef_offset*-1,ly+18)
+					self.ManageShadowWords(10,adjy3,rx+Rgt_offset   ,ry-45)
+					self.ManageShadowWords(11,suby3,rx+Rgt_offset*-1,ry+18)
+					
+					self.RandText.itemconfigure(self.StandardWordsList[8],text=adjy2,fill=colory2)
+					self.RandText.itemconfigure(self.StandardWordsList[9],text=suby2,fill=colory2)
+					self.RandText.itemconfigure(self.StandardWordsList[10],text=adjy3,fill=colory3)
+					self.RandText.itemconfigure(self.StandardWordsList[11],text=suby3,fill=colory3)
+					self.RandText.coords(self.StandardWordsList[8],lx+Lef_offset   ,ly-45)
+					self.RandText.coords(self.StandardWordsList[9],lx+Lef_offset*-1,ly+18)
+					self.RandText.coords(self.StandardWordsList[10],rx+Rgt_offset   ,ry-45)
+					self.RandText.coords(self.StandardWordsList[11],rx+Rgt_offset*-1,ry+18)
+					self.RandText.tag_raise(self.StandardWordsList[8])
+					self.RandText.tag_raise(self.StandardWordsList[9])
+					self.RandText.tag_raise(self.StandardWordsList[10])
+					self.RandText.tag_raise(self.StandardWordsList[11])
 					
 				if not self.wordcount > 4:
 					self.maintext_var = False
@@ -191,53 +194,71 @@ class TextLibs:
 					self.UnleashWords()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'TextLib.UpdateText', subj='')
+	
+	def ManageShadowWords(self,i,LineText,X,Y):
+		self.RandText.itemconfigure(self.ShadowWordsList[i][0],text=LineText)
+		self.RandText.itemconfigure(self.ShadowWordsList[i][1],text=LineText)
+		self.RandText.itemconfigure(self.ShadowWordsList[i][2],text=LineText)
+		self.RandText.itemconfigure(self.ShadowWordsList[i][3],text=LineText)
+		self.RandText.coords(self.ShadowWordsList[i][0],X-self.ShadowOffset,Y-self.ShadowOffset)
+		self.RandText.coords(self.ShadowWordsList[i][1],X-self.ShadowOffset,Y+self.ShadowOffset)
+		self.RandText.coords(self.ShadowWordsList[i][2],X+self.ShadowOffset,Y-self.ShadowOffset)
+		self.RandText.coords(self.ShadowWordsList[i][3],X+self.ShadowOffset,Y+self.ShadowOffset)
+		self.RandText.tag_raise(self.ShadowWordsList[i][0])
+		self.RandText.tag_raise(self.ShadowWordsList[i][1])
+		self.RandText.tag_raise(self.ShadowWordsList[i][2])
+		self.RandText.tag_raise(self.ShadowWordsList[i][3])
 		
 	def UnleashWords(self):
 		def RandX(): return randint(100,self.screenwidth-100)
 		def RandY(): return randint(50,self.screenheight-50)
-		def LineText(): return choice(self.alines).upper()+' '+choice(self.slines).upper()
-		def CycleText(l):
-			for i in l:
-				self.RandText.itemconfigure(i,text=LineText(),fill=self.GenColor())
-				self.RandText.coords(i,RandX(),RandY())
+		def RandLineText(): return choice(self.alines).upper()+' '+choice(self.slines).upper()
+		def CycleText(Bottom,Top):
+			for tag in self.UnlimitedWordsList[Bottom:Top]:
+				LineText = RandLineText()
+				RandomX = RandX()
+				RandomY = RandY()
+				
+				self.ManageShadowWords(self.UnlimitedWordsList.index(tag),LineText,RandomX,RandomY)
+				
+				self.RandText.itemconfigure(tag,text=LineText,fill=self.GenColor())
+				self.RandText.coords(tag,RandomX,RandomY)
+				self.RandText.tag_raise(tag)
+				
 		# ###################### #
 		try:
 			if self.InsaneWordsA == 1:
 				self.InsaneWordsA = 2
-				CycleText([self.TAa,self.TBa,self.TCa,self.TDa,self.TEa,self.TFa,self.TGa,self.THa,self.TIa])
+				CycleText(12,18)
 			elif self.InsaneWordsA == 2:
 				self.InsaneWordsA = 3
-				CycleText([self.TJa,self.TKa,self.TLa,self.TMa,self.TNa,self.TOa,self.TPa,self.TQa,self.TRa])
+				CycleText(18,24)
 			elif self.InsaneWordsA == 3:
+				self.InsaneWordsA = 4
+				CycleText(24,30)
+			elif self.InsaneWordsA == 4:
 				self.InsaneWordsA = 1
-				CycleText([self.TSa,self.TTa,self.TUa,self.TVa,self.TWa,self.TXa,self.TYa,self.TZa])
+				CycleText(30,36)
+				
 			if self.InsaneWordsB == 1:
 				self.InsaneWordsB = 2
-				CycleText([self.TAb,self.TBb,self.TCb,self.TDb,self.TEb,self.TFb,self.TGb,self.THb,self.TIb])
+				CycleText(36,42)
 			elif self.InsaneWordsB == 2:
 				self.InsaneWordsB = 3
-				CycleText([self.TJb,self.TKb,self.TLb,self.TMb,self.TNb,self.TOb,self.TPb,self.TQb,self.TRb])
+				CycleText(42,48)
 			elif self.InsaneWordsB == 3:
+				self.InsaneWordsB = 4
+				CycleText(48,54)
+			elif self.InsaneWordsB == 4:
 				self.InsaneWordsB = 1
-				CycleText([self.TSb,self.TTb,self.TUb,self.TVb,self.TWb,self.TXb,self.TYb,self.TZb])
+				CycleText(54,60)
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'TextLib.UnleashWords', subj='')
 			
 	def ClearScreen(self):
 		if HSDEBUG: print('ClearScreen')
 		try:
-			l = \
-			[
-				self.TopTextA,self.BotTextA,self.LefTextA,self.RgtTextA,
-				self.TopTextB,self.TopTextC,self.BotTextB,self.BotTextC,
-				self.LefTextB,self.LefTextC,self.RgtTextB,self.RgtTextC,
-				self.TAa,self.TBa,self.TCa,self.TDa,self.TEa,self.TFa,self.TGa,self.THa,self.TIa,
-				self.TJa,self.TKa,self.TLa,self.TMa,self.TNa,self.TOa,self.TPa,self.TQa,self.TRa,
-				self.TSa,self.TTa,self.TUa,self.TVa,self.TWa,self.TXa,self.TYa,self.TZa,
-				self.TAb,self.TBb,self.TCb,self.TDb,self.TEb,self.TFb,self.TGb,self.THb,self.TIb,
-				self.TJb,self.TKb,self.TLb,self.TMb,self.TNb,self.TOb,self.TPb,self.TQb,self.TRb,
-				self.TSb,self.TTb,self.TUb,self.TVb,self.TWb,self.TXb,self.TYb,self.TZb
-			]
+			l = self.StandardWordsList + self.UnlimitedWordsList
 			for i in l:
 				self.RandText.itemconfigure(i,text='')
 		except Exception as e:

@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter.ttk import Notebook
+from tkinter.ttk import Notebook, Style
 from win32gui import GetForegroundWindow, ShowWindow
 from win32con import SW_MINIMIZE
 from PIL import Image, ImageTk
@@ -17,8 +17,6 @@ from random import randint
 from sys import exit
 from timeit import default_timer as timer
 
-import sys
-sys.path.insert(1, 'Libs/')
 from TextLibs import GenColorList, ReadTextColors
 import HypnoTherapy
 import OWVibe
@@ -33,33 +31,36 @@ URL='http://localhost.lovense.com:20010/'
 HSDEBUG = False
 #HSDEBUG = True
 
+# pip install pyinstaller==3.6
+# pip install opencv-python==4.5.3.56
 
 		
     ###########################  Info  ##############################
-    #                                                               #
-    #                   Created by u/Graveknight1                   #
-    #                                                               #
-    # Please contact me via reddit for questions or requests.       #
-    #                                                               #
-    # This program is not for sale, if someone charged you for it,  #
-    # you've been ripped off.                                       #
-    #                                                               #
-    # This code was written for the Healsluts community. If you     #
-    # like what you see, check them out at r/healsluts              #
-    #                                                               #
+    #																#
+    #					Created by u/Graveknight1					#
+    #																#
+    # Please contact me via reddit for questions or requests.		#
+    #																#
+    # This program is not for sale, if someone charged you for it,	#
+    # you've been ripped off.										#
+    #																#
+    # This code was written for the Healsluts community. If you		#
+    # like what you see, check them out at r/healsluts				#
+    #																#
     #################################################################
-    #               use this line to compile the .exe               #
-    #   For me                                                      #
-    # pyinstaller -F --icon=ProgDeveloper\hs.ico HealslutMaster.py  #
-    #                                                               #
-    #   For you                                                     #
-    # pyinstaller -F HealslutMaster.py                              #
-    #                                                               #
+    #               use this line to compile the .exe				#
+    #   For me														#
+    # pyinstaller -F --icon=ProgDeveloper\hs.ico HealslutMaster.py	#
+    #																#
+    #   For you														#
+    # pyinstaller -F HealslutMaster.py								#
+    #																#
     #################################################################
-    #                                                               #
-    # https://lovense.com/developer/docs/session-control            #
-    # https://lovense.com/developer/docs/lan-connect-pc             #
-    #                                                               #
+    #																#
+    # https://lovense.com/developer/docs/session-control			#
+    # https://lovense.com/developer/docs/lan-connect-pc				#
+    # https://iostindex.com/										#
+    #																#
     #################################################################
 	
 #thanks to Lewd-Zko	(twitter.com/LewdZko) for the image of crystal which was modified 
@@ -75,10 +76,50 @@ class HealslutMaster(Frame):
 			self.master = master
 			self.master.overrideredirect(1)
 			self.SetupVars(background_list,prefdict,hyp_folders,Insults,Praise)
+			self.SetStyle()
 			self.SetupMenu()
 			self.SavePrefDict()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'healslutmaster.init', subj='')
+	
+	def SetStyle(self):
+		self.MenuFont = 	('Calibri', 14, 'bold')
+		self.LabeFont = 	('Calibri', 14, 'bold')
+		self.OptionFont = 	('Calibri', 12, 'bold')
+		self.ThemeColor1 =	'#E0E2E4'	#White
+		self.ThemeColor2 = 	'#D9C455'	#Mercy Yellow
+		self.ThemeColor3 = 	'#3A4549' 	#Darkmode
+		self.ThemeColor4 = 	'Black' 	#Black
+		self.ThemeColor5 = 	'#4E5D63' 	#Light bg for black text
+		s = Style()
+		s.theme_create("yummy", parent="alt", settings={
+				"TNotebook": {
+					"configure": {
+						"tabmargins": [2, 5, 2, 0],
+						"background": HP.TRANS_CLR(),
+						"foreground": self.ThemeColor1,
+						"highlightthickness": 0,
+						"borderwidth": 0,
+					} 
+				},
+				"TNotebook.Tab": {
+					"configure": {
+						"padding": [5, 1], 
+						"background": self.ThemeColor5,
+						"foreground": self.ThemeColor1,
+						"highlightthickness": 0,
+						"borderwidth": 0,
+					},
+					"map": {
+						"background": [("selected", self.ThemeColor2)],
+						"foreground": [("selected", self.ThemeColor4)],
+						"highlightthickness": [("selected", 0)],
+						"borderwidth": [("selected", 0)],
+						"expand": [("selected", [1, 1, 1, 0])] 
+					} 
+				}
+			})
+		s.theme_use('yummy')
 	
 	def SetupVars(self,background_list,prefdict,hyp_folders,Insults,Praise):
 		try:
@@ -94,6 +135,7 @@ class HealslutMaster(Frame):
 			self.p_bg,			self.c_bg = Pipe()
 			self.p_ss,			self.c_ss = Pipe()
 			self.p_ssloc,		self.c_ssloc = Pipe()
+			self.p_hwlog, 		self.c_hwlog = Pipe()
 			
 			self.background_list = background_list
 			self.background_select = StringVar(self.master)
@@ -120,7 +162,6 @@ class HealslutMaster(Frame):
 			self.hyp_banword = IntVar(self.master)
 			self.hyp_tranbanr = IntVar(self.master)
 			self.display_rules = IntVar(self.master)
-			self.delold = IntVar(self.master)
 			self.s_decay = StringVar(self.master)
 			self.s_decay_pow = StringVar(self.master)
 			self.hyp_dom = StringVar(self.master)
@@ -159,7 +200,6 @@ class HealslutMaster(Frame):
 			self.hyp_banword.set(int(prefdict['hyp_banword']))
 			self.hyp_tranbanr.set(int(prefdict['hyp_tranbanr']))
 			self.display_rules.set(int(prefdict['display_rules']))
-			self.delold.set(int(prefdict['delold']))
 			self.s_decay.set(prefdict['s_decay'])
 			self.s_decay_pow.set(prefdict['s_decay_pow'])
 			self.hyp_dom.set(prefdict['hyp_dom'])
@@ -252,20 +292,23 @@ class HealslutMaster(Frame):
 		self.bg.grip.bind("<ButtonPress-1>", StartMoveMM)
 		self.bg.grip.bind("<ButtonRelease-1>", StopMoveMM)
 		self.bg.grip.bind("<B1-Motion>", MainMenuOnMotion)
-		self.BtnRwrd = Button(self.bg, bg='green',text="Rwrd",width=5,command=partial(self.HandleCycles,self.rewardcycle))
+		self.BtnRwrd = Button(self.bg, bg='green',text="Rwrd",width=5,command=partial(self.HandleCycles,self.rewardcycle),font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,highlightbackground=self.ThemeColor4)
 		self.BtnRwrd.grid(row=1, column=0)
-		self.BtnPnsh = Button(self.bg, bg='red', text="Pnsh", width=5,command=partial(self.HandleCycles,self.punishcycle))
+		self.BtnPnsh = Button(self.bg, bg='red', text="Pnsh", width=5,command=partial(self.HandleCycles,self.punishcycle),font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,highlightbackground=self.ThemeColor4)
 		self.BtnPnsh.grid(row=2, column=0)
-		self.BtnStopVibe = Button(self.bg,text="Stop\nVibe",width=5,command=HP.StopVibe)
+		self.BtnStopVibe = Button(self.bg,text="Stop\nVibe",width=5,command=HP.StopVibe,font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		self.BtnStopVibe.grid(row=3, column=0)
-		self.BtnHypno = Button(self.bg,text="Start\nHypno",width=5,command=self.LaunchHypno)
+		self.BtnHypno = Button(self.bg,text="Start\nHypno",width=5,command=self.LaunchHypno,font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		self.BtnHypno.grid(row=4, column=0)
-		self.BtnEdit = Button(self.bg, text="Edit",width=5,command=self.EditHypno)
+		self.BtnEdit = Button(self.bg, text="Edit",width=5,command=self.EditHypno,font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		self.BtnEdit.grid(row=5, column=0)
-		self.BtnQuit = Button(self.bg, text="Quit",width=5,command=self.Shutdown)
+		#self.BtnQuit = Button(self.bg, text="Quit",width=5,command=self.Shutdown)
+		self.BtnQuit = Button(self.bg, text="Quit",width=5,command=self.Shutdown,font=self.OptionFont,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+				
 		self.BtnQuit.grid(row=6, column=0)
 		self.master.config(takefocus=1)
 		self.AlwaysOnTop()
+		
 		
 	def EditHypno(self):
 		def UpdateEditMenu():
@@ -302,20 +345,22 @@ class HealslutMaster(Frame):
 				#if self.c_hypno.poll() == True:
 				while self.c_hypno.poll() == True:
 					self.c_hypno.recv()
-					
-				self.EditMenu = Toplevel()
+				
+				self.EditMenu = Toplevel(bg=self.ThemeColor3,highlightthickness=0)
 				self.EditMenu.title("HypnoTherapy Settings")
 				self.EditMenu.overrideredirect(True)
-				width, height = 970,440
+				self.EditMenu.wm_attributes("-transparentcolor", HP.TRANS_CLR())
+				width, height = 920,440
 				x = 1770 - (width  / 2)
 				y = 770 - (height / 2) 
+				
 				self.EditMenu.geometry('%dx%d+%d+%d'%(width, height, x, y))
 				
-				self.note = Notebook(self.EditMenu)
 				
-				self.tab1 = Frame(self.note, width=width-50, height=height-75, borderwidth=0, relief=RAISED)
-				self.tab2 = Frame(self.note)
-				self.tab3 = Frame(self.note)
+				self.note = Notebook(self.EditMenu)
+				self.tab1 = Frame(self.note, width=width, height=height-75, borderwidth=0, relief=RAISED,bg=self.ThemeColor3,highlightthickness=0)
+				self.tab2 = Frame(self.note, width=width, height=height-75, borderwidth=0, relief=RAISED,bg=self.ThemeColor3,highlightthickness=0)
+				self.tab3 = Frame(self.note, width=width, height=height-75, borderwidth=0, relief=RAISED,bg=self.ThemeColor3,highlightthickness=0)
 				
 				self.SetupTab1()
 				self.SetupTab2()
@@ -324,10 +369,16 @@ class HealslutMaster(Frame):
 				self.note.add(self.tab1, text = "Background and Pinup")
 				self.note.add(self.tab2, text = "Rules and Games")
 				self.note.add(self.tab3, text = "Text and Vibrator")
-				self.note.place(x=25,y=0)
-
+				self.note.place(x=0,y=0)
+				
+				EditCanvas = Canvas(self.EditMenu, width=width,height=height,highlightthickness=0,bg=HP.TRANS_CLR(),highlightbackground=self.ThemeColor3)
+				EditCanvas.place(x=0,y=height-62)
+				myimage = 'Resources\\MenuImages\\Caduceus.png'
+				self.EditImage = ImageTk.PhotoImage(file=myimage)
+				EditCanvas.create_image(0,-10,image=self.EditImage, anchor=NW)
+				
 					# Exit button
-				Button(self.EditMenu, text="Dismiss", command=CloseEditMenu).place(x=width-115,y=height-40)
+				Button(self.EditMenu, text="Dismiss", font=self.MenuFont,command=CloseEditMenu,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=width-90,y=height-55)
 				
 				self.after(25, UpdateEditMenu)
 			else:
@@ -337,6 +388,15 @@ class HealslutMaster(Frame):
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'EditHypno', subj='')
 		
+	def GenMenuText(self,Can,x,y,Text,MyFont):
+		ShadowOffset = 1
+		Can.create_text(x+ShadowOffset,y+ShadowOffset, text=Text,font=MyFont,fill='#000000',anchor=NW)
+		Can.create_text(x-ShadowOffset,y-ShadowOffset, text=Text,font=MyFont,fill='#000000',anchor=NW)
+		Can.create_text(x+ShadowOffset,y-ShadowOffset, text=Text,font=MyFont,fill='#000000',anchor=NW)
+		Can.create_text(x-ShadowOffset,y+ShadowOffset, text=Text,font=MyFont,fill='#000000',anchor=NW)
+		Can.create_text(x-ShadowOffset,y+ShadowOffset, text=Text,font=MyFont,fill=self.ThemeColor1,anchor=NW)
+	
+	
 	def SetupTab1(self):
 		def GenGifCycle(event=None):
 			self.gifcyclist = []
@@ -350,11 +410,10 @@ class HealslutMaster(Frame):
 			if self.convfolder.get() == 'All':
 				for folder in self.hyp_folders:
 					if not folder == 'All':
-						HP.ConvertImg(folder,self.delold.get(),
-							self.screenwidth,self.screenheight)
+						HP.ConvertImg(folder,self.screenwidth,self.screenheight)
 			else:
-				HP.ConvertImg(self.convfolder.get(),self.delold.get(),
-					self.screenwidth,self.screenheight)
+				print('Checking images within folder:', self.convfolder.get())
+				HP.ConvertImg(self.convfolder.get(),self.screenwidth,self.screenheight)
 			print('Done.')
 		def FormatGifs():
 			print('Formatting Gifs...')
@@ -368,70 +427,172 @@ class HealslutMaster(Frame):
 			# # # # # # # # # #
 			# BG Gif Preview  #
 			# # # # # # # # # #
-		TextLbl = Canvas(self.tab1, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		
+		TextLbl = Canvas(self.tab1, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=15, y=15)
-		Label(TextLbl,text='Hypno Background Settings').place(x=25, y=10)
-		OptionMenu(TextLbl, self.background_select, *self.background_list,command=GenGifCycle).place(x=15,y=35)
-		self.gifcanvas = Canvas(TextLbl, width=250, height=250, bg='gray75')
+				
+		Text = 'Hypno Background Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		BGselect = OptionMenu(TextLbl, self.background_select, *self.background_list, command=GenGifCycle)
+		BGselect.place(x=15,y=30)
+		BGselect.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		BGselect['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		self.gifcanvas = Canvas(TextLbl, width=250, height=250, bg=self.ThemeColor4,borderwidth=0,highlightthickness=0)
 		self.gifcanvas.place(x=18,y=70)
 		GenGifCycle()
 		try:
 			self.gifpreview = self.gifcanvas.create_image(1,1,image=next(self.GifCycle), anchor=NW)
 		except StopIteration:
-			Label(self.gifcanvas,width=25,font=('Times',12),text='!Format Gif Before Running',anchor=W,bg='gray75').place(x=0,y=0)
+			Text = '!Format Gif'
+			x,y = 10,2
+			self.GenMenuText(self.gifcanvas,x,y,Text,self.MenuFont)
+			Text = 'Before Running'
+			x,y = 10,20
+			self.GenMenuText(self.gifcanvas,x,y,Text,self.MenuFont)
+			
+			# # # # # # # # # # # # # # #
+			# Pinup and Hypno Settings  #
+			# # # # # # # # # # # # # # #
+		TextLbl = Canvas(self.tab1, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		TextLbl.place(x=315, y=15)
+		Text = 'Pinup and Hypno Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		inc = 40
+		y = 40
+		Col1x = 25
+		Col2x = 275
+		ChkBoxx = 250
+		x = 25
+		
+			# Dropdowns
+		Text = 'Overlay Opacity'
+		self.GenMenuText(TextLbl,x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.hyp_opacity, '0', '1', '2', '3', '4')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		y += inc
+		Text = 'Cycle Delay'
+		self.GenMenuText(TextLbl,x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.hyp_delay, '75', '125', '250', '500', '1000', '1500', '3000')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		y += inc
+		Text = 'Image Folder'
+		self.GenMenuText(TextLbl,x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.hyp_gfile, *self.hyp_folders)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+			# Both Checkboxes
+		y += inc
+		Text = 'Enable Pinups'
+		self.GenMenuText(TextLbl,x,y,Text,self.OptionFont)
+		Checkbutton(TextLbl, variable=self.hyp_pinup,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		y += inc
+		Text = 'Desktop Background'
+		self.GenMenuText(TextLbl,x,y,Text,self.OptionFont)
+		Checkbutton(TextLbl, variable=self.UseHSBackground,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
+			# Hypno Background Submenu
+		BgOpsLbl = Canvas(TextLbl, width=140,height=90,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		BgOpsLbl.place(x=5, y=240)
+		inc = 20
+		x = 10
+		y = 5
+		Text = 'Gif Overlay'
+		self.GenMenuText(BgOpsLbl,x,y,Text,self.OptionFont)
+		x = 35
+		y += inc
+		Radiobutton(BgOpsLbl, variable=self.hyp_able,value=0,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'None'
+		self.GenMenuText(BgOpsLbl,x,y,Text,self.OptionFont)
+		y += inc
+		Radiobutton(BgOpsLbl, variable=self.hyp_able,value=1,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'Enable Gif'
+		self.GenMenuText(BgOpsLbl,x,y,Text,self.OptionFont)
+		y += inc
+		Radiobutton(BgOpsLbl, variable=self.hyp_able,value=2,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'Turbo Gif'
+		self.GenMenuText(BgOpsLbl,x,y,Text,self.OptionFont)
+		
 		
 			# # # # # # # # # # #
 			# Format and Resize #
 			# # # # # # # # # # #
-		TextLbl = Canvas(self.tab1, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab1, width=285,height=170,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=615, y=15)
-		Label(TextLbl,text='Hypno Background Settings').place(x=25, y=10)
-		inc = 40
-		y = 35
-		Label(TextLbl, width=6, font=('Times', 12),text='Width', anchor=W).place(x=65,y=y)
-		Entry(TextLbl, width=5, borderwidth=0, font=('Times', 14), textvariable=self.textwdith ).place(x=150,y=y)
-		y += inc*.6
-		Label(TextLbl, width=6, font=('Times', 12),text='Height',anchor=W).place(x=65,y=y)
-		Entry(TextLbl, width=5, borderwidth=0, font=('Times', 14), textvariable=self.textheight).place(x=150,y=y)
-		y += inc*.8
-		Label(TextLbl,text='Format and Resize \nGifs to Screen Size').place(x=40, y=y)
-		Button(TextLbl, text="Format Gifs", command=FormatGifs).place(x=150,y=y)
-		y += inc*2
-		y += inc
-		OptionMenu(TextLbl, self.convfolder, *self.conv_hyp_folders).place(x=45,y=y)
-		y += inc
-		Checkbutton(TextLbl, text="Delete jpgs", variable=self.delold).place(x=45,y=y)
-		y += inc
-		Label(TextLbl,text='Format and Resize \nPics to Screen Size').place(x=40, y=y)
-		Button(TextLbl, text="Convert jpg to png", command=HandleImgConvert).place(x=150,y=y)
 		
-			# # # # # # # # # #
-			# BG Gif Preview  #
-			# # # # # # # # # #
-		TextLbl = Canvas(self.tab1, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
-		TextLbl.place(x=315, y=15)
-		Label(TextLbl,text='Pinup and Hypno Settings').place(x=25, y=10)
-		inc = 40
-		y = 35
-		Message(TextLbl, text='Overlay Opacity').place(x=45,y=y)
-		OptionMenu(TextLbl, self.hyp_opacity, '0', '1', '2', '3', '4').place(x=150,y=y)
+		Text = 'Gif Format Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		Col1x = 15
+		inc = 24
+		y = 25
+		
+		Text = 'Press this to format and resize '
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		y += inc*.8
+		Text = 'gifs to screen size. You must do'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		y += inc*.8
+		Text = 'this initally so that the gifs work'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		y += inc*1.5
+				
+		Text = 'Monitor Width'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		Entry(TextLbl, width=5, borderwidth=0, textvariable=self.textwdith, font=self.OptionFont, bg=self.ThemeColor1, highlightthickness=0).place(x=150,y=y)
 		y += inc
-		Message(TextLbl, text='Cycle Delay').place(x=45,y=y)
-		OptionMenu(TextLbl, self.hyp_delay, '250', '500', '1000', '1500', '3000').place(x=150,y=y)
+		
+		Text = 'Monitor Height'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		Entry(TextLbl, width=5, borderwidth=0, textvariable=self.textheight,font=self.OptionFont, bg=self.ThemeColor1, highlightthickness=0).place(x=150,y=y)
 		y += inc
-		Message(TextLbl, text='Image Folder').place(x=45,y=y)
-		OptionMenu(TextLbl, self.hyp_gfile, *self.hyp_folders).place(x=150,y=y)
-		y += inc
-		Radiobutton(TextLbl, text="None", variable=self.hyp_able,value=0).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Hypno Background", variable=self.hyp_able,value=1).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Turbo Hypno", variable=self.hyp_able,value=2).place(x=45,y=y)
-		y += inc*.6
-		Checkbutton(TextLbl, text="Enable Pinups", variable=self.hyp_pinup).place(x=45,y=y)
-		y += inc*.6
-		Checkbutton(TextLbl, text="Healslut Desktop Background", variable=self.UseHSBackground).place(x=800,y=50)
-	
+		
+		b = Button(TextLbl, text="Format Gifs", width=35, command=FormatGifs,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		b.place(x=15,y=y)
+		
+		TextLbl = Canvas(self.tab1, width=285,height=150,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		TextLbl.place(x=615, y=200)
+		
+		Text = 'Image Format Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		Col1x = 15
+		inc = 24
+		y = 25
+		
+		
+		Text = 'Format and resize images to fit'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		y += inc*.8
+		Text = 'the screen size above within the '
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		y += inc*.8
+		Text = 'selected folder. '
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		
+		myop = OptionMenu(TextLbl, self.convfolder, *self.conv_hyp_folders)
+		myop.place(x=270,y=90,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		b = Button(TextLbl, text="Resize Images", width=35, command=HandleImgConvert,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		b.place(x=15,y=127)
+		
+		
 	def SetupTab2(self):
 		def GenKillfeedList():
 			AllCharList = []
@@ -445,76 +606,156 @@ class HealslutMaster(Frame):
 			# # # # # # # # #
 			# Game Settings #
 			# # # # # # # # #
-		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=15, y=15)
-		Label(TextLbl,text='Rule and Macro Settings').place(x=25, y=10)
+		Text = 'Rule and Macro Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		inc = 40
+		y = 40
+		Col1x = 25
+		Col2x = 275
+		ChkBoxx = 250
+		x = 25
+		
 		inc = 40
 		y = 35
-		Message(TextLbl, width=200, text='Rule set').place(x=45,y=y)
-		OptionMenu(TextLbl, self.s_rulename, *self.rulesets).place(x=150,y=y)
+		Text = 'Premade Rulesets'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.s_rulename, *self.rulesets)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		Button(TextLbl, text="Load Premade Rules", command=self.LoadPrefDict).place(x=150,y=y)
+		Button(TextLbl, text="Load Premade Rules", width=35, command=self.LoadPrefDict,fg=self.ThemeColor1,highlightthickness=0,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=15,y=y)
+		
 		y += inc
-		Message(TextLbl, width=200, text='Rule Font Size').place(x=45,y=y)
-		OptionMenu(TextLbl, self.fontsize, '12', '18', '20', '24', '30').place(x=150,y=y)
+		Text = 'On Screen Rules Font Size'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.fontsize, '12', '18', '20', '24', '30')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		
 		y += inc
-		Message(TextLbl, width=200, text='Game',aspect=200).place(x=45,y=y)
-		OptionMenu(TextLbl, self.hyp_game, 'None', 'OW', 'LoL').place(x=150,y=y)
+		Text = 'Overlay Special Ports for'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		myop = OptionMenu(TextLbl, self.hyp_game, 'None', 'OW', 'LoL')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		
 		y += inc
-		GenKillfeedList()
-		Radiobutton(TextLbl, text="No On-screen Rules", variable=self.display_rules,value=0).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Transparent Rules",	variable=self.display_rules,value=1).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Opaque Rules",		variable=self.display_rules,value=2).place(x=45,y=y)
-		y += inc*.6
-		Checkbutton(TextLbl, text="Use ActionMenu",		variable=self.UseActionMenu).place(x=45,y=y)
+		Text = 'Use ActionMenu'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		Checkbutton(TextLbl, variable=self.UseActionMenu,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
+		RulesOpsLbl = Canvas(TextLbl, width=275, height=90,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		RulesOpsLbl.place(x=5, y=240)
+		inc = 20
+		y = 5
+		Text = 'On Screen Rules'
+		self.GenMenuText(RulesOpsLbl,10,y,Text,self.OptionFont)
+		x = 35
+		y += inc
+		Radiobutton(RulesOpsLbl, variable=self.display_rules,value=0,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'No On Screen Rules'
+		self.GenMenuText(RulesOpsLbl,x,y,Text,self.OptionFont)
+		
+		y += inc
+		Radiobutton(RulesOpsLbl, variable=self.display_rules,value=1,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'Transparent Rules'
+		self.GenMenuText(RulesOpsLbl,x,y,Text,self.OptionFont)
+		
+		y += inc
+		Radiobutton(RulesOpsLbl, variable=self.display_rules,value=2,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		Text = 'Opaque Rules'
+		self.GenMenuText(RulesOpsLbl,x,y,Text,self.OptionFont)
+		
 		
 			# # # # # # # #
 			# OW Settings #
 			# # # # # # # #
-		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=315, y=15)
-		Label(TextLbl,text='Overwatch Settings').place(x=25, y=10)
+		Text = 'Overwatch Settings'
+		x,y = 10,2
+		inc = 40
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
+		
+		GenKillfeedList()
+		
+		y = 35
+		Text = 'Sub Character'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
 		self.optSub = OptionMenu(TextLbl, self.HSSub, *self.AllCharList)
+		self.optSub.place(x=Col2x,y=y,anchor='ne')
+		self.optSub.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		self.optSub['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		y += inc
+		Text = 'Dom Character'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
 		self.optDom = OptionMenu(TextLbl, self.HSDom, *self.AllCharList)
-		self.chkFP = Checkbutton(TextLbl, text="Freeplay", variable=self.Freeplay)
-		y = 35
-		Message(TextLbl, width=200, text='Sub Character').place(x=45,y=y)
-		self.optSub.place(x=150,y=y)
+		self.optDom.place(x=Col2x,y=y,anchor='ne')
+		self.optDom.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		self.optDom['menu'].configure( font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		Message(TextLbl, width=200, text='Dom Character').place(x=45,y=y)
-		self.optDom.place(x=150,y=y)
-		y += inc
-		self.chkFP.place(x=150,y=y)
+		Text = 'Freeplay Mode'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		self.chkFP = Checkbutton(TextLbl, variable=self.Freeplay,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		self.chkFP.place(x=ChkBoxx,y=y,anchor='ne')
 		
 		
-		
-		
-		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+			# # # # # # # # # # # #
+			# Simon Says Settings #
+			# # # # # # # # # # # #
+		TextLbl = Canvas(self.tab2, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=615, y=15)
-		Label(TextLbl,text='Simon Says Settings').place(x=25, y=10)
-		y = 35
-		Checkbutton(TextLbl, text="Smaller", variable=self.SizeSettings).place(x=45,y=y)
-		y += inc*.6
-		Checkbutton(TextLbl, text="Transparent", variable=self.SSOpaque).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Alt-WSAD Scheme", variable=self.display_rules,value=1).place(x=45,y=y)
-		y += inc*.6
-		Radiobutton(TextLbl, text="Arrowkey Scheme", variable=self.display_rules,value=2).place(x=45,y=y)
+		Text = 'Simon Says Settings'
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,Text,self.MenuFont)
 		
-		'''
-		self.SizeSettings
-		self.SSOpaque
-		self.AlternateSimon
-		'''
+		y = 35
+		Text = 'Smaller Gameboard'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		Checkbutton(TextLbl, variable=self.SizeSettings,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
+		y += inc
+		Text = 'Transparent Gameboard'
+		self.GenMenuText(TextLbl,Col1x,y,Text,self.OptionFont)
+		Checkbutton(TextLbl, variable=self.SSOpaque,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
+		y += inc
+		SSOpts = Canvas(TextLbl, width=275,height=70,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
+		SSOpts.place(x=5, y=y)
+		inc = 20
+		y = 5
+		Text = 'Keybindings'
+		self.GenMenuText(SSOpts,10,y,Text,self.OptionFont)
+		x = 35
+		
+		y += inc
+		Text = 'Bind Arrow Keys'
+		self.GenMenuText(SSOpts,x,y,Text,self.OptionFont)
+		Radiobutton(SSOpts, variable=self.AlternateSimon,value=2,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		y += inc
+		Text = 'Bind WASD Keys'
+		self.GenMenuText(SSOpts,x,y,Text,self.OptionFont)
+		Radiobutton(SSOpts, variable=self.AlternateSimon,value=1,bg=self.ThemeColor3,activebackground=self.ThemeColor3, borderwidth=0).place(x=10,y=y)
+		
 				
 	def SetupTab3(self):
 		
 			# # # # # # # # #
 			# Text Settings #
 			# # # # # # # # #
-		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=15, y=15)
 		hdlist = ["None", "Male",  "Female"]
 		hslist = ["Sub",  "Boy",   "Girl"  ]
@@ -522,65 +763,129 @@ class HealslutMaster(Frame):
 		hwlist = ["Never", "Seldom", "Not Often", "Often", "Very Often", "Always", "Banner"]
 		wdlist = ["None",  "Low",    "Medium",    "High",  "Very High",  "Max",    "Unlimited"]
 		inc = 40
-		Label(TextLbl,text='Text Settings').place(x=25, y=10)
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,'Text Settings',self.MenuFont)
+		
+		Col1x = 25
+		Col2x = 275
+		ChkBoxx = 250
+		
 		y = 35
-		Message(TextLbl, width=200, text='Dom Gender'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Dom Gender',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Self Gender'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Sub Gender',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Feminization'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Feminization',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Write For Me'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Write For Me',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Word Count'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Word Count',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Text Color'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Text Color',self.OptionFont)
+		
 		y = 35
-		OptionMenu(TextLbl, self.hyp_dom,      *hdlist).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.hyp_dom,		*hdlist)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		OptionMenu(TextLbl, self.hyp_sub,      *hslist).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.hyp_sub,		*hslist)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		OptionMenu(TextLbl, self.FemSex,       *fslist).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.FemSex,			*fslist)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		OptionMenu(TextLbl, self.hyp_homework, *hwlist).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.hyp_homework,	*hwlist)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		OptionMenu(TextLbl, self.hyp_words,    *wdlist).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.hyp_words,		*wdlist)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		OptionMenu(TextLbl, self.ColorList, *self.ColorOpts).place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.ColorList,		*self.ColorOpts)
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
 		y += inc
-		Checkbutton(TextLbl, text="Transparent Banner", variable=self.hyp_tranbanr).place(x=45,y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Transparent Banner',self.OptionFont)
+		Checkbutton(TextLbl, variable=self.hyp_tranbanr,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
 		y += inc*.6
-		Checkbutton(TextLbl, text="Transparent Words",  variable=self.hyp_banword ).place(x=45,y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Transparent Words',self.OptionFont)
+		Checkbutton(TextLbl, variable=self.hyp_banword, highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
 		
 			# # # # # # # # # #
 			# Audio Settings  #
 			# # # # # # # # # #
-		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=315, y=15)
-		Checkbutton(TextLbl, text="Play Audio", variable=self.PlayAudio).place(x=25,y=10)
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,'Audio Settings',self.MenuFont)
+		
 		y = 35
-		Message(TextLbl, width=200, text='Looping Audio'	).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Enable Audio',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Track Type'		).place(x=45, y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Looping Audio',self.OptionFont)
+		y += inc
+		self.GenMenuText(TextLbl,Col1x,y,'Track Type',self.OptionFont)
+		
 		y = 35
-		OptionMenu(TextLbl, self.loopingAudio, "List", "Shuffle").place(x=150,y=y)
+		Checkbutton(TextLbl, variable=self.PlayAudio,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
 		y += inc
-		OptionMenu(TextLbl, self.AudioType, "Either", "Music", "Spoken").place(x=150,y=y)
+		myop = OptionMenu(TextLbl, self.loopingAudio, "List", "Shuffle")
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		y += inc
+		myop = OptionMenu(TextLbl, self.AudioType, "Either", "Music", "Spoken")
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
 		
 			# # # # # # # # # # #
 			# Vibrator Settings #
 			# # # # # # # # # # #
-		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1, highlightbackground="Gray85")
+		TextLbl = Canvas(self.tab3, width=285,height=335,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4)
 		TextLbl.place(x=615, y=15)
-		Checkbutton(TextLbl, text="Vibrator Interface", variable=self.DoVibeLoop).place(x=25,y=10)
+		x,y = 10,2
+		self.GenMenuText(TextLbl,x,y,'Vibration Settings',self.MenuFont)
+		
 		y = 35
-		Message(TextLbl, width=200, text='Speed Decay Timer'	).place(x=45,y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Vibrator Interface',self.OptionFont)
 		y += inc
-		Message(TextLbl, width=200, text='Speed Decay Strengh').place(x=45,y=y)
+		self.GenMenuText(TextLbl,Col1x,y,'Speed Decay Timer',self.OptionFont)
+		y += inc
+		self.GenMenuText(TextLbl,Col1x,y,'Speed Decay Strengh',self.OptionFont)
+		
 		y = 35
-		OptionMenu(TextLbl, self.s_decay, '0', '3', '10', '30', '45', '60', '75', '90').place(x=175,y=y)
+		Checkbutton(TextLbl, variable=self.DoVibeLoop,highlightthickness=1,bg=self.ThemeColor3,highlightbackground=self.ThemeColor4).place(x=ChkBoxx,y=y,anchor='ne')
+		
 		y += inc
-		OptionMenu(TextLbl, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '3/4', '1/2', '1/4').place(x=175,y=y)
+		myop = OptionMenu(TextLbl, self.s_decay, '0', '3', '10', '30', '45', '60', '75', '90')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
+		
+		y += inc
+		myop = OptionMenu(TextLbl, self.s_decay_pow, '0', '-1', '-3', '-10', '-20', '3/4', '1/2', '1/4')
+		myop.place(x=Col2x,y=y,anchor='ne')
+		myop.config(			font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0,highlightthickness=0)
+		myop['menu'].configure(	font=self.OptionFont, bg=self.ThemeColor1, activebackground=self.ThemeColor2, activeforeground=self.ThemeColor4, borderwidth=0)
 		
 	# # # # # # # # # #
 	#  Launch Hypno   #
@@ -636,7 +941,7 @@ class HealslutMaster(Frame):
 							globfile,s_rulename,fontsize,display_rules,loopingAudio,AudioType,
 							gifset,FemSex,ColorList,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,
 							self.c_wordknt,self.c_CharSelect,self.c_hypno,self.p_bg,self.c_bg,
-							self.p_homework)
+							self.p_homework,self.p_hwlog,self.c_hwlog)
 				self.EstablishRules()
 				self.LaunchVibe()
 			else:
@@ -685,12 +990,14 @@ class HealslutMaster(Frame):
 				'self.p_ssloc':self.p_ssloc,
 				'self.c_ssloc':self.c_ssloc,
 				}
+				
+			# Just a tool to show us what pipes are overflowing
 			for name, pipe in d.items():
 				i = 0
 				while pipe.poll():
 					pipe.recv()
 					i += 1
-				print(name, i)
+				#print(name, i)
 			
 			
 			if self.c_Vibe.poll() == False:
@@ -740,7 +1047,6 @@ class HealslutMaster(Frame):
 				self.hyp_banword.set(int(prefdict['hyp_banword']))
 				self.hyp_tranbanr.set(int(prefdict['hyp_tranbanr']))
 				self.display_rules.set(int(prefdict['display_rules']))
-				self.delold.set(int(prefdict['delold']))
 				self.s_decay.set(prefdict['s_decay'])
 				self.s_decay_pow.set(prefdict['s_decay_pow'])
 				self.hyp_dom.set(prefdict['hyp_dom'])
@@ -789,7 +1095,6 @@ class HealslutMaster(Frame):
 			'hyp_banword:'+str(self.hyp_banword.get()),
 			'hyp_tranbanr:'+str(self.hyp_tranbanr.get()),
 			'display_rules:'+str(self.display_rules.get()),
-			'delold:'+str(self.delold.get()),
 			's_decay:'+str(self.s_decay.get()),
 			's_decay_pow:'+str(self.s_decay_pow.get()),
 			'hyp_dom:'+str(self.hyp_dom.get()),
@@ -867,7 +1172,6 @@ class HealslutMaster(Frame):
 							self.KillFeedFiles.append(AssistPath)
 				self.KillfeedWarning = True
 				self.ScreencapLoop()
-			#self.SelectLoop()	#$ character select loop, will be used with banner one day
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'LaunchVibe', subj='')
 	
@@ -1259,7 +1563,13 @@ class HealslutMaster(Frame):
 			cyc = next(mycycle)
 			line = str(cyc).split(',')
 			MacroList = line
+			
 			for i,Macro in enumerate(line):
+				print(i, Macro)
+				if Macro == '$playsound Punishment Buzz.mp3':
+					if self.p_hwlog.poll() == True:
+						Macro = Macro.replace('$playsound Punishment Buzz.mp3','')
+						print(Macro)
 				self.DoMacro(Macro.replace('\n',''),MacroList[i+1:])
 				if '$wait' in Macro:
 					break
@@ -1283,6 +1593,7 @@ class HealslutMaster(Frame):
 		
 		MacroOptions = \
 		[
+			'',
 			'$playsound',
 			'$playvideo',
 			'$text',
@@ -1301,6 +1612,7 @@ class HealslutMaster(Frame):
 			'$simonsays',
 			'$+curve',
 			'$-curve',
+			'$wordknt',
 		]
 		
 		try:
@@ -1375,6 +1687,14 @@ class HealslutMaster(Frame):
 					self.p_homework.recv()
 				self.c_homework.send(int(Macro.replace('$-curve ',''))*-1)
 				print('Sending', int(Macro.replace('$-curve ',''))*-1)
+			if '$wordknt' in Macro:
+				Knt = int(Macro.replace('$wordknt',''))
+				if Knt < 0:
+					Knt = 0
+				if Knt > 6:
+					Knt = 6
+				self.p_wordknt.send(Knt)
+				
 			#if '$setwords' in Macro:
 			if not any(i in Macro for i in MacroOptions):
 				print(Macro)

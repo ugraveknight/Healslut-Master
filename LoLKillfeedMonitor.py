@@ -9,11 +9,26 @@ def TreatSub(info,name,c_killfeed):
 
 def SubDeath(file,c_killfeed):
 	x, y = None, None
+	YoureDead = False
+	PostGameZero = False
 	try:
-		x, y = locateCenterOnScreen(file+'SubDeath.png', confidence=0.8)
+		x, y = locateCenterOnScreen(file+'KDA.png', confidence=0.8)
+		PostGameZero = True
 	except TypeError:
 		pass
-	if x:
+	try:
+		x, y = locateCenterOnScreen(file+'SubDeath.png', confidence=0.8)
+		YoureDead = True
+	except TypeError:
+		pass
+	try:
+		x, y = locateCenterOnScreen(file+'KDA.png', confidence=0.8)
+		PostGameZero = True
+	except TypeError:
+		pass
+	
+	
+	if YoureDead and not PostGameZero:
 		TreatSub('SubDeath','Sub',c_killfeed)
 
 def RunTest():	#Debug
@@ -21,7 +36,7 @@ def RunTest():	#Debug
 	newtime = time() if Debug==True else 0
 	while True:
 		newtime = LogTime(newtime) if Debug==True else 0
-		SubDeath('Resources/Killfeed/2560x1440/LOL/SubDeath.png',c_killfeed)
+		SubDeath('Resources/Killfeed/2560x1440/LOL/',c_killfeed)
 		sleep(1)
 		
 def LogTime(newtime):	#Debug

@@ -2,18 +2,14 @@ from win32gui import FindWindow, SetWindowLong
 from win32con import WS_EX_LAYERED, WS_EX_TRANSPARENT, GWL_EXSTYLE
 from traceback import format_exc
 from random import randint, choice
-from os import remove, path, makedirs
+from os import remove, path, makedirs, rename
 from PIL import Image, ImageTk
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 from urllib.request import urlopen	
 from threading import Thread
 from ctypes import windll
 from time import sleep
 from glob import iglob, glob
-from smtplib import SMTP, SMTPAuthenticationError	
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
 from requests import get, exceptions
 from cv2 import VideoCapture, imwrite
 from sys import exit
@@ -21,8 +17,6 @@ from itertools import cycle
 
 def TRANS_CLR(): 	return '#010101'
 def TRANS_CLR_ALT():return '#000000'
-#def GlobalFont():	return "Consolas Bold"
-#def GlobalFont():	return "helvetica Bold"
 def GlobalFont():	return "Impact"
 def FONT0():		return (GlobalFont(), 44)
 def FONT1():		return (GlobalFont(), 28)
@@ -128,52 +122,101 @@ def ExtractFrames(mywidth,myheight,Filepath):
 				frame.seek(nframes)
 			except EOFError:
 				break;
-					
-def ConvertImg(folder, DelOld, screenwidth, screenheight,Performance_Mode=True):
-	def ResizeImg(img,name,screenwidth,screenheight):
-		ImgW, ImgH = img.size	
-		fract = None
-		if Performance_Mode:
-			POS = .75 #percent of screen
-			if   ImgW > screenwidth  * .5:
-				fract = (ImgW % screenwidth*POS)/ImgW 
-			elif ImgH > screenheight * .5:
-				fract = (ImgW % screenheight*POS)/ImgH 
-		else:
-			POS = .9 #percent of screen
-			if   ImgW > screenwidth  - 100:
-				fract = (ImgW - 100 - 3000 % screenwidth*POS)/ImgW 
-			elif ImgH > screenheight - 100:
-				fract = (ImgW - 100 - 3000 % screenheight*POS)/ImgH 
-		if fract:
-			w = int(ImgW*fract)
-			h = int(ImgH*fract)
-			reimg = img.resize((w,h), Image.ANTIALIAS)
-			print('Resizing...')
-			return reimg
-		return img
-	# ####################### #
-	filelist = glob(folder+'*.jpg')+glob(folder+'*.png')
-	x=0
-	for file in filelist:
+	
+import multiprocessing as mp
+
+
+def ResizeImg(filepath,img,screenwidth,screenheight):
+	ImgW, ImgH = img.size	
+	fract = None
+	POS = .9 #percent of screen
+	
+	if ImgW > (screenwidth  * POS):
+		fract = (screenheight*POS) / ImgW
+		
+	if ImgH > (screenheight * POS):
+		fract = (screenheight*POS) / ImgH
+
+	if fract:
+		w = int(ImgW*fract)
+		h = int(ImgH*fract)
+		reimg = img.resize((w,h), Image.ANTIALIAS)
+		print('Resizing...\n')
+		return reimg
+	return img
+	
+def ProcessList(knt,SubList,file_c,Corruptfile_c,screenwidth,screenheight):
+	print('Starting Process', knt, 'of', int(mp.cpu_count()/2))
+	for i,filepath in enumerate(SubList):
 		try:
-			print(x,'of',len(filelist), file)
-			name,sep,tail = file.rpartition('.')
-			with Image.open(file) as im:
-				im = ResizeImg(im,name,screenwidth,screenheight)
-				if DelOld != 1:
-					name, sep, basename = name.rpartition('\\')
-					im.save(name+'\\new_'+basename+'.png', "PNG")
-				else:
-					im.save(name+'.png', "PNG")
-			x+=1
+			with Image.open(filepath) as im:
+				im = ResizeImg(filepath,im,screenwidth,screenheight)
+				im.save(filepath)
+				print(knt, 'Processing', i+1, 'of', len(SubList))
+				
 		except OSError as e:
-			print('\n', e, '\n','error', file, '\n')
-	if DelOld == 1:
-		print('clearing old .jpgs and resizing images too large for your screen...')
-		for file in filelist:
-			if '.jpg' in file:
+			print('\n', e, '\n','error', filepath, '\n')
+			print(type(e))
+			Corruptfile_c.send(filepath)
+	file_c.send(i)
+
+def HandleCorruptedFiles(Corruptfile_p,folder):
+	QuarantineFolder = 'Corrupted Files'
+	ListofCorruptFiles = []
+	while Corruptfile_p.poll():
+		ListofCorruptFiles.append(Corruptfile_p.recv())
+	
+	if len(ListofCorruptFiles) > 0:
+		print('\nThese files failed to process.')
+		for file in ListofCorruptFiles:
+			print(file)
+		UserInput = input('These files will be moved to the "Images\\'+QuarantineFolder+'\\" directory. Should they be deleted instead? (y/n)')
+		if UserInput.lower() == 'y':
+			for file in ListofCorruptFiles:
 				remove(file)
+		else:
+			if UserInput.lower() not in ['','n']:
+				print('Im sorry, but your input did not match an expected result. These files will be moved.')
+			
+			OutDir = path.abspath('Resources\\Images\\'+QuarantineFolder)
+			if not path.exists(OutDir):
+				makedirs(OutDir)
+			
+			for file in ListofCorruptFiles:
+				Basename = path.basename(file)
+				rename(file,OutDir+'\\'+Basename)
+	else:
+		print('No corrupted files were found.')
+
+def ConvertImg(folder, screenwidth, screenheight):
+	def split(a, n):
+		k, m = divmod(len(a), n)
+		return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
+	# ####################### #
+	AbsFolder = path.abspath('Resources\\Images\\'+folder)
+	filelist = glob(AbsFolder+'\\*.jpg')+glob(AbsFolder+'\\*.jpeg')+glob(AbsFolder+'\\*.png')
+	print(AbsFolder)
+	
+	file_p, file_c = mp.Pipe()
+	Corruptfile_p, Corruptfile_c = mp.Pipe()
+	ListofProcesses = []
+	for knt,SubList in enumerate(split(filelist,int(mp.cpu_count()/2))):
+		print(len(SubList))
+		ListofProcesses.append(mp.Process(target=ProcessList, args=(knt+1,SubList,file_c,Corruptfile_c,screenwidth,screenheight)))
+	
+	for p in ListofProcesses:
+		p.start()
+	for p in ListofProcesses:
+		p.join()
+	
+	i = 0
+	while file_p.poll():
+		i += file_p.recv()
+	
+	print('Number of processed files:', i, 'of', len(filelist))
+	
+	HandleCorruptedFiles(Corruptfile_p,folder)
+	
 
 def HandleOSBackground(Value):
 	try:
@@ -270,6 +313,8 @@ def GenUserPref(PrefFilePath='Resources\\Preferences.txt',Reset=False):
 	return prefdict
 	
 def VersionCheck():
+	print('The verison check failed due to githubs updated policy. This will be fixed eventually...')
+	'''
 	print('if you believe this program has frozen, press ctrl + c, then check the Errors folder for details')
 	print('Version number:',VERSION())
 	try:
@@ -285,7 +330,7 @@ def VersionCheck():
 			print('Your version is up to date')
 	except Exception as e:
 		print('Error connecting to Github, automatic verison check failed.')
-
+	'''
 
 def GenButtonImage(filename):
 	Filepath = path.abspath('Resources\\Buttonlabels\\'+filename)

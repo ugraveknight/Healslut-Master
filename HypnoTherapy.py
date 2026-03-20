@@ -34,7 +34,7 @@ class Hypnotherapy(Frame):
 				tranbanr, s_rulename, fontsize, display_rules, loopingAudio,
 				AudioType, gifset, FemSex, ColorList, c_vid, c_txt, c_pinup, 
 				c_homework, c_wordknt, c_CharSelect, c_hypno, p_bg, c_bg,
-				p_homework, *pargs):
+				p_homework, p_hwlog, c_hwlog, *pargs):
 		Frame.__init__(self, master, *pargs)
 		try:
 			if HSDEBUG: print('Prepping Hypnotherapy Variables')
@@ -87,7 +87,7 @@ class Hypnotherapy(Frame):
 			self.p_opacity, self.c_opacity = Pipe()
 			self.p_pinupdims, self.c_pinupdims = Pipe()
 			self.p_pininfo, self.c_pininfo = Pipe()
-			self.p_hwlog, self.c_hwlog = Pipe()
+			self.p_hwlog, self.c_hwlog = p_hwlog, c_hwlog
 			self.TextWidth = self.screenwidth - 300
 			self.Curve = 0
 			
@@ -107,6 +107,7 @@ class Hypnotherapy(Frame):
 			self.MakeBackground()
 			
 			if self.display_rules != 0:
+				if HSDEBUG: print('Building Rules')
 				self.BuildRules()
 				
 			if HSDEBUG: print('Prepping Banner')
@@ -114,10 +115,7 @@ class Hypnotherapy(Frame):
 			
 			if HSDEBUG: print('Initializing Pinup Object')
 			self.bg.fg = self.bg.create_image(self.x_cen, self.y_cen, image='')
-			
-			if HSDEBUG: print('Building Rules')
-			self.BuildRules()
-			
+						
 			if HSDEBUG: print('Prepping Background Loop')
 			self.LaunchBG()
 			
@@ -164,10 +162,14 @@ class Hypnotherapy(Frame):
 	def BuildRules(self):
 		Filepath = path.abspath('Resources\\Healslut Games\\'+self.s_rulename+'\\Rules.txt')
 		with open(Filepath, 'r') as f:
-			lines = f.readlines()
-		for line in lines:
-			self.output = self.output+line
-	
+			self.output = f.read()
+		if self.display_rules == 1:
+			self.bg.create_text(0-2,self.y_cen-2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+			self.bg.create_text(0+2,self.y_cen+2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+			self.bg.create_text(0-2,self.y_cen+2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+			self.bg.create_text(0+2,self.y_cen-2,text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='Black',   justify=LEFT,anchor=W)
+			self.bg.create_text(0,  self.y_cen,  text=self.output,font=(HP.GlobalFont(),self.fontsize),fill='hot pink',justify=LEFT,anchor=W)
+
 	def PrepBanner(self):
 		def RunTransBanner():
 			try:
@@ -176,10 +178,11 @@ class Hypnotherapy(Frame):
 					self.BannerLine = HP.SetWrittenLine(self.Humiliation, self.prefer_dom, self.prefer_sub)
 					self.banner_var = 0
 					self.linecolor = choice(self.ColorList)
-				self.bg.delete(self.tmp_banner)
-				self.tmp_banner = self.bg.create_text(self.screenwidth/2, self.screenheight/1.3, 
-													text=self.BannerLine.upper(),width=self.TextWidth,anchor=CENTER,
-													font=(HP.GlobalFont(), 44), fill=self.linecolor)
+				self.bg.itemconfig(self.TransBanner,  text=self.BannerLine.upper(), fill=self.linecolor)
+				self.bg.itemconfig(self.TransBannera, text=self.BannerLine.upper())
+				self.bg.itemconfig(self.TransBannerb, text=self.BannerLine.upper())
+				self.bg.itemconfig(self.TransBannerc, text=self.BannerLine.upper())
+				self.bg.itemconfig(self.TransBannerd, text=self.BannerLine.upper())
 			except Exception as e:
 				HP.HandleError(format_exc(2), e, 'RunTransBanner', subj='')
 			self.master.after(self.delay, RunTransBanner)
@@ -217,15 +220,20 @@ class Hypnotherapy(Frame):
 							output,display_rules,fontsize,c_images,c_txt,
 							c_wordknt,c_CharSelect,c_hypno)).start()
 			if self.tranbanr == 1 and self.homework == 'Banner':
-				self.tmp_banner = self.bg.create_text(0, 0, text='')
+				print('Hypno Layer Banner running')
+				self.TransBannera = self.bg.create_text(self.screenwidth/2-2, self.screenheight/1.3-2, text='', 
+											width=self.TextWidth,anchor=CENTER,font=(HP.GlobalFont(), 44),fill='#000000')
+				self.TransBannerb = self.bg.create_text(self.screenwidth/2+2, self.screenheight/1.3+2, text='', 
+											width=self.TextWidth,anchor=CENTER,font=(HP.GlobalFont(), 44),fill='#000000')
+				self.TransBannerc = self.bg.create_text(self.screenwidth/2+2, self.screenheight/1.3-2, text='', 
+											width=self.TextWidth,anchor=CENTER,font=(HP.GlobalFont(), 44),fill='#000000')
+				self.TransBannerd = self.bg.create_text(self.screenwidth/2-2, self.screenheight/1.3+2, text='', 
+											width=self.TextWidth,anchor=CENTER,font=(HP.GlobalFont(), 44),fill='#000000')
+				self.TransBanner = self.bg.create_text(self.screenwidth/2, self.screenheight/1.3, text='', 
+											width=self.TextWidth,anchor=CENTER,font=(HP.GlobalFont(), 44),)
 				RunTransBanner()
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'PrepBanner', subj='')
-	
-	def BuildRules(self):
-		if self.display_rules == 1:
-			self.bg.create_text(0,self.y_cen,text=self.output,fill='hot pink',
-					font=("Impact",self.fontsize),justify=LEFT,anchor=W)
 	
 	# # # # # # # # # #
 	#      Audio      #
@@ -357,7 +365,7 @@ class Hypnotherapy(Frame):
 				# Better than after since we can still check on things
 			self.LetsWait()
 			
-			print('Slides Loop:',int((time()-Mark)*1000))
+			# print('Slides Loop:',int((time()-Mark)*1000))
 			
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'slides', subj='')
@@ -451,7 +459,7 @@ class Hypnotherapy(Frame):
 		try:	
 			HomeworkLibs.StartHomeworkPane(self.DoingHW,self.c_homework,self.p_pinupdims,
 							self.homework,self.enable_hypno,self.game,self.Humiliation,
-							self.prefer_dom,self.prefer_sub,self.c_hypno,self.c_hwlog)
+							self.prefer_dom,self.prefer_sub,self.c_hypno,self.c_hwlog,self.ColorList)
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'LaunchWFM', subj='')
 	# # # # # # # # # #
@@ -463,7 +471,7 @@ class StartHypnoProcess(Process):
 						homework,wordcount,hypno,dom,sub,pinup,banwords,tranbanr,
 						globfile,s_rulename,fontsize,display_rules,loopingAudio,AudioType,
 						gifset,FemSex,ColorList,c_vid,c_txt,c_pinup,c_homework,c_wordknt,c_CharSelect,
-						c_hypno,p_bg,c_bg,p_homework):
+						c_hypno,p_bg,c_bg,p_homework,p_hwlog,c_hwlog):
 		try:
 			self.delay = delay
 			self.opacity = opacity
@@ -495,6 +503,8 @@ class StartHypnoProcess(Process):
 			self.p_bg = p_bg
 			self.c_bg = c_bg
 			self.p_homework = p_homework
+			self.p_hwlog = p_hwlog
+			self.c_hwlog = c_hwlog
 			
 			Process.__init__(self)
 			self.start()
@@ -508,7 +518,7 @@ class StartHypnoProcess(Process):
 				self.homework,self.wordcount,self.OverlayActive,self.dom,self.sub,self.pinup,self.banwords,self.tranbanr,
 				self.globfile,self.s_rulename,self.fontsize,self.display_rules,self.loopingAudio,self.AudioType,self.gifset,
 				self.FemSex,self.ColorList,self.c_vid,self.c_txt,self.c_pinup,self.c_homework,self.c_wordknt,self.c_CharSelect,
-				self.c_hypno,self.p_bg,self.c_bg,self.p_homework)
+				self.c_hypno,self.p_bg,self.c_bg,self.p_homework,self.p_hwlog,self.c_hwlog)
 		except Exception as e:
 			HP.HandleError(format_exc(2), e, 'StartHypnoProcess.run', subj='')
 
@@ -533,13 +543,17 @@ def GenImageFiles(globfile,pinup):
 	if pinup == 1:
 		if globfile == 'All':
 			Filepath = path.abspath('Resources/Images')
-			image_files = glob(Filepath+'/*/*.png', recursive=True)
+			image_files =  glob(Filepath+'/*/*.png',  recursive=True)
+			image_files += glob(Filepath+'/*/*.jpg',  recursive=True)
+			image_files += glob(Filepath+'/*/*.jpeg', recursive=True)
 			print(len(glob(Filepath+'/*/*.png')))
 			
 			print('All images found:', len(image_files))
 		else:
 			globfile = path.abspath('Resources\\Images\\'+globfile+'\\')
-			image_files = glob(globfile+'/*.png', recursive=True)
+			image_files =  glob(globfile+'/*.png',  recursive=True)
+			image_files += glob(globfile+'/*.jpg',  recursive=True)
+			image_files += glob(globfile+'/*.jpeg', recursive=True)
 			print(globfile,'found', len(image_files), 'images...')
 	else:
 		image_files = ''
@@ -560,7 +574,7 @@ def launch(delay,opacity,game,homework,wordcount,hypno,
 				s_rulename,fontsize,display_rules,loopingAudio,
 				AudioType,gifset,FemSex,ColorList,c_vid,c_txt,
 				c_pinup,c_homework,c_wordknt,c_CharSelect,c_hypno,
-				p_bg,c_bg,p_homework):
+				p_bg,c_bg,p_homework,p_hwlog,c_hwlog):
 	try:
 		root = Tk()
 		width = root.winfo_screenwidth()
@@ -583,7 +597,7 @@ def launch(delay,opacity,game,homework,wordcount,hypno,
 					tranbanr, s_rulename, fontsize, display_rules, loopingAudio, 
 					AudioType,gifset, FemSex, ColorList, c_vid, c_txt, c_pinup,
 					c_homework, c_wordknt, c_CharSelect, c_hypno, p_bg, c_bg,
-					p_homework)
+					p_homework, p_hwlog, c_hwlog)
 		e.pack(fill=BOTH, expand=YES)
 		root.mainloop()
 	except Exception as e:
